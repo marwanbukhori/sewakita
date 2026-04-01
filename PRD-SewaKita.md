@@ -235,36 +235,42 @@ These features are scoped but NOT built until Phase 1 is validated with real use
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
 | Frontend | React + Vite (PWA) | Fast, offline-capable, no app store needed |
-| Backend | PocketBase or Supabase | Auth, DB, real-time — minimal infra management |
+| Backend | Supabase | Auth, DB, real-time, storage, RLS — minimal infra management. Free tier: 50K MAU, 500MB DB |
 | Hosting | DigitalOcean or Fly.io | Low-cost, SG region for Malaysian latency |
+| Auth | Supabase magic link / Google Sign-In (MVP) | Zero cost per authentication for both landlord and tenant |
+| Auth (Phase 2) | WhatsApp OTP via 360dialog | ~RM0.19/auth, for users who prefer phone-based login |
 | WhatsApp | `wa.me` deep links (MVP) | Zero cost, no API approval needed |
 | WhatsApp (Phase 2) | WhatsApp Business API via 360dialog | Automated sends, but requires approval + cost |
 | PDF Generation | React-PDF or server-side Puppeteer | Receipts, agreements |
-| SMS OTP | Twilio or local provider (Mobi) | Phone-based auth |
 
 ### 7.2 Data Model (Simplified)
 
 ```
-Landlord
-├── id, name, phone, email
+User (Supabase Auth)
+├── id (auth_id), email, role (landlord/tenant), last_login
+│
+Landlord (extends User)
+├── id, auth_id, name, phone, email
 │
 ├── Property[]
-│   ├── id, name, address, photo_url
+│   ├── id, name, address, photo_url, billing_date (day of month)
 │   │
 │   ├── Room[]
 │   │   ├── id, label, rent_amount, status (occupied/vacant)
 │   │   │
 │   │   └── Tenancy[]
 │   │       ├── id, tenant_id, move_in, move_out, deposit, agreed_rent
+│   │       ├── deposit_deductions (JSON: [{item, amount, photo_url}])
 │   │       └── status (active/ended)
 │   │
 │   └── UtilityBill[]
 │       ├── id, month, type (electric/water/internet)
 │       ├── total_amount, split_method
+│       ├── per_room_readings (JSON, for sub-meter: [{room_id, kwh}])
 │       └── per_room_amount (computed)
 │
-├── Tenant[]
-│   ├── id, name, phone, ic_number
+├── Tenant[] (extends User)
+│   ├── id, auth_id, name, phone, email, ic_number
 │   └── emergency_contact
 │
 └── MonthlyBill[]
@@ -277,12 +283,23 @@ Landlord
         └── receipt_sent (boolean)
 ```
 
+*Note: Landlord and Tenant share the Supabase Auth table (`User`) with role-based access. Row-Level Security (RLS) policies ensure tenants can only read their own data, and landlords can only access their own properties/tenants.*
+
 ### 7.3 Key Technical Decisions
 
 - **PWA over native app** — No app store review process, instant updates, works on any phone. Malaysian smartphone penetration is high and Chrome/Safari PWA support is sufficient.
-- **Local-first with sync** — Landlords in older buildings may have spotty WiFi. The app must work offline and sync when reconnected.
+- **Offline-capable with sync** — Service worker caching for read access offline, queued writes synced on reconnect. Full local-first with conflict resolution in Phase 2.
 - **WhatsApp deep links for MVP** — Avoids the cost and complexity of WhatsApp Business API. Landlord taps a button, WhatsApp opens with pre-filled message, landlord hits send. Good enough for validation.
-- **No tenant login for MVP** — Reduces friction to zero. Tenant is a record the landlord manages, not a user in the system.
+- **Tenant has an account** — Tenants log in via magic link or Google Sign-In to view bills, payment history, and tenancy details. Reduces WhatsApp back-and-forth and gives tenants transparency.
+- **Supabase as single backend** — Auth, database, real-time subscriptions, and file storage in one platform. Free tier covers early growth (50K MAU). Standard Postgres underneath — portable if needed.
+
+### 7.4 Scalability Considerations
+
+- **Row-Level Security (RLS)** — Supabase RLS policies enforce data isolation from day one. Landlords see only their properties; tenants see only their data.
+- **Schema for scale** — Indexes on `property_id`, `tenant_id`, and `month` columns to support portfolio landlords with 60+ rooms across 10+ properties.
+- **API pagination & filtering** — All list endpoints support pagination and filtering to handle growing datasets gracefully.
+- **PWA performance** — Lazy loading for property/room views, virtual lists for long tenant/bill lists.
+- **Separation of concerns** — Billing logic, notification logic, and auth handled as independent modules. Allows upgrading any layer (e.g., adding WhatsApp Business API) without touching others.
 
 ---
 
