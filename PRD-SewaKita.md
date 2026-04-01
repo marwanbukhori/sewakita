@@ -408,7 +408,7 @@ SaaS economics are favorable: near-zero marginal cost per additional user on Sup
 | Landlords too resistant to change from WhatsApp | High | Don't replace WhatsApp — augment it. The app generates; WhatsApp delivers. |
 | Low willingness to pay RM29/month | Medium | Free tier is genuinely useful. Pro conversion driven by utility splitting + multi-property which are clear time-savers. |
 | WhatsApp API costs if scaling automated sends | Medium | MVP uses free deep links. Only move to API when volume justifies it. |
-| Competitor enters market | Low | Speed to market + community trust is the moat. Big players won't target this niche. |
+| Competitor enters market | Low | Multiple defensibility layers: (1) **Data lock-in** — years of payment history, tenant records, and utility patterns become valuable and painful to migrate; (2) **Network effects** — landlord-to-landlord referrals within local communities; (3) **Integration depth** (Phase 2) — FPX/DuitNow integration raises switching costs; (4) **Community trust** — presence in Facebook groups, BM-first content, and brand recognition in the niche. |
 | Data privacy concerns (tenant IC numbers, financial data) | Medium | IC is optional. All data encrypted at rest. Clear privacy policy in BM. PDPA compliance. |
 | Scope creep into full property management | High | Hard scope boundary: we serve independent landlords managing rooms/units. No condo JMB management, no developer-scale tools. Complexity grows via portfolio size, not feature bloat. |
 
