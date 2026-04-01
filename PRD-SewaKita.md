@@ -25,6 +25,19 @@ The typical independent landlord owns 1–10+ properties with 3–6 rooms each. 
 - **Tenancy agreement tracking** — expiry dates, deposit records, and deduction history live in scattered documents or not at all.
 - **Communication** happens through informal WhatsApp groups with no structure, audit trail, or automation.
 
+### 2.1 Market Size
+
+Malaysia's rental market is substantial and growing. Key data points:
+
+- **1.8–1.9 million** rented housing units nationwide (DOSM 2020 Census), with 23–25% of Malaysian households renting
+- **KL + Selangor** account for 30–35% of the rental market — approximately **550,000–650,000 rented units** in this corridor alone
+- **Room rentals** (as opposed to whole-unit) make up an estimated 30–40% of urban KL/Selangor rentals, driven by students, migrant workers, and young professionals
+- **70–80%** of Malaysian rental properties are owned by individual landlords, not institutional investors
+- **Estimated addressable market:** 150,000–250,000 independent room-renting landlords in KL/Selangor; 300,000–400,000 across urban Malaysia (incl. Penang, Johor, Ipoh)
+- **Rental demand is growing** as homeownership affordability declines — median house price-to-income ratio exceeds 4.1x nationally and is higher in KL (Bank Negara Malaysia)
+
+*Sources: DOSM Census & Household Income Survey, NAPIC Property Market Reports, Bank Negara Annual Report*
+
 Existing solutions do not serve this segment. Speedhome and PropertyGuru are listing/matchmaking platforms. Enterprise property management tools (Jejakatuan, StayC) target condo JMBs and large developers with pricing and complexity far beyond what independent landlords need — even those with 10+ properties want simplicity, not an enterprise dashboard.
 
 ---
