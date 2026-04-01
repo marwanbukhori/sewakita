@@ -126,10 +126,19 @@ SewaKita serves any landlord managing rental rooms or units independently — fr
 
 **Requirements:**
 - Landlord inputs monthly utility readings/amounts per property: TNB (electricity), water (SYABAS/SAJ/etc.), internet (Unifi/Maxis/etc.)
-- Configurable split method per utility: equal split across occupied rooms, by meter reading (if sub-metered), fixed amount per room, or landlord absorbs (excluded from split)
+- Configurable split method per utility:
+  - **By sub-meter reading (default)** — landlord enters kWh per room from individual meters. This is the dominant method among Malaysian landlords and should be the primary UI flow.
+  - **Equal split** across occupied rooms
+  - **Fixed amount** per room (e.g., RM80/month flat)
+  - **Landlord absorbs** (excluded from tenant bill — common for water at RM10–20/room)
 - Auto-generate monthly bill per tenant: base rent + utility share = total due
 - Display bill breakdown clearly (tenant sees exactly what they're paying for)
 - Bill history per tenant and per property
+
+**Billing Edge Cases:**
+- **Mid-month move-in:** prorated first month (rent × remaining days ÷ total days in month)
+- **Configurable billing date** per property (not hardcoded to 1st of the month — some landlords bill on 15th, etc.)
+- **Utility bill input decoupled from rent due date** — landlord enters TNB/SYABAS bill when it arrives; system calculates and applies the split to the relevant billing period
 
 ### 5.4 Payment Tracking
 
