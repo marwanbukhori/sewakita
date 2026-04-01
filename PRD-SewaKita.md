@@ -165,13 +165,21 @@ SewaKita serves any landlord managing rental rooms or units independently — fr
 
 ### 5.6 Authentication & Data
 
-**Description:** Simple, phone-number-based auth appropriate for the Malaysian market.
+**Description:** Simple, zero-cost auth for both landlords and tenants, with PDPA-compliant data handling.
 
 **Requirements:**
-- Sign up / login via phone number + OTP (SMS or WhatsApp OTP)
-- Data stored in cloud with local-first PWA cache
-- All data belongs to the landlord — tenant does not need an account
+- Sign up / login via **magic link (email)** through Supabase or **Google Sign-In** — zero cost per authentication
+- Both landlords and tenants authenticate through the same system with role-based access
+- Future upgrade path: WhatsApp OTP (~RM0.19/auth) or SMS OTP (~RM0.10–0.40/auth) when revenue supports it
+- Data stored in Supabase (cloud) with PWA service worker cache for offline read access
 - Data export (CSV) for tax/record purposes
+
+**PDPA Compliance (Personal Data Protection Act 2010):**
+- Data processing notice and consent flow during signup — clearly explain what data is collected and why
+- Privacy policy in Bahasa Malaysia (accessible within the app)
+- IC number collection is clearly optional with stated purpose ("for tenancy record-keeping only")
+- Cross-border data transfer notice (data hosted in Singapore region)
+- Purpose limitation — tenant data used only for rental management, never shared with third parties
 
 ### 5.7 Tenant Portal
 
