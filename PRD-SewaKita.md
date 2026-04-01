@@ -91,7 +91,7 @@ SewaKita serves any landlord managing rental rooms or units independently — fr
 2. **Phone-first** — The landlord manages everything from their phone. No desktop required.
 3. **Malay-first, bilingual** — Primary UI in Bahasa Malaysia with English toggle. All generated messages in BM by default.
 4. **Zero onboarding friction** — Landlord should add their first property and tenant within 2 minutes of signing up.
-5. **Offline-capable** — PWA with local-first data. Sync when online.
+5. **Offline-capable** — PWA with service worker caching for read access offline and queued writes synced on reconnect. Full local-first with conflict resolution in Phase 2. Architecture designed to upgrade without rewrites.
 
 ---
 
