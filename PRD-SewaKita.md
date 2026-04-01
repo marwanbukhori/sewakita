@@ -109,14 +109,16 @@ SewaKita serves any landlord managing rental rooms or units independently — fr
 
 ### 5.2 Tenant Management
 
-**Description:** Landlord adds tenants and assigns them to rooms with tenancy details.
+**Description:** Landlord adds tenants and assigns them to rooms with tenancy details. Tenants are both records managed by the landlord AND users who can log in to view their own data.
 
 **Requirements:**
-- Add tenant with name, phone number (required), IC number (optional), emergency contact (optional)
+- Add tenant with name, phone number (required), email (required for login), IC number (optional), emergency contact (optional)
 - Assign tenant to a room with move-in date, agreed rent, deposit amount, and tenancy end date
 - Record deposit paid (amount + date)
-- Mark tenant as moved out with move-out date and deposit deduction notes
+- Track deposit deductions with itemized breakdown and optional photo evidence (disclaimer: record-keeping tool, not legal advice)
+- Mark tenant as moved out with move-out date and deposit deduction summary
 - View tenant history per room (past and current)
+- Tenant can log in via magic link or Google Sign-In to access their own data (see Section 5.7)
 
 ### 5.3 Monthly Billing & Utility Splitting
 
@@ -162,6 +164,20 @@ SewaKita serves any landlord managing rental rooms or units independently — fr
 - All data belongs to the landlord — tenant does not need an account
 - Data export (CSV) for tax/record purposes
 
+### 5.7 Tenant Portal
+
+**Description:** Tenants can log in to view their bills, payment history, and tenancy details — reducing "berapa saya kena bayar bulan ni?" WhatsApp messages.
+
+**Requirements:**
+- Tenant login via magic link (email) or Google Sign-In — no password needed
+- View current month's bill with full breakdown (rent + utility share)
+- View bill history and payment history
+- View outstanding balance
+- View tenancy details (move-in date, agreed rent, deposit amount, tenancy end date)
+- In-app notifications alongside WhatsApp messages
+- UI structured to support future online payment integration (FPX/DuitNow in Phase 2)
+- Tenant can only see their own data — no access to other tenants or landlord-level information
+
 ---
 
 ## 6. Features — Phase 2 (Post-Validation)
@@ -184,16 +200,12 @@ These features are scoped but NOT built until Phase 1 is validated with real use
 - Track status: reported → in progress → resolved
 - Photo upload for before/after
 
-### 6.4 Tenant Self-Service Portal
-- Tenant accesses a link (no login) to view their current bill, payment history, and tenancy details
-- Reduces "berapa saya kena bayar bulan ni?" WhatsApp messages
-
-### 6.5 Online Payment Integration
+### 6.4 Online Payment Integration
 - FPX or DuitNow QR integration for direct rent payment
 - Auto-reconciliation when payment received
 - Likely via Billplz, Toyyib, or Stripe MY
 
-### 6.6 Multi-Language Support
+### 6.5 Multi-Language Support
 - Full UI in BM, English, and Mandarin
 - Generated messages in tenant's preferred language
 
