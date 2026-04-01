@@ -414,14 +414,23 @@ SaaS economics are favorable: near-zero marginal cost per additional user on Sup
 
 ---
 
-## 12. Open Questions
+## 12. Resolved Questions & Remaining Action Items
 
-1. **Naming** — "SewaKita" is a working title. Need to validate it doesn't conflict with existing brands and resonates with target users.
-2. **OTP provider** — SMS OTP costs ~RM0.15–0.30/SMS. At scale this adds up. WhatsApp OTP via Business API may be cheaper but adds complexity.
-3. **Utility sub-metering** — How common is sub-metering in Malaysian room rentals vs. simple equal split? This affects how complex the splitting UI needs to be.
-4. **Deposit management** — Should the app track deposit deductions formally, or is this too legally sensitive for a simple tool?
-5. **Market size** — Need to quantify: how many small-scale landlords exist in KL/Selangor? NAPIC or DOSM data may help.
-6. **Regulatory** — Any licensing requirements for property management tools in Malaysia? Likely none at this scale but worth confirming.
+### Resolved
+
+1. **Naming** — No conflicts found in research. "SewaKita" is strong: "Sewa" (rent) + "Kita" (our/us) communicates purpose immediately and fits Malaysian collectivist culture. **Status: Proceed, pending manual verification (see action items below).**
+2. **OTP provider** — Resolved. Using Supabase magic link / Google Sign-In for MVP (zero cost). SMS OTP (~RM0.10–0.40/auth) and WhatsApp OTP (~RM0.19/auth via 360dialog) deferred to Phase 2 when revenue supports it.
+3. **Utility sub-metering** — Resolved. Sub-metering is the dominant method among serious Malaysian landlords (ProMeter.my, SplitMeter.my exist for this market). Sub-meter kWh input is now the primary UI flow. All 4 split methods (sub-meter, equal, fixed, absorbed) are supported. Water is commonly landlord-absorbed.
+4. **Deposit management** — Resolved. Safe to track with disclaimer. Malaysia has no dedicated residential tenancy act — deposits governed by Contracts Act 1950 and contract terms. Transparent tracking reduces disputes and serves as evidence in Consumer Claims Tribunal. Disclaimer added: "record-keeping tool, not legal advice."
+5. **Market size** — Resolved. Estimated 150,000–250,000 independent room-renting landlords in KL/Selangor; 300,000–400,000 across urban Malaysia. Market size supports revenue projections. (Sources: DOSM Census, NAPIC, Bank Negara.)
+6. **Regulatory** — Resolved. No licensing required — BOVAEP/LPPEH regulates human practitioners, not software tools. PDPA 2010 compliance added to MVP scope (consent flow, BM privacy policy, optional IC, cross-border data notice). Digital receipts recognized under Electronic Commerce Act 2006. Phase 2 payments: use pass-through gateways (Billplz, Revenue Monster) to avoid financial licensing.
+
+### Remaining Action Items
+
+- [ ] Search SSM (mydata.ssm.com.my) for any registered business named "SewaKita" or "Sewa Kita"
+- [ ] Search MyIPO (myipo.gov.my) trademark database for conflicts
+- [ ] Check domain availability: sewakita.com, sewakita.my, sewakita.app
+- [ ] Search Google Play + Apple App Store for existing apps with this name
 
 ---
 
