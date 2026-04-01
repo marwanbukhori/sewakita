@@ -460,3 +460,6 @@ SaaS economics are favorable: near-zero marginal cost per additional user on Sup
 8. As a landlord, I want to record deposit amounts per tenant so I have a clear record when they move out.
 9. As a landlord, I want to export my rental income data so I can use it for LHDN tax filing.
 10. As a tenant, I want to receive a clear bill breakdown via WhatsApp so I know exactly what I'm paying for.
+11. As a tenant, I want to log in and see my current and past bills so I don't have to ask my landlord "berapa kena bayar bulan ni?"
+12. As a tenant, I want to see my payment history and outstanding balance so I know where I stand.
+13. As a tenant, I want to see my tenancy details (move-in date, deposit paid, agreed rent) so I have a record of my agreement.
