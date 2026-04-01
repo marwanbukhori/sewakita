@@ -310,11 +310,14 @@ Landlord (extends User)
 | Tier | Price | Includes |
 |------|-------|----------|
 | Free | RM0 | 1 property, up to 3 rooms, basic billing |
-| Pro | RM39/month | Up to 5 properties, unlimited rooms, utility splitting, receipt generation, payment tracking |
+| Starter | RM19/month | Up to 2 properties, unlimited rooms, basic utility splitting |
+| Pro | RM39/month | Up to 5 properties, all features incl. receipt generation, payment tracking |
 | Business | RM79/month | Unlimited properties & rooms, cross-property dashboard, tax summary, agreement generator |
-| Business+ (Phase 2) | RM149/month | Multi-owner/agent support, maintenance tracking, tenant portal, priority support |
+| Business+ (Phase 2) | RM149/month | Multi-owner/agent support, maintenance tracking, priority support |
 
-Pricing scales with the landlord's portfolio — a landlord managing 10 houses at RM79/month is paying less than RM8/property while collecting RM30,000+/month in rent. The ROI is obvious.
+**Annual billing:** 2 months free (e.g., Pro annual = RM39 × 10 = RM390/year).
+
+Pricing scales with the landlord's portfolio — a landlord managing 10 houses at RM79/month is paying less than RM8/property while collecting RM30,000+/month in rent. The ROI is obvious. The Starter tier at RM19/month provides an accessible entry point for Segment A landlords (1–3 properties, RM2K–10K monthly rental income).
 
 ### 8.2 Revenue Projections (Conservative)
 
@@ -325,7 +328,23 @@ Assuming launch in KL/Selangor area:
 - Monthly recurring revenue at 12 months (300 landlords): RM15,000
 - Portfolio landlords (Segment B) are the high-value accounts — 20% of users but 50%+ of revenue
 
-### 8.3 Alternative/Supplementary Revenue
+### 8.3 Unit Economics
+
+| Item | Cost |
+|------|------|
+| Supabase (free tier → Pro at scale) | RM0–110/mo |
+| DigitalOcean/Fly.io hosting (if needed for workers) | ~RM50–100/mo |
+| Auth (magic link / Google Sign-In) | RM0 |
+| Domain + SSL | ~RM50/mo |
+| **Total infrastructure cost** | **~RM100–260/mo** |
+
+- At 100 landlords × RM50 blended ARPU = **RM5,000 MRR** → ~95% margin
+- Break-even for full-time income (~RM8K/mo): **~160 paying landlords**
+- At 1,000 landlords × RM50 ARPU = **RM50,000 MRR**, infrastructure ~RM500–1,000/mo
+
+SaaS economics are favorable: near-zero marginal cost per additional user on Supabase, no per-auth costs, and infrastructure scales sub-linearly with user count.
+
+### 8.4 Alternative/Supplementary Revenue
 
 - **Featured listing for tukang/service providers** — Landlords frequently need plumbers, electricians, aircon servicing. A referral marketplace within the app creates a natural second revenue stream.
 - **Financial product partnerships** — Tenant deposit insurance, landlord property insurance referrals.
