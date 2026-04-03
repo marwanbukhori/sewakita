@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @theme {
+  /* Font */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Primary (Teal — SewaKita brand) */
   --color-primary-50: #f0fdfa;
   --color-primary-100: #ccfbf1;
   --color-primary-200: #99f6e4;
@@ -12,26 +16,101 @@
   --color-primary-800: #115e59;
   --color-primary-900: #134e4a;
 
+  /* Danger */
   --color-danger-50: #fef2f2;
   --color-danger-500: #ef4444;
   --color-danger-600: #dc2626;
 
+  /* Warning */
   --color-warning-50: #fffbeb;
   --color-warning-500: #f59e0b;
   --color-warning-600: #d97706;
 
+  /* Success */
   --color-success-50: #f0fdf4;
   --color-success-500: #22c55e;
   --color-success-600: #16a34a;
 
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  /* Shadow elevation scale */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-header: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: #2D333A;
+  background-color: #F7FAFC;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.skeleton {
+  background: #ECEEF1;
+  border-radius: 8px;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Press feedback */
+.press-scale {
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.press-scale:active {
+  transform: scale(0.97);
+}
+
+/* Page entrance animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeInUp 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.animate-in-delay-1 { animation-delay: 50ms; }
+.animate-in-delay-2 { animation-delay: 100ms; }
+.animate-in-delay-3 { animation-delay: 150ms; }
+.animate-in-delay-4 { animation-delay: 200ms; }
+
+/* Safe area utilities */
+.safe-top { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Smooth transitions on interactive elements */
+a, button, [role="button"] {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-in,
+  .animate-in-delay-1,
+  .animate-in-delay-2,
+  .animate-in-delay-3,
+  .animate-in-delay-4 {
+    animation: none;
+  }
+  .press-scale:active {
+    transform: none;
+  }
+  .skeleton {
+    animation: none;
+    opacity: 0.7;
+  }
 }
