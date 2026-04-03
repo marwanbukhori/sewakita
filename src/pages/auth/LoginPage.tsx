@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import LanguageToggle from '@/components/ui/LanguageToggle'
+import { BatikBackground } from '@/assets/batik/patterns'
 
 export default function LoginPage() {
   const { signInWithMagicLink, signInWithGoogle } = useAuth()
@@ -34,8 +35,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7FAFC] flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm animate-in">
+    <div className="min-h-screen bg-[#F7FAFC] flex flex-col items-center justify-center px-4 relative overflow-hidden">
+      {/* Batik background decoration */}
+      <BatikBackground className="absolute top-0 left-0 w-full h-full text-primary-600 pointer-events-none" />
+
+      <div className="w-full max-w-sm animate-in relative z-10">
         {/* Language toggle */}
         <div className="flex justify-end mb-4">
           <LanguageToggle />

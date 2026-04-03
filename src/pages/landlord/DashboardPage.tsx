@@ -9,6 +9,7 @@ import QuickActions from '@/components/ui/QuickActions'
 import EmptyState from '@/components/ui/EmptyState'
 import ActivityFeed from '@/components/ui/ActivityFeed'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
+import { BatikHeroOverlay } from '@/assets/batik/patterns'
 
 interface OverdueBill extends MonthlyBill {
   tenant: Profile
@@ -93,7 +94,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Revenue overview */}
-      <Card variant="hero" padding="p-5">
+      <Card variant="hero" padding="p-5" className="relative overflow-hidden">
+        <BatikHeroOverlay />
+        <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
           <p className="text-white/70 text-sm font-medium">Kutipan Bulan Ini</p>
           <Link to="/payments" className="text-white/60 hover:text-white text-xs flex items-center gap-1">
@@ -134,6 +137,7 @@ export default function DashboardPage() {
               <AlertTriangle size={10} /> {stats.overdueCount} tertunggak
             </span>
           )}
+        </div>
         </div>
       </Card>
 

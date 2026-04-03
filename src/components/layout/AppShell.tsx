@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
 import Button from '@/components/ui/Button'
 import LanguageToggle from '@/components/ui/LanguageToggle'
+import { BatikNavRing } from '@/assets/batik/patterns'
 import { useTranslation } from 'react-i18next'
 
 interface NavItem {
@@ -245,6 +246,7 @@ export default function AppShell() {
                       ? 'bg-primary-600 text-white shadow-primary-300/50'
                       : 'bg-white text-primary-600 border-2 border-primary-100'
                   }`}>
+                    <BatikNavRing className={isActive ? 'text-white' : 'text-primary-400'} />
                     <item.icon size={26} strokeWidth={isActive ? 2.5 : 2} />
                     {item.badge !== undefined && item.badge > 0 && (
                       <span className="absolute -top-1 -right-1 bg-danger-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
