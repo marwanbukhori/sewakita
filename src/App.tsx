@@ -17,6 +17,7 @@ import TenantFormPage from '@/pages/landlord/TenantFormPage'
 import BilPage from '@/pages/landlord/BilPage'
 import AgreementFormPage from '@/pages/landlord/AgreementFormPage'
 import AgreementViewPage from '@/pages/landlord/AgreementViewPage'
+import NotificationSettingsPage from '@/pages/landlord/NotificationSettingsPage'
 
 import TenantDashboard from '@/pages/tenant/TenantDashboard'
 import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
@@ -97,6 +98,7 @@ function AppRoutes() {
         <Route path="/tenants/new" element={<TenantFormPage />} />
         <Route path="/agreements/new" element={<AgreementFormPage />} />
         <Route path="/agreements/:id" element={<AgreementViewPage />} />
+        <Route path="/properties/:id/notifications" element={<NotificationSettingsPage />} />
         <Route path="/bil" element={<BilPage />} />
         {/* Legacy route redirects */}
         <Route path="/billing" element={<Navigate to="/bil" replace />} />
