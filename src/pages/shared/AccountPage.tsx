@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, ChevronRight, HelpCircle, LogOut, Shield, User, Bell } from 'lucide-react'
+import { Building2, ChevronRight, LogOut, Shield, User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Card from '@/components/ui/Card'
 import BottomSheet from '@/components/ui/BottomSheet'
@@ -21,7 +21,7 @@ export default function AccountPage() {
       items: [
         { icon: User, label: 'Maklumat peribadi', to: '#' },
         ...(role === 'landlord' ? [{ icon: Building2, label: 'Hartanah saya', to: '/properties' }] : []),
-        { icon: Bell, label: 'Tetapan notifikasi', to: '#' },
+        // { icon: Bell, label: 'Tetapan notifikasi', to: '#' },
       ],
     },
     {
@@ -36,13 +36,13 @@ export default function AccountPage() {
     <div className="space-y-5 animate-in">
       {/* Profile header */}
       <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-primary-600 flex items-center justify-center text-white text-xl font-bold shrink-0">
+        <div className="w-14 h-14 rounded-full bg-primary-500 flex items-center justify-center text-white text-xl font-bold shrink-0">
           {profile?.name?.charAt(0)?.toUpperCase() || '?'}
         </div>
         <div>
           <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full font-medium">
               {role === 'landlord' ? 'Tuan Rumah' : 'Penyewa'}
             </span>
             {profile?.phone && (
@@ -50,18 +50,6 @@ export default function AccountPage() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Help cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card variant="elevated" padding="p-4" className="text-center">
-          <HelpCircle size={24} className="mx-auto text-primary-600 mb-2" />
-          <p className="text-xs font-medium text-gray-700">Pusat Bantuan</p>
-        </Card>
-        <Card variant="elevated" padding="p-4" className="text-center">
-          <User size={24} className="mx-auto text-primary-600 mb-2" />
-          <p className="text-xs font-medium text-gray-700">Jemput Rakan</p>
-        </Card>
       </div>
 
       {/* Settings groups */}
@@ -78,7 +66,7 @@ export default function AccountPage() {
                 >
                   <item.icon size={18} className="text-gray-500" />
                   <span className="flex-1 text-sm text-gray-800">{item.label}</span>
-                  <ChevronRight size={16} className="text-gray-400" />
+                  <ChevronRight size={16} className="text-gray-300" />
                 </Link>
               ))}
             </div>
@@ -99,7 +87,6 @@ export default function AccountPage() {
 
       <p className="text-center text-xs text-gray-400 pb-4">SewaKita v1.0</p>
 
-      {/* Logout confirmation */}
       <BottomSheet open={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)} title="Log Keluar">
         <div className="space-y-4">
           <p className="text-sm text-gray-500">Adakah anda pasti mahu log keluar dari SewaKita?</p>

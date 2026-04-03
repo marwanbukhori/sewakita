@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Users, Receipt, AlertTriangle, Plus, UserPlus, FileText, CreditCard } from 'lucide-react'
+import { Building2, Users, AlertTriangle, Plus, UserPlus, FileText, CreditCard, TrendingUp, ArrowUpRight } from 'lucide-react'
 import type { Room, MonthlyBill } from '@/types/database'
 import Card from '@/components/ui/Card'
 import QuickActions from '@/components/ui/QuickActions'
@@ -21,12 +21,8 @@ interface DashboardStats {
 export default function DashboardPage() {
   const { profile } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
-    totalProperties: 0,
-    totalRooms: 0,
-    occupiedRooms: 0,
-    overdueCount: 0,
-    expectedIncome: 0,
-    collectedIncome: 0,
+    totalProperties: 0, totalRooms: 0, occupiedRooms: 0,
+    overdueCount: 0, expectedIncome: 0, collectedIncome: 0,
   })
   const [loading, setLoading] = useState(true)
 
@@ -59,6 +55,8 @@ export default function DashboardPage() {
   if (loading) return <SkeletonDashboard />
 
   const collectionPercent = stats.expectedIncome > 0 ? Math.round((stats.collectedIncome / stats.expectedIncome) * 100) : 0
+  const outstanding = stats.expectedIncome - stats.collectedIncome
+  const occupancyPercent = stats.totalRooms > 0 ? Math.round((stats.occupiedRooms / stats.totalRooms) * 100) : 0
 
   const quickActions = [
     { icon: Building2, label: 'Tambah Hartanah', to: '/properties/new', color: 'bg-primary-50 text-primary-600' },
@@ -75,89 +73,103 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
       </div>
 
-      {/* Hero collection card */}
+      {/* Revenue overview */}
       <Card variant="hero" padding="p-5">
-        <p className="text-primary-200 text-sm font-medium mb-1">Kutipan Bulan Ini</p>
-        <div className="flex items-baseline gap-2 mb-3">
-          <span className="text-2xl font-bold">RM{stats.collectedIncome.toLocaleString()}</span>
-          <span className="text-primary-200 text-sm">/ RM{stats.expectedIncome.toLocaleString()}</span>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-white/70 text-sm font-medium">Kutipan Bulan Ini</p>
+          <Link to="/payments" className="text-white/60 hover:text-white text-xs flex items-center gap-1">
+            Lihat semua <ArrowUpRight size={12} />
+          </Link>
         </div>
-        <div className="relative h-2.5 bg-white/20 rounded-full overflow-hidden mb-3">
+
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <p className="text-3xl font-bold tracking-tight">RM{stats.collectedIncome.toLocaleString()}</p>
+            <p className="text-white/60 text-sm mt-0.5">daripada RM{stats.expectedIncome.toLocaleString()}</p>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center gap-1 text-white/90">
+              <TrendingUp size={14} />
+              <span className="text-lg font-bold">{collectionPercent}%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="relative h-2 bg-white/20 rounded-full overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 bg-white rounded-full transition-all"
+            className="absolute inset-y-0 left-0 bg-white rounded-full transition-all duration-500"
             style={{ width: `${collectionPercent}%` }}
           />
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-white/80">{collectionPercent}% dikutip</span>
-            {stats.overdueCount > 0 && (
-              <span className="bg-red-500/80 text-white text-xs px-2 py-0.5 rounded-full font-medium">
-                {stats.overdueCount} Tertunggak
-              </span>
-            )}
-          </div>
-          <Link to="/payments" className="text-sm text-white/80 hover:text-white transition-colors">
-            Lihat Semua →
-          </Link>
+
+        {/* Bottom stats row */}
+        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/10">
+          {outstanding > 0 && (
+            <span className="text-xs text-white/70">
+              Baki: <strong className="text-white">RM{outstanding.toLocaleString()}</strong>
+            </span>
+          )}
+          {stats.overdueCount > 0 && (
+            <span className="bg-red-500/30 text-white text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+              <AlertTriangle size={10} /> {stats.overdueCount} tertunggak
+            </span>
+          )}
         </div>
       </Card>
 
       {/* Quick actions */}
       <QuickActions actions={quickActions} />
 
-      {/* Stat cards */}
+      {/* Key metrics — 2x2 grid */}
       <div className="grid grid-cols-2 gap-3">
-        <Card variant="elevated" className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 rounded-l-xl" />
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
-              <Building2 size={18} className="text-primary-600" />
+        <Card variant="default" padding="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
+              <Building2 size={16} className="text-primary-600" />
             </div>
-            <div>
-              <div className="text-xl font-bold text-gray-900">{stats.totalProperties}</div>
-              <div className="text-xs text-gray-500">Hartanah</div>
-            </div>
+            <Link to="/properties" className="text-gray-400 hover:text-primary-500">
+              <ArrowUpRight size={14} />
+            </Link>
           </div>
+          <p className="text-2xl font-bold text-gray-800">{stats.totalProperties}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Hartanah</p>
         </Card>
 
-        <Card variant="elevated" className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-xl" />
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-              <Users size={18} className="text-blue-600" />
+        <Card variant="default" padding="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+              <Users size={16} className="text-blue-600" />
             </div>
-            <div>
-              <div className="text-xl font-bold text-gray-900">{stats.occupiedRooms}/{stats.totalRooms}</div>
-              <div className="text-xs text-gray-500">Bilik Berisi</div>
-            </div>
+            <span className="text-xs text-gray-400">{occupancyPercent}%</span>
           </div>
+          <p className="text-2xl font-bold text-gray-800">{stats.occupiedRooms}<span className="text-base text-gray-400 font-normal">/{stats.totalRooms}</span></p>
+          <p className="text-xs text-gray-500 mt-0.5">Bilik Berisi</p>
         </Card>
 
-        <Card variant="elevated" className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-green-500 rounded-l-xl" />
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center shrink-0">
-              <Receipt size={18} className="text-green-600" />
-            </div>
-            <div>
-              <div className="text-xl font-bold text-gray-900">RM{stats.expectedIncome.toLocaleString()}</div>
-              <div className="text-xs text-gray-500">Dijangka</div>
+        <Card variant="default" padding="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+              <TrendingUp size={16} className="text-green-600" />
             </div>
           </div>
+          <p className="text-2xl font-bold text-gray-800">RM{stats.expectedIncome.toLocaleString()}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Dijangka</p>
         </Card>
 
-        <Card variant="elevated" className={`relative overflow-hidden ${stats.overdueCount > 0 ? 'ring-1 ring-danger-500/20' : ''}`}>
-          <div className={`absolute top-0 left-0 w-1 h-full rounded-l-xl ${stats.overdueCount > 0 ? 'bg-danger-500' : 'bg-gray-300'}`} />
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${stats.overdueCount > 0 ? 'bg-danger-50' : 'bg-gray-50'}`}>
-              <AlertTriangle size={18} className={stats.overdueCount > 0 ? 'text-danger-500' : 'text-gray-400'} />
+        <Card variant="default" padding="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stats.overdueCount > 0 ? 'bg-red-50' : 'bg-gray-50'}`}>
+              <AlertTriangle size={16} className={stats.overdueCount > 0 ? 'text-red-500' : 'text-gray-400'} />
             </div>
-            <div>
-              <div className="text-xl font-bold text-gray-900">{stats.overdueCount}</div>
-              <div className="text-xs text-gray-500">Tertunggak</div>
-            </div>
+            {stats.overdueCount > 0 && (
+              <Link to="/payments" className="text-red-400 hover:text-red-500">
+                <ArrowUpRight size={14} />
+              </Link>
+            )}
           </div>
+          <p className={`text-2xl font-bold ${stats.overdueCount > 0 ? 'text-red-600' : 'text-gray-800'}`}>{stats.overdueCount}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Tertunggak</p>
         </Card>
       </div>
 

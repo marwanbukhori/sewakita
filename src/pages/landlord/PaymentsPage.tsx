@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react'
+import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import type { MonthlyBill, Property, Room, Profile, PaymentMethod } from '@/types/database'
 import toast from 'react-hot-toast'
 import { generateBillMessage, generateReminderMessage, generateReceiptMessage } from '@/lib/whatsapp'
@@ -124,9 +124,6 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      <Button variant="ghost" size="sm" onClick={() => window.history.back()} icon={ArrowLeft} className="sm:hidden">
-        Kembali
-      </Button>
       <h1 className="text-xl font-bold text-gray-800">Bayaran</h1>
 
       {/* Summary strip */}

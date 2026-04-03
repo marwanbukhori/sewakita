@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt, Plus, ChevronDown, ChevronUp, Zap, Droplets, Wifi, ArrowLeft } from 'lucide-react'
+import { Receipt, Plus, ChevronDown, ChevronUp, Zap, Droplets, Wifi } from 'lucide-react'
 import type { Property, Room, UtilityBill, MonthlyBill, Tenancy, Profile, SplitMethod, UtilityType } from '@/types/database'
 import toast from 'react-hot-toast'
 import Card from '@/components/ui/Card'
@@ -151,9 +151,6 @@ export default function BillingPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      <Button variant="ghost" size="sm" onClick={() => window.history.back()} icon={ArrowLeft} className="sm:hidden">
-        Kembali
-      </Button>
       <h1 className="text-xl font-bold text-gray-800">Bil Bulanan</h1>
 
       <div className="flex flex-col sm:flex-row gap-3">

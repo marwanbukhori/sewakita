@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Plus, MapPin, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Building2, Plus, MapPin, ChevronRight } from 'lucide-react'
 import type { Property, Room } from '@/types/database'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -35,15 +35,10 @@ export default function PropertiesPage() {
     setLoading(false)
   }
 
-  const navigate = useNavigate()
-
   if (loading) return <SkeletonList count={3} />
 
   return (
     <div className="space-y-4 animate-in">
-      <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} icon={ArrowLeft} className="sm:hidden">
-        Dashboard
-      </Button>
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-800">Hartanah</h1>
         <Link to="/properties/new">
