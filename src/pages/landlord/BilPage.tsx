@@ -319,8 +319,7 @@ export default function BilPage() {
       {tab === 'bills' && (
         <>
           {/* Summary strip — hero style */}
-          <Card variant="hero" padding="p-4" className="relative overflow-hidden">
-            <div className="relative z-10">
+          <Card variant="hero" padding="p-4">
               {/* Progress bar at top */}
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-white/70 font-medium">Collection Rate</span>
@@ -344,7 +343,6 @@ export default function BilPage() {
                   <p className="text-sm font-bold text-amber-300">RM{(totalExpected - totalCollected).toLocaleString()}</p>
                 </div>
               </div>
-            </div>
           </Card>
 
           {/* Month + Filters */}

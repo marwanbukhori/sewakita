@@ -8,7 +8,6 @@ import { format } from 'date-fns'
 import Card from '@/components/ui/Card'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
-import { BatikHeroOverlay } from '@/assets/batik/patterns'
 
 export default function TenantDashboard() {
   const { profile } = useAuth()
@@ -110,9 +109,7 @@ export default function TenantDashboard() {
 
       {/* Hero bill card */}
       {currentBill ? (
-        <Card variant="hero" padding="p-5" className="relative overflow-hidden">
-          <BatikHeroOverlay />
-          <div className="relative z-10">
+        <Card variant="hero" padding="p-5">
           <p className="text-primary-200 text-sm font-medium mb-1">Bil {currentMonthLabel}</p>
           <p className="text-3xl font-bold mb-4">RM{currentBill.total_due.toLocaleString()}</p>
 
@@ -154,7 +151,6 @@ export default function TenantDashboard() {
             }
             size="md"
           />
-          </div>
         </Card>
       ) : (
         <Card variant="default" padding="p-6" className="text-center">

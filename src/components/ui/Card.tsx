@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { BatikHeroOverlay } from '@/assets/batik/patterns'
 
 type CardVariant = 'default' | 'elevated' | 'outlined' | 'hero'
 
@@ -18,9 +19,12 @@ const variantStyles: Record<CardVariant, string> = {
 }
 
 export default function Card({ variant = 'default', padding = 'p-4', pressable = false, className = '', children }: CardProps) {
+  const isHero = variant === 'hero'
+
   return (
-    <div className={`${variantStyles[variant]} ${padding} ${pressable ? 'cursor-pointer hover:shadow-lg active:scale-[0.98] transition-all duration-150' : ''} ${className}`}>
-      {children}
+    <div className={`${variantStyles[variant]} ${padding} ${pressable ? 'cursor-pointer hover:shadow-lg active:scale-[0.98] transition-all duration-150' : ''} ${isHero ? 'relative overflow-hidden' : ''} ${className}`}>
+      {isHero && <BatikHeroOverlay />}
+      {isHero ? <div className="relative z-10">{children}</div> : children}
     </div>
   )
 }
