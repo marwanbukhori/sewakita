@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
 import Button from '@/components/ui/Button'
 import LanguageToggle from '@/components/ui/LanguageToggle'
-import { BatikNavRing } from '@/assets/batik/patterns'
+import { BatikNavRing, BatikBorder } from '@/assets/batik/patterns'
 import { useTranslation } from 'react-i18next'
 
 interface NavItem {
@@ -227,58 +227,65 @@ export default function AppShell() {
       </div>
 
       {/* Mobile bottom nav — 3 icons with raised center */}
-      <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-white z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] safe-bottom">
-        <div className="grid grid-cols-3">
-          {nav.map((item) => {
-            const isActive = location.pathname === item.to ||
-              (item.to !== '/dashboard' && item.to !== '/tenant/dashboard' && location.pathname.startsWith(item.to))
+      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-50 safe-bottom">
+        {/* Curved background with notch for center button */}
+        <div className="relative">
+          {/* Background shape */}
+          <div className="absolute inset-0 bg-white shadow-[0_-2px_20px_rgba(0,0,0,0.08)] rounded-t-2xl" />
 
-            // Center icon — raised with circle background
-            if (item.isCenter) {
+          <div className="relative grid grid-cols-3 items-end h-16">
+            {nav.map((item) => {
+              const isActive = location.pathname === item.to ||
+                (item.to !== '/dashboard' && item.to !== '/tenant/dashboard' && location.pathname.startsWith(item.to))
+
+              // Center icon — raised with gradient circle
+              if (item.isCenter) {
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className="relative flex flex-col items-center -mt-4"
+                  >
+                    <div className={`relative flex items-center justify-center w-[56px] h-[56px] rounded-full transition-all active:scale-95 ${
+                      isActive
+                        ? 'bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-[0_4px_20px_rgba(0,144,209,0.4)]'
+                        : 'bg-gradient-to-br from-primary-50 to-primary-100 text-primary-600 shadow-md'
+                    }`}>
+                      <BatikNavRing active={isActive} />
+                      <item.icon size={24} strokeWidth={2} />
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 bg-danger-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-[10px] mt-1 mb-1 ${isActive ? 'font-bold text-primary-600' : 'font-medium text-gray-400'}`}>
+                      {item.label}
+                    </span>
+                  </NavLink>
+                )
+              }
+
+              // Regular nav items
               return (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className="relative flex flex-col items-center justify-center py-1"
+                  className={`relative flex flex-col items-center justify-center pb-2 pt-3 active:scale-95 ${
+                    isActive ? 'text-primary-600' : 'text-gray-400'
+                  }`}
                 >
-                  <div className={`relative -mt-5 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all ${
-                    isActive
-                      ? 'bg-primary-600 text-white shadow-primary-300/50'
-                      : 'bg-white text-primary-600 border-2 border-primary-100'
-                  }`}>
-                    <BatikNavRing className={isActive ? 'text-white' : 'text-primary-400'} />
-                    <item.icon size={26} strokeWidth={isActive ? 2.5 : 2} />
-                    {item.badge !== undefined && item.badge > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-danger-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <span className={`text-[10px] mt-0.5 ${isActive ? 'font-bold text-primary-600' : 'font-medium text-gray-400'}`}>
+                  {isActive && (
+                    <div className="absolute top-0 w-8 h-1 rounded-full bg-primary-500" />
+                  )}
+                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <span className={`text-[10px] mt-1 ${isActive ? 'font-bold' : 'font-medium'}`}>
                     {item.label}
                   </span>
                 </NavLink>
               )
-            }
-
-            // Regular nav items
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={`relative flex flex-col items-center justify-center py-2.5 ${
-                  isActive ? 'text-primary-600' : 'text-gray-400'
-                }`}
-              >
-                <div className={`flex items-center justify-center w-12 h-7 rounded-2xl transition-colors ${isActive ? 'bg-primary-50' : ''}`}>
-                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
-                </div>
-                <span className={`text-[11px] mt-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>
-                  {item.label}
-                </span>
-              </NavLink>
-            )
-          })}
+            })}
+          </div>
         </div>
       </nav>
 

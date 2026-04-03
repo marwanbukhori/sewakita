@@ -110,7 +110,7 @@ export default function TenantFormPage() {
     const property = properties.find((p) => p.id === form.property_id)
 
     return (
-      <div className="max-w-lg mx-auto space-y-4 animate-in">
+      <div className="space-y-4 animate-in">
         <div className="text-center py-4">
           <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
             <Check className="text-green-600" size={28} />
@@ -162,7 +162,7 @@ export default function TenantFormPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-4 animate-in">
+    <div className="space-y-4 animate-in">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>
         Kembali
       </Button>
@@ -170,37 +170,35 @@ export default function TenantFormPage() {
       <h1 className="text-xl font-bold text-gray-800">Jemput Penyewa</h1>
       <p className="text-sm text-gray-500">Cipta pautan jemputan untuk penyewa mendaftar sendiri dan terikat ke unit ini.</p>
 
-      <Card variant="elevated" padding="p-6" className="!rounded-3xl">
-        <form onSubmit={handleSubmit} className="space-y-5">
+      <Card variant="elevated" padding="p-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Maklumat Penyewaan</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select label="Hartanah *" required value={form.property_id}
-              onChange={(e) => setForm({ ...form, property_id: e.target.value, room_id: '' })}>
-              <option value="">Pilih hartanah</option>
-              {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </Select>
-            <Select label="Bilik *" required value={form.room_id}
-              onChange={(e) => {
-                const room = vacantRooms.find((r) => r.id === e.target.value)
-                setForm({ ...form, room_id: e.target.value, agreed_rent: room ? String(room.rent_amount) : form.agreed_rent })
-              }}>
-              <option value="">Pilih bilik</option>
-              {vacantRooms.map((r) => <option key={r.id} value={r.id}>{r.label} (RM{r.rent_amount})</option>)}
-            </Select>
-          </div>
+          <Select label="Hartanah *" required value={form.property_id}
+            onChange={(e) => setForm({ ...form, property_id: e.target.value, room_id: '' })}>
+            <option value="">Pilih hartanah</option>
+            {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </Select>
+          <Select label="Bilik *" required value={form.room_id}
+            onChange={(e) => {
+              const room = vacantRooms.find((r) => r.id === e.target.value)
+              setForm({ ...form, room_id: e.target.value, agreed_rent: room ? String(room.rent_amount) : form.agreed_rent })
+            }}>
+            <option value="">Pilih bilik</option>
+            {vacantRooms.map((r) => <option key={r.id} value={r.id}>{r.label} (RM{r.rent_amount})</option>)}
+          </Select>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <Input label="Sewa (RM) *" type="number" required value={form.agreed_rent}
               onChange={(e) => setForm({ ...form, agreed_rent: e.target.value })} />
             <Input label="Deposit (RM) *" type="number" required value={form.deposit}
               onChange={(e) => setForm({ ...form, deposit: e.target.value })} />
-            <Input label="Tarikh masuk *" type="date" required value={form.move_in}
-              onChange={(e) => setForm({ ...form, move_in: e.target.value })} />
           </div>
 
+          <Input label="Tarikh masuk *" type="date" required value={form.move_in}
+            onChange={(e) => setForm({ ...form, move_in: e.target.value })} />
+
           <hr className="border-gray-100" />
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Pilihan</p>
 
           <Input label="Email penyewa (pilihan)" type="email" value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}

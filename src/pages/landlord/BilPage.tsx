@@ -295,52 +295,62 @@ export default function BilPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      {/* Tab switcher */}
-      <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+      {/* Tab switcher — pill style */}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-2xl p-1.5">
         <button
           onClick={() => setTab('bills')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
-            tab === 'bills' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
+            tab === 'bills' ? 'bg-white text-primary-700 shadow-md' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
           Bil Bulanan
         </button>
         <button
           onClick={() => setTab('generate')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
-            tab === 'generate' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
+            tab === 'generate' ? 'bg-white text-primary-700 shadow-md' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
-          Utiliti & Jana Bil
+          Utiliti & Jana
         </button>
       </div>
 
       {/* ===== TAB 1: Bil Bulanan ===== */}
       {tab === 'bills' && (
         <>
-          {/* Summary strip */}
-          <Card variant="elevated" padding="p-4">
-            <div className="grid grid-cols-3 gap-1 text-center">
-              <div>
-                <p className="text-xs text-gray-500">Dijangka</p>
-                <p className="text-sm font-bold text-gray-900">RM{totalExpected.toLocaleString()}</p>
+          {/* Summary strip — hero style */}
+          <Card variant="hero" padding="p-4" className="relative overflow-hidden">
+            <div className="relative z-10">
+              {/* Progress bar at top */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-white/70 font-medium">Collection Rate</span>
+                <span className="text-sm font-bold text-white">{collectionPercent}%</span>
               </div>
-              <div>
-                <p className="text-xs text-gray-500">Dikutip</p>
-                <p className="text-sm font-bold text-primary-700">RM{totalCollected.toLocaleString()}</p>
-                <p className="text-[10px] text-primary-500">({collectionPercent}%)</p>
+              <div className="h-1.5 bg-white/20 rounded-full overflow-hidden mb-3">
+                <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${collectionPercent}%` }} />
               </div>
-              <div>
-                <p className="text-xs text-gray-500">Baki</p>
-                <p className="text-sm font-bold text-danger-500">RM{(totalExpected - totalCollected).toLocaleString()}</p>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-white/10 rounded-xl p-2.5 text-center">
+                  <p className="text-[10px] text-white/60 uppercase tracking-wide">Expected</p>
+                  <p className="text-sm font-bold text-white">RM{totalExpected.toLocaleString()}</p>
+                </div>
+                <div className="bg-white/10 rounded-xl p-2.5 text-center">
+                  <p className="text-[10px] text-white/60 uppercase tracking-wide">Collected</p>
+                  <p className="text-sm font-bold text-green-300">RM{totalCollected.toLocaleString()}</p>
+                </div>
+                <div className="bg-white/10 rounded-xl p-2.5 text-center">
+                  <p className="text-[10px] text-white/60 uppercase tracking-wide">Outstanding</p>
+                  <p className="text-sm font-bold text-amber-300">RM{(totalExpected - totalCollected).toLocaleString()}</p>
+                </div>
               </div>
             </div>
           </Card>
 
-          {/* Filters */}
-          <div className="space-y-2">
+          {/* Month + Filters */}
+          <div className="space-y-3">
             <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
               {filterOptions.map((opt) => (
                 <button
                   key={opt.value}
