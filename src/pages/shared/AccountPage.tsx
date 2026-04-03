@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { Building2, ChevronRight, LogOut, Shield, User, BarChart3, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Card from '@/components/ui/Card'
 import BottomSheet from '@/components/ui/BottomSheet'
 import Button from '@/components/ui/Button'
 
 export default function AccountPage() {
   const { profile, role, signOut } = useAuth()
+  const { t } = useTranslation()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   function confirmLogout() {
@@ -17,23 +19,23 @@ export default function AccountPage() {
 
   const settingsGroups = [
     {
-      title: 'Akaun',
+      title: t('account.title'),
       items: [
-        { icon: User, label: 'Maklumat peribadi', to: '#' },
-        ...(role === 'landlord' ? [{ icon: Building2, label: 'Hartanah saya', to: '/properties' }] : []),
+        { icon: User, label: t('account.personal_info'), to: '#' },
+        ...(role === 'landlord' ? [{ icon: Building2, label: t('account.my_properties'), to: '/properties' }] : []),
       ],
     },
     ...(role === 'landlord' ? [{
-      title: 'Laporan',
+      title: t('account.reports'),
       items: [
-        { icon: BarChart3, label: 'Ringkasan Kutipan Bulanan', to: '/account/reports/monthly' },
-        { icon: FileText, label: 'Ringkasan Cukai Tahunan', to: '/account/reports/annual' },
+        { icon: BarChart3, label: t('account.monthly_report'), to: '/account/reports/monthly' },
+        { icon: FileText, label: t('account.annual_report'), to: '/account/reports/annual' },
       ],
     }] : []),
     {
-      title: 'Keselamatan',
+      title: t('account.security'),
       items: [
-        { icon: Shield, label: 'Tukar kata laluan', to: '#' },
+        { icon: Shield, label: t('account.change_password'), to: '#' },
       ],
     },
   ]
@@ -49,7 +51,7 @@ export default function AccountPage() {
           <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full font-medium">
-              {role === 'landlord' ? 'Tuan Rumah' : 'Penyewa'}
+              {role === 'landlord' ? t('onboarding.landlord') : t('onboarding.tenant')}
             </span>
             {profile?.phone && (
               <span className="text-xs text-gray-500">{profile.phone}</span>
@@ -87,21 +89,21 @@ export default function AccountPage() {
           className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 transition-colors rounded-2xl"
         >
           <LogOut size={18} className="text-danger-500" />
-          <span className="text-sm font-medium text-danger-500">Log Keluar</span>
+          <span className="text-sm font-medium text-danger-500">{t('account.logout')}</span>
         </button>
       </Card>
 
-      <p className="text-center text-xs text-gray-400 pb-4">SewaKita v1.0</p>
+      <p className="text-center text-xs text-gray-400 pb-4">{t('app.name')} {t('app.version')}</p>
 
-      <BottomSheet open={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)} title="Log Keluar">
+      <BottomSheet open={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)} title={t('account.logout')}>
         <div className="space-y-4">
-          <p className="text-sm text-gray-500">Adakah anda pasti mahu log keluar dari SewaKita?</p>
+          <p className="text-sm text-gray-500">{t('account.logout_confirm')}</p>
           <div className="flex gap-3">
             <Button variant="secondary" className="flex-1" onClick={() => setShowLogoutConfirm(false)}>
-              Batal
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" className="flex-1" onClick={confirmLogout}>
-              Log Keluar
+              {t('account.logout')}
             </Button>
           </div>
         </div>

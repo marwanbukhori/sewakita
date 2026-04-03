@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { Mail } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import LanguageToggle from '@/components/ui/LanguageToggle'
 
 export default function LoginPage() {
   const { signInWithMagicLink, signInWithGoogle } = useAuth()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -17,7 +20,7 @@ export default function LoginPage() {
     const { error } = await signInWithMagicLink(email)
     setLoading(false)
     if (error) {
-      toast.error('Gagal hantar pautan. Sila cuba lagi.')
+      toast.error(t('auth.failed_send'))
     } else {
       setSent(true)
     }
@@ -26,21 +29,26 @@ export default function LoginPage() {
   async function handleGoogle() {
     const { error } = await signInWithGoogle()
     if (error) {
-      toast.error('Gagal log masuk dengan Google.')
+      toast.error(t('auth.failed_google'))
     }
   }
 
   return (
     <div className="min-h-screen bg-[#F7FAFC] flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm animate-in">
+        {/* Language toggle */}
+        <div className="flex justify-end mb-4">
+          <LanguageToggle />
+        </div>
+
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-md">
             <span className="text-white text-2xl font-bold">S</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">SewaKita</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('app.name')}</h1>
           <p className="text-gray-500 mt-1.5 text-sm">
-            Urus sewa rumah dan bilik dengan mudah
+            {t('app.tagline')}
           </p>
         </div>
 
@@ -50,30 +58,30 @@ export default function LoginPage() {
               <div className="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mx-auto mb-4">
                 <Mail className="text-primary-600" size={28} />
               </div>
-              <h2 className="text-lg font-semibold text-gray-800">Semak email anda</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t('auth.check_email')}</h2>
               <p className="text-sm text-gray-500 mt-2">
-                Pautan log masuk telah dihantar ke <strong>{email}</strong>
+                {t('auth.magic_link_sent')} <strong>{email}</strong>
               </p>
               <button
                 onClick={() => setSent(false)}
                 className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium"
               >
-                Guna email lain
+                {t('auth.use_another_email')}
               </button>
             </div>
           ) : (
             <>
               <form onSubmit={handleMagicLink} className="space-y-4">
                 <Input
-                  label="Alamat email"
+                  label={t('auth.email_label')}
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="contoh@email.com"
+                  placeholder={t('auth.email_placeholder')}
                 />
                 <Button type="submit" loading={loading} fullWidth size="lg">
-                  Log masuk dengan email
+                  {t('auth.login_email')}
                 </Button>
               </form>
 
@@ -82,7 +90,7 @@ export default function LoginPage() {
                   <div className="w-full border-t border-gray-100" />
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white px-3 text-xs text-gray-400">atau</span>
+                  <span className="bg-white px-3 text-xs text-gray-400">{t('auth.or')}</span>
                 </div>
               </div>
 
@@ -93,15 +101,15 @@ export default function LoginPage() {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                Log masuk dengan Google
+                {t('auth.login_google')}
               </Button>
             </>
           )}
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Dengan log masuk, anda bersetuju dengan{' '}
-          <a href="#" className="text-primary-600">Dasar Privasi</a> kami.
+          {t('auth.privacy')}{' '}
+          <a href="#" className="text-primary-600">{t('auth.privacy_policy')}</a>.
         </p>
       </div>
     </div>

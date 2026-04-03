@@ -5,6 +5,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
 import Button from '@/components/ui/Button'
+import LanguageToggle from '@/components/ui/LanguageToggle'
+import { useTranslation } from 'react-i18next'
 
 interface NavItem {
   to: string
@@ -15,6 +17,7 @@ interface NavItem {
 
 export default function AppShell() {
   const { profile, role, signOut } = useAuth()
+  const { t } = useTranslation()
   const location = useLocation()
   const [overdueCount, setOverdueCount] = useState(0)
   const [scrolled, setScrolled] = useState(false)
@@ -61,16 +64,16 @@ export default function AppShell() {
   }
 
   const landlordNav: NavItem[] = [
-    { to: '/dashboard', label: 'Utama', icon: Home },
-    { to: '/properties', label: 'Hartanah', icon: Building2 },
-    { to: '/bil', label: 'Bil', icon: Receipt, badge: overdueCount },
-    { to: '/account', label: 'Akaun', icon: CircleUser },
+    { to: '/dashboard', label: t('nav.home'), icon: Home },
+    { to: '/properties', label: t('nav.properties'), icon: Building2 },
+    { to: '/bil', label: t('nav.billing'), icon: Receipt, badge: overdueCount },
+    { to: '/account', label: t('nav.account'), icon: CircleUser },
   ]
 
   const tenantNav: NavItem[] = [
-    { to: '/tenant/dashboard', label: 'Utama', icon: Home },
-    { to: '/tenant/bills', label: 'Bil', icon: Receipt },
-    { to: '/account', label: 'Akaun', icon: CircleUser },
+    { to: '/tenant/dashboard', label: t('nav.home'), icon: Home },
+    { to: '/tenant/bills', label: t('nav.billing'), icon: Receipt },
+    { to: '/account', label: t('nav.account'), icon: CircleUser },
   ]
 
   // Sidebar same as bottom nav for both roles
@@ -86,6 +89,7 @@ export default function AppShell() {
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <span className="text-lg font-bold tracking-tight text-primary-600">SewaKita</span>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <span className="text-sm text-gray-500 hidden sm:block">{profile?.name}</span>
             {/* Mobile hamburger */}
             <button
@@ -112,7 +116,7 @@ export default function AppShell() {
                 <div className="min-w-0">
                   <p className="font-semibold text-gray-800 truncate">{profile?.name}</p>
                   <span className="text-xs bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full font-medium">
-                    {role === 'landlord' ? 'Tuan Rumah' : 'Penyewa'}
+                    {role === 'landlord' ? t('onboarding.landlord') : t('onboarding.tenant')}
                   </span>
                 </div>
               </div>
@@ -122,7 +126,7 @@ export default function AppShell() {
             <div className="py-2">
               <Link to="/faq" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50">
                 <HelpCircle size={18} className="text-gray-500" />
-                <span className="flex-1 text-sm text-gray-800">Soalan Lazim</span>
+                <span className="flex-1 text-sm text-gray-800">{t('menu.faq')}</span>
                 <ChevronRight size={16} className="text-gray-300" />
               </Link>
             </div>
@@ -131,7 +135,7 @@ export default function AppShell() {
             <div className="border-t border-gray-100 py-2">
               <button onClick={handleLogout} className="flex items-center gap-3 px-5 py-3 w-full hover:bg-red-50">
                 <LogOut size={18} className="text-danger-500" />
-                <span className="text-sm font-medium text-danger-500">Log Keluar</span>
+                <span className="text-sm font-medium text-danger-500">{t('menu.logout')}</span>
               </button>
             </div>
           </div>
@@ -202,15 +206,15 @@ export default function AppShell() {
       </nav>
 
       {/* Logout confirmation */}
-      <BottomSheet open={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)} title="Log Keluar">
+      <BottomSheet open={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)} title={t('account.logout')}>
         <div className="space-y-4">
-          <p className="text-sm text-gray-500">Adakah anda pasti mahu log keluar dari SewaKita?</p>
+          <p className="text-sm text-gray-500">{t('account.logout_confirm')}</p>
           <div className="flex gap-3">
             <Button variant="secondary" className="flex-1" onClick={() => setShowLogoutConfirm(false)}>
-              Batal
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" className="flex-1" onClick={confirmLogout}>
-              Log Keluar
+              {t('account.logout')}
             </Button>
           </div>
         </div>
