@@ -1,0 +1,94 @@
+import { useAuth } from '@/lib/auth-context'
+import { Building2, ChevronRight, HelpCircle, LogOut, Shield, User, Bell } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import Card from '@/components/ui/Card'
+
+export default function AccountPage() {
+  const { profile, role, signOut } = useAuth()
+
+  const settingsGroups = [
+    {
+      title: 'Akaun',
+      items: [
+        { icon: User, label: 'Maklumat peribadi', to: '#' },
+        ...(role === 'landlord' ? [{ icon: Building2, label: 'Hartanah saya', to: '/properties' }] : []),
+        { icon: Bell, label: 'Tetapan notifikasi', to: '#' },
+      ],
+    },
+    {
+      title: 'Keselamatan',
+      items: [
+        { icon: Shield, label: 'Tukar kata laluan', to: '#' },
+      ],
+    },
+  ]
+
+  return (
+    <div className="space-y-5">
+      {/* Profile header */}
+      <div className="flex items-center gap-4">
+        <div className="w-14 h-14 rounded-full bg-primary-600 flex items-center justify-center text-white text-xl font-bold shrink-0">
+          {profile?.name?.charAt(0)?.toUpperCase() || '?'}
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">{profile?.name}</h1>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full font-medium">
+              {role === 'landlord' ? 'Tuan Rumah' : 'Penyewa'}
+            </span>
+            {profile?.phone && (
+              <span className="text-xs text-gray-500">{profile.phone}</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Help cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card variant="elevated" padding="p-4" className="text-center">
+          <HelpCircle size={24} className="mx-auto text-primary-600 mb-2" />
+          <p className="text-xs font-medium text-gray-700">Pusat Bantuan</p>
+        </Card>
+        <Card variant="elevated" padding="p-4" className="text-center">
+          <User size={24} className="mx-auto text-primary-600 mb-2" />
+          <p className="text-xs font-medium text-gray-700">Jemput Rakan</p>
+        </Card>
+      </div>
+
+      {/* Settings groups */}
+      {settingsGroups.map((group) => (
+        <div key={group.title}>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{group.title}</p>
+          <Card variant="elevated" padding="p-0">
+            <div className="divide-y divide-gray-100">
+              {group.items.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors"
+                >
+                  <item.icon size={18} className="text-gray-500" />
+                  <span className="flex-1 text-sm text-gray-900">{item.label}</span>
+                  <ChevronRight size={16} className="text-gray-400" />
+                </Link>
+              ))}
+            </div>
+          </Card>
+        </div>
+      ))}
+
+      {/* Logout */}
+      <Card variant="elevated" padding="p-0">
+        <button
+          onClick={signOut}
+          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 transition-colors rounded-xl"
+        >
+          <LogOut size={18} className="text-danger-500" />
+          <span className="text-sm font-medium text-danger-500">Log Keluar</span>
+        </button>
+      </Card>
+
+      <p className="text-center text-xs text-gray-400 pb-4">SewaKita v1.0</p>
+    </div>
+  )
+}

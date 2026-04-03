@@ -18,6 +18,7 @@ import PaymentsPage from '@/pages/landlord/PaymentsPage'
 import TenantDashboard from '@/pages/tenant/TenantDashboard'
 import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
 import TenantPaymentsPage from '@/pages/tenant/TenantPaymentsPage'
+import AccountPage from '@/pages/shared/AccountPage'
 
 function AppRoutes() {
   const { user, profile, loading } = useAuth()
@@ -56,6 +57,7 @@ function AppRoutes() {
           <Route path="/tenant/dashboard" element={<TenantDashboard />} />
           <Route path="/tenant/bills" element={<TenantBillsPage />} />
           <Route path="/tenant/payments" element={<TenantPaymentsPage />} />
+          <Route path="/account" element={<AccountPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/tenant/dashboard" replace />} />
       </Routes>
@@ -73,6 +75,7 @@ function AppRoutes() {
         <Route path="/tenants/new" element={<TenantFormPage />} />
         <Route path="/billing" element={<BillingPage />} />
         <Route path="/payments" element={<PaymentsPage />} />
+        <Route path="/account" element={<AccountPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
