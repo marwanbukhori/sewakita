@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, ChevronRight, LogOut, Shield, User } from 'lucide-react'
+import { Building2, ChevronRight, LogOut, Shield, User, BarChart3, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Card from '@/components/ui/Card'
 import BottomSheet from '@/components/ui/BottomSheet'
@@ -21,9 +21,15 @@ export default function AccountPage() {
       items: [
         { icon: User, label: 'Maklumat peribadi', to: '#' },
         ...(role === 'landlord' ? [{ icon: Building2, label: 'Hartanah saya', to: '/properties' }] : []),
-        // { icon: Bell, label: 'Tetapan notifikasi', to: '#' },
       ],
     },
+    ...(role === 'landlord' ? [{
+      title: 'Laporan',
+      items: [
+        { icon: BarChart3, label: 'Ringkasan Kutipan Bulanan', to: '/account/reports/monthly' },
+        { icon: FileText, label: 'Ringkasan Cukai Tahunan', to: '/account/reports/annual' },
+      ],
+    }] : []),
     {
       title: 'Keselamatan',
       items: [
