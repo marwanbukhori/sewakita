@@ -9,7 +9,6 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import EmptyState from '@/components/ui/EmptyState'
 import { SkeletonList } from '@/components/ui/Skeleton'
-import { BatikCardAccent } from '@/assets/batik/patterns'
 
 interface PropertyWithRooms extends Property {
   rooms: Room[]
@@ -69,10 +68,20 @@ export default function PropertiesPage() {
 
             return (
               <Link key={property.id} to={`/properties/${property.id}`}>
-                <Card variant="elevated" pressable padding="p-0" className="overflow-hidden relative">
-                  <BatikCardAccent />
+                <Card variant="elevated" pressable padding="p-4" className="relative overflow-hidden">
+                  {/* Full-card subtle batik background */}
+                  <div className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backgroundImage: 'url(/batik/floral-traditional.png)',
+                      backgroundSize: '350px',
+                      backgroundRepeat: 'repeat',
+                      backgroundPosition: 'center',
+                      opacity: 0.03,
+                      filter: 'grayscale(1)',
+                    }}
+                  />
 
-                  <div className="p-4">
+                  <div className="relative">
                     {/* Property header */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -104,18 +113,15 @@ export default function PropertiesPage() {
                       </div>
                     </div>
 
-                    {/* Stats row */}
-                    <div className="flex gap-3 text-sm">
-                      <span className="text-gray-500"><strong className="text-gray-800">{activeRooms.length}</strong> {t('properties.rooms')}</span>
-                      <span className="text-green-600"><strong>{occupied}</strong> filled</span>
-                      <span className="text-amber-600"><strong>{vacant}</strong> vacant</span>
+                    {/* Stats + billing */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="flex gap-3 text-xs">
+                        <span className="text-gray-500"><strong className="text-gray-800">{activeRooms.length}</strong> rooms</span>
+                        <span className="text-green-600"><strong>{occupied}</strong> filled</span>
+                        {vacant > 0 && <span className="text-amber-600"><strong>{vacant}</strong> vacant</span>}
+                      </div>
+                      <span className="text-[10px] text-gray-400">Day {property.billing_date}</span>
                     </div>
-                  </div>
-
-                  {/* Bottom strip */}
-                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-[10px] text-gray-400">{t('properties.billing_day', { day: property.billing_date })}</span>
-                    <span className="text-[10px] text-primary-600 font-semibold">{t('properties.edit')} →</span>
                   </div>
                 </Card>
               </Link>
