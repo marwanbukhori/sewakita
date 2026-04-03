@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2, Phone, Mail, Calendar, LogOut as LogOutIcon, History } from 'lucide-react'
+import { format } from 'date-fns'
 import type { Property, Room, Tenancy, Profile } from '@/types/database'
 import toast from 'react-hot-toast'
 import Button from '@/components/ui/Button'
@@ -178,32 +179,76 @@ export default function PropertyDetailPage() {
         <div className="grid gap-3">
           {rooms.map((room) => {
             const activeTenancy = room.tenancies?.find((t) => t.status === 'active')
+            const pastTenancies = room.tenancies?.filter((t) => t.status === 'ended') || []
+            const tenant = activeTenancy?.tenant
             return (
               <Card key={room.id} variant="default" padding="p-4">
+                {/* Room header */}
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-gray-800">{room.label}</h3>
                     <p className="text-sm text-gray-500">RM{room.rent_amount}/bulan</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <button onClick={() => openEditRoom(room)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100">
                       <Pencil size={14} />
                     </button>
-                    {room.status === 'occupied' ? (
-                      <StatusBadge status="occupied" label={activeTenancy?.tenant?.name || 'Berisi'} />
-                    ) : (
-                      <>
-                        <StatusBadge status="vacant" />
-                        <Link
-                          to={`/tenants/new?room_id=${room.id}&property_id=${property.id}`}
-                          className="text-primary-600 hover:text-primary-700 p-1"
-                        >
-                          <UserPlus size={18} />
-                        </Link>
-                      </>
-                    )}
+                    <StatusBadge status={room.status === 'occupied' ? 'occupied' : 'vacant'} />
                   </div>
                 </div>
+
+                {/* Tenant details (if occupied) */}
+                {tenant && activeTenancy && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold shrink-0">
+                        {tenant.name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-800 text-sm">{tenant.name}</p>
+                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                          {tenant.phone && <span className="flex items-center gap-1"><Phone size={10} /> {tenant.phone}</span>}
+                          {tenant.email && <span className="flex items-center gap-1 truncate"><Mail size={10} /> {tenant.email}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span className="flex items-center gap-1"><Calendar size={10} /> Masuk: {format(new Date(activeTenancy.move_in), 'dd MMM yyyy')}</span>
+                      <span>Deposit: RM{activeTenancy.deposit}</span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Link to={`/bil`}>
+                        <Button variant="ghost" size="sm">Lihat Bil</Button>
+                      </Link>
+                      <Link to={`/properties/${property.id}/rooms/${room.id}/move-out`}>
+                        <Button variant="ghost" size="sm" icon={LogOutIcon} className="!text-danger-500">Pindah Keluar</Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* Vacant: add tenant CTA */}
+                {room.status !== 'occupied' && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <Link to={`/tenants/new?room_id=${room.id}&property_id=${property.id}`}>
+                      <Button variant="ghost" size="sm" icon={UserPlus} fullWidth>
+                        Tambah Penyewa
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+
+                {/* Past tenants */}
+                {pastTenancies.length > 0 && (
+                  <div className="mt-2">
+                    <button
+                      onClick={() => {/* toggle could be added */ }}
+                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
+                    >
+                      <History size={10} /> {pastTenancies.length} penyewa lepas
+                    </button>
+                  </div>
+                )}
               </Card>
             )
           })}

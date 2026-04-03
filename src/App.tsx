@@ -10,6 +10,7 @@ import DashboardPage from '@/pages/landlord/DashboardPage'
 import PropertiesPage from '@/pages/landlord/PropertiesPage'
 import PropertyFormPage from '@/pages/landlord/PropertyFormPage'
 import PropertyDetailPage from '@/pages/landlord/PropertyDetailPage'
+import MoveOutPage from '@/pages/landlord/MoveOutPage'
 import TenantsPage from '@/pages/landlord/TenantsPage'
 import TenantFormPage from '@/pages/landlord/TenantFormPage'
 import BilPage from '@/pages/landlord/BilPage'
@@ -74,6 +75,7 @@ function AppRoutes() {
         <Route path="/properties" element={<PropertiesPage />} />
         <Route path="/properties/new" element={<PropertyFormPage />} />
         <Route path="/properties/:id" element={<PropertyDetailPage />} />
+        <Route path="/properties/:propertyId/rooms/:roomId/move-out" element={<MoveOutPage />} />
         <Route path="/tenants" element={<TenantsPage />} />
         <Route path="/tenants/new" element={<TenantFormPage />} />
         <Route path="/bil" element={<BilPage />} />
