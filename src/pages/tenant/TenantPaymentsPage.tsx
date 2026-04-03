@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import Card from '@/components/ui/Card'
 import SectionHeader from '@/components/ui/SectionHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import { SkeletonList } from '@/components/ui/Skeleton'
 
 interface PaymentWithBill extends Payment {
   bill: MonthlyBill
@@ -48,9 +49,7 @@ export default function TenantPaymentsPage() {
     setLoading(false)
   }
 
-  if (loading) {
-    return <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary-600 border-t-transparent rounded-full" /></div>
-  }
+  if (loading) return <SkeletonList count={3} />
 
   const methodLabels: Record<string, string> = {
     bank_transfer: 'Pindahan Bank',
@@ -74,8 +73,8 @@ export default function TenantPaymentsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">Bayaran Saya</h1>
+    <div className="space-y-4 animate-in">
+      <h1 className="text-xl font-bold text-gray-800">Bayaran Saya</h1>
 
       {totalOutstanding > 0 && (
         <Card variant="default" padding="p-4" className="border-amber-200 bg-amber-50">

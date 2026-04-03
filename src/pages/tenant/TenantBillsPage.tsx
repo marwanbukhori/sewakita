@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import StatusBadge from '@/components/ui/StatusBadge'
 import SectionHeader from '@/components/ui/SectionHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import { SkeletonList } from '@/components/ui/Skeleton'
 
 export default function TenantBillsPage() {
   const { profile } = useAuth()
@@ -30,9 +31,7 @@ export default function TenantBillsPage() {
     setLoading(false)
   }
 
-  if (loading) {
-    return <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary-600 border-t-transparent rounded-full" /></div>
-  }
+  if (loading) return <SkeletonList count={3} />
 
   const formatMonth = (m: string) => {
     const [year, month] = m.split('-')
@@ -48,8 +47,8 @@ export default function TenantBillsPage() {
   }, {})
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">Bil Saya</h1>
+    <div className="space-y-4 animate-in">
+      <h1 className="text-xl font-bold text-gray-800">Bil Saya</h1>
 
       {bills.length === 0 ? (
         <EmptyState icon={Receipt} title="Tiada sejarah bil" />

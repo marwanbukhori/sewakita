@@ -24,7 +24,7 @@ export default function AccountPage() {
   ]
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-in">
       {/* Profile header */}
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-full bg-primary-600 flex items-center justify-center text-white text-xl font-bold shrink-0">

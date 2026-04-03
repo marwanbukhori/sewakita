@@ -7,6 +7,7 @@ import type { Room, MonthlyBill } from '@/types/database'
 import Card from '@/components/ui/Card'
 import QuickActions from '@/components/ui/QuickActions'
 import EmptyState from '@/components/ui/EmptyState'
+import { SkeletonDashboard } from '@/components/ui/Skeleton'
 
 interface DashboardStats {
   totalProperties: number
@@ -55,9 +56,7 @@ export default function DashboardPage() {
     setLoading(false)
   }
 
-  if (loading) {
-    return <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary-600 border-t-transparent rounded-full" /></div>
-  }
+  if (loading) return <SkeletonDashboard />
 
   const collectionPercent = stats.expectedIncome > 0 ? Math.round((stats.collectedIncome / stats.expectedIncome) * 100) : 0
 
@@ -69,11 +68,11 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-in">
       {/* Greeting */}
       <div>
         <p className="text-sm text-gray-500">Selamat kembali,</p>
-        <h1 className="text-xl font-bold text-gray-900">{profile?.name}</h1>
+        <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
       </div>
 
       {/* Hero collection card */}
