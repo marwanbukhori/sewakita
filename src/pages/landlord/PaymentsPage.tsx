@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react'
 import type { MonthlyBill, Property, Room, Profile, PaymentMethod } from '@/types/database'
 import toast from 'react-hot-toast'
 import { generateBillMessage, generateReminderMessage, generateReceiptMessage } from '@/lib/whatsapp'
@@ -124,11 +124,14 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-4 animate-in">
+      <Button variant="ghost" size="sm" onClick={() => window.history.back()} icon={ArrowLeft} className="sm:hidden">
+        Kembali
+      </Button>
       <h1 className="text-xl font-bold text-gray-800">Bayaran</h1>
 
       {/* Summary strip */}
       <Card variant="elevated" padding="p-4">
-        <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="grid grid-cols-3 gap-1 text-center">
           <div>
             <p className="text-xs text-gray-500">Dijangka</p>
             <p className="text-sm font-bold text-gray-900">RM{totalExpected.toLocaleString()}</p>
@@ -146,15 +149,15 @@ export default function PaymentsPage() {
       </Card>
 
       {/* Filters */}
-      <div className="flex items-center gap-2">
+      <div className="space-y-2">
         <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
-          className="h-10 px-3 border border-gray-200 rounded-lg text-base bg-white" />
-        <div className="flex gap-1.5 flex-1 overflow-x-auto scrollbar-none">
+          className="h-10 w-full px-3 border border-gray-200 rounded-lg text-base bg-white" />
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
           {filterOptions.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setStatusFilter(opt.value)}
-              className={`px-3.5 h-10 rounded-full text-xs font-semibold whitespace-nowrap active:scale-95 ${
+              className={`px-3.5 h-9 rounded-full text-xs font-semibold whitespace-nowrap active:scale-95 ${
                 statusFilter === opt.value
                   ? 'bg-primary-600 text-white shadow-sm'
                   : 'bg-white text-gray-600 shadow-card hover:bg-gray-50'

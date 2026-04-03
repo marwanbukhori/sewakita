@@ -1,10 +1,19 @@
+import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { Building2, ChevronRight, HelpCircle, LogOut, Shield, User, Bell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Card from '@/components/ui/Card'
+import BottomSheet from '@/components/ui/BottomSheet'
+import Button from '@/components/ui/Button'
 
 export default function AccountPage() {
   const { profile, role, signOut } = useAuth()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+  function confirmLogout() {
+    setShowLogoutConfirm(false)
+    signOut()
+  }
 
   const settingsGroups = [
     {
@@ -31,7 +40,7 @@ export default function AccountPage() {
           {profile?.name?.charAt(0)?.toUpperCase() || '?'}
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">{profile?.name}</h1>
+          <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full font-medium">
               {role === 'landlord' ? 'Tuan Rumah' : 'Penyewa'}
@@ -68,7 +77,7 @@ export default function AccountPage() {
                   className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors"
                 >
                   <item.icon size={18} className="text-gray-500" />
-                  <span className="flex-1 text-sm text-gray-900">{item.label}</span>
+                  <span className="flex-1 text-sm text-gray-800">{item.label}</span>
                   <ChevronRight size={16} className="text-gray-400" />
                 </Link>
               ))}
@@ -80,8 +89,8 @@ export default function AccountPage() {
       {/* Logout */}
       <Card variant="elevated" padding="p-0">
         <button
-          onClick={signOut}
-          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 transition-colors rounded-xl"
+          onClick={() => setShowLogoutConfirm(true)}
+          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 transition-colors rounded-2xl"
         >
           <LogOut size={18} className="text-danger-500" />
           <span className="text-sm font-medium text-danger-500">Log Keluar</span>
@@ -89,6 +98,21 @@ export default function AccountPage() {
       </Card>
 
       <p className="text-center text-xs text-gray-400 pb-4">SewaKita v1.0</p>
+
+      {/* Logout confirmation */}
+      <BottomSheet open={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)} title="Log Keluar">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">Adakah anda pasti mahu log keluar dari SewaKita?</p>
+          <div className="flex gap-3">
+            <Button variant="secondary" className="flex-1" onClick={() => setShowLogoutConfirm(false)}>
+              Batal
+            </Button>
+            <Button variant="danger" className="flex-1" onClick={confirmLogout}>
+              Log Keluar
+            </Button>
+          </div>
+        </div>
+      </BottomSheet>
     </div>
   )
 }
