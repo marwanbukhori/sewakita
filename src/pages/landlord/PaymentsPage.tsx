@@ -1,21 +1,29 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { CreditCard, Check, MessageCircle } from 'lucide-react'
-import type { MonthlyBill, Property, Room, Tenancy, Profile, PaymentMethod } from '@/types/database'
+import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import type { MonthlyBill, Property, Room, Profile, PaymentMethod } from '@/types/database'
 import toast from 'react-hot-toast'
 import { generateBillMessage, generateReminderMessage, generateReceiptMessage } from '@/lib/whatsapp'
+import Card from '@/components/ui/Card'
+import StatusBadge from '@/components/ui/StatusBadge'
+import SectionHeader from '@/components/ui/SectionHeader'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface BillWithDetails extends MonthlyBill {
   room: Room & { property: Property }
   tenant: Profile
 }
 
+type StatusFilter = 'all' | 'overdue' | 'pending' | 'paid'
+
 export default function PaymentsPage() {
   const { profile } = useAuth()
   const [bills, setBills] = useState<BillWithDetails[]>([])
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7))
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [loading, setLoading] = useState(true)
+  const [expandedBill, setExpandedBill] = useState<string | null>(null)
   const [paymentModal, setPaymentModal] = useState<{ bill: BillWithDetails; amount: string; method: PaymentMethod } | null>(null)
 
   useEffect(() => {
@@ -35,7 +43,6 @@ export default function PaymentsPage() {
       .eq('month', month)
       .order('status')
 
-    // Filter by landlord
     const myBills = (data || []).filter((b: BillWithDetails) => b.room?.property?.landlord_id === profile!.id)
     setBills(myBills)
     setLoading(false)
@@ -87,82 +94,150 @@ export default function PaymentsPage() {
 
   const totalExpected = bills.reduce((s, b) => s + b.total_due, 0)
   const totalCollected = bills.reduce((s, b) => s + b.total_paid, 0)
+  const collectionPercent = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0
+
+  const filteredBills = statusFilter === 'all' ? bills : bills.filter(b => {
+    if (statusFilter === 'overdue') return b.status === 'overdue'
+    if (statusFilter === 'pending') return b.status === 'pending' || b.status === 'partial'
+    return b.status === 'paid'
+  })
+
+  // Group by property
+  const grouped = filteredBills.reduce<Record<string, { property: Property; bills: BillWithDetails[] }>>((acc, bill) => {
+    const propId = bill.room?.property?.id
+    if (!propId) return acc
+    if (!acc[propId]) acc[propId] = { property: bill.room.property, bills: [] }
+    acc[propId].bills.push(bill)
+    return acc
+  }, {})
+
+  const unpaidBills = bills.filter(b => b.status !== 'paid')
+  const filterOptions: { value: StatusFilter; label: string }[] = [
+    { value: 'all', label: 'Semua' },
+    { value: 'overdue', label: 'Tertunggak' },
+    { value: 'pending', label: 'Belum Bayar' },
+    { value: 'paid', label: 'Selesai' },
+  ]
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Bayaran</h1>
+      <h1 className="text-xl font-bold text-gray-900">Bayaran</h1>
+
+      {/* Summary strip */}
+      <Card variant="elevated" padding="p-4">
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p className="text-xs text-gray-500">Dijangka</p>
+            <p className="text-sm font-bold text-gray-900">RM{totalExpected.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">Dikutip</p>
+            <p className="text-sm font-bold text-primary-700">RM{totalCollected.toLocaleString()}</p>
+            <p className="text-[10px] text-primary-500">({collectionPercent}%)</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">Baki</p>
+            <p className="text-sm font-bold text-danger-500">RM{(totalExpected - totalCollected).toLocaleString()}</p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2">
         <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-      </div>
-
-      {/* Summary */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Dijangka: <strong className="text-gray-900">RM{totalExpected.toLocaleString()}</strong></span>
-          <span className="text-gray-500">Dikutip: <strong className="text-primary-700">RM{totalCollected.toLocaleString()}</strong></span>
-          <span className="text-gray-500">Baki: <strong className="text-danger-500">RM{(totalExpected - totalCollected).toLocaleString()}</strong></span>
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" />
+        <div className="flex gap-1 flex-1 overflow-x-auto">
+          {filterOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setStatusFilter(opt.value)}
+              className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                statusFilter === opt.value
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Bills list */}
-      {bills.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <CreditCard className="mx-auto text-gray-300 mb-3" size={40} />
-          <p className="text-gray-500 text-sm">Tiada bil untuk bulan ini.</p>
-        </div>
+      {/* Bills grouped by property */}
+      {filteredBills.length === 0 ? (
+        <EmptyState icon={CreditCard} title="Tiada bil untuk bulan ini" />
       ) : (
-        <div className="space-y-3">
-          {bills.map((bill) => (
-            <div key={bill.id} className={`bg-white rounded-xl border p-4 ${
-              bill.status === 'overdue' ? 'border-danger-500/30' : 'border-gray-200'
-            }`}>
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <h3 className="font-medium text-gray-900">{bill.tenant?.name}</h3>
-                  <p className="text-xs text-gray-500">{bill.room?.property?.name} — {bill.room?.label}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">RM{bill.total_due}</div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    bill.status === 'paid' ? 'bg-success-50 text-green-700' :
-                    bill.status === 'overdue' ? 'bg-danger-50 text-red-700' :
-                    bill.status === 'partial' ? 'bg-warning-50 text-amber-700' :
-                    'bg-gray-100 text-gray-600'
-                  }`}>
-                    {bill.status === 'paid' ? 'Dibayar' :
-                     bill.status === 'overdue' ? 'Tertunggak' :
-                     bill.status === 'partial' ? `Separa (RM${bill.total_paid})` : 'Belum bayar'}
-                  </span>
-                </div>
-              </div>
+        <div className="space-y-5">
+          {Object.values(grouped).map(({ property, bills: propBills }) => (
+            <div key={property.id}>
+              <SectionHeader title={property.name} action={{ label: `${propBills.length} bil`, to: `/properties/${property.id}` }} />
+              <Card variant="elevated" padding="p-0">
+                <div className="divide-y divide-gray-100">
+                  {propBills.map((bill) => {
+                    const isExpanded = expandedBill === bill.id
+                    return (
+                      <div key={bill.id}>
+                        <button
+                          onClick={() => setExpandedBill(isExpanded ? null : bill.id)}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 text-sm truncate">{bill.tenant?.name}</p>
+                            <p className="text-xs text-gray-500">{bill.room?.label}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-bold text-gray-900 text-sm">RM{bill.total_due}</p>
+                          </div>
+                          <StatusBadge status={bill.status as 'paid' | 'overdue' | 'partial' | 'pending'} />
+                          {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                        </button>
 
-              <div className="flex gap-2 mt-3">
-                {bill.status !== 'paid' && (
-                  <button
-                    onClick={() => setPaymentModal({ bill, amount: String(bill.total_due - bill.total_paid), method: 'bank_transfer' })}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-primary-600 text-white text-xs rounded-lg hover:bg-primary-700"
-                  >
-                    <Check size={12} /> Rekod Bayaran
-                  </button>
-                )}
-                <button
-                  onClick={() => handleWhatsApp(bill, bill.status === 'paid' ? 'receipt' : bill.status === 'overdue' ? 'reminder' : 'bill')}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700"
-                >
-                  <MessageCircle size={12} />
-                  {bill.status === 'paid' ? 'Resit' : bill.status === 'overdue' ? 'Peringatan' : 'Hantar Bil'}
-                </button>
-              </div>
+                        {isExpanded && (
+                          <div className="px-4 pb-3 flex gap-2">
+                            {bill.status !== 'paid' && (
+                              <button
+                                onClick={() => setPaymentModal({ bill, amount: String(bill.total_due - bill.total_paid), method: 'bank_transfer' })}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-xs rounded-lg hover:bg-primary-700 transition-colors"
+                              >
+                                <Check size={12} /> Rekod Bayaran
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleWhatsApp(bill, bill.status === 'paid' ? 'receipt' : bill.status === 'overdue' ? 'reminder' : 'bill')}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                              <MessageCircle size={12} />
+                              {bill.status === 'paid' ? 'Resit' : bill.status === 'overdue' ? 'Peringatan' : 'Hantar Bil'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
             </div>
           ))}
         </div>
       )}
 
+      {/* Floating WhatsApp CTA */}
+      {unpaidBills.length > 0 && (
+        <button
+          onClick={() => {
+            unpaidBills.forEach(bill => handleWhatsApp(bill, bill.status === 'overdue' ? 'reminder' : 'bill'))
+          }}
+          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 bg-green-600 text-white px-4 py-3 rounded-full shadow-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm font-medium z-40"
+        >
+          <MessageCircle size={18} />
+          Hantar Semua Bil
+        </button>
+      )}
+
       {/* Payment modal */}
       {paymentModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-5 w-full max-w-sm space-y-4">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">Rekod Bayaran</h2>
             <p className="text-sm text-gray-500">{paymentModal.bill.tenant?.name} — RM{paymentModal.bill.total_due}</p>
 
