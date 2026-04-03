@@ -2,12 +2,17 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Users, AlertTriangle, Plus, UserPlus, FileText, CreditCard, TrendingUp, ArrowUpRight } from 'lucide-react'
-import type { Room, MonthlyBill } from '@/types/database'
+import { Building2, Users, AlertTriangle, Plus, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle } from 'lucide-react'
+import type { Room, MonthlyBill, Profile, Property } from '@/types/database'
 import Card from '@/components/ui/Card'
 import QuickActions from '@/components/ui/QuickActions'
 import EmptyState from '@/components/ui/EmptyState'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
+
+interface OverdueBill extends MonthlyBill {
+  tenant: Profile
+  room: Room & { property: Property }
+}
 
 interface DashboardStats {
   totalProperties: number
@@ -24,6 +29,7 @@ export default function DashboardPage() {
     totalProperties: 0, totalRooms: 0, occupiedRooms: 0,
     overdueCount: 0, expectedIncome: 0, collectedIncome: 0,
   })
+  const [overdueBills, setOverdueBills] = useState<OverdueBill[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -49,6 +55,18 @@ export default function DashboardPage() {
       expectedIncome: currentBills.reduce((sum: number, b: MonthlyBill) => sum + b.total_due, 0),
       collectedIncome: currentBills.reduce((sum: number, b: MonthlyBill) => sum + b.total_paid, 0),
     })
+
+    // Load overdue bills with tenant details
+    const { data: overdueData } = await supabase
+      .from('monthly_bills')
+      .select('*, tenant:profiles!monthly_bills_tenant_id_fkey(name, phone), room:rooms(label, property:properties(name))')
+      .eq('status', 'overdue')
+      .eq('month', currentMonth)
+
+    const myOverdue = (overdueData || []).filter((b: OverdueBill) =>
+      (b.room?.property as Property & { landlord_id?: string })?.landlord_id === profile!.id
+    )
+    setOverdueBills(myOverdue)
     setLoading(false)
   }
 
@@ -60,9 +78,9 @@ export default function DashboardPage() {
 
   const quickActions = [
     { icon: Building2, label: 'Tambah Hartanah', to: '/properties/new', color: 'bg-primary-50 text-primary-600' },
-    { icon: UserPlus, label: 'Tambah Penyewa', to: '/tenants/new', color: 'bg-blue-50 text-blue-600' },
-    { icon: FileText, label: 'Jana Bil', to: '/billing', color: 'bg-amber-50 text-amber-600' },
-    { icon: CreditCard, label: 'Rekod Bayaran', to: '/payments', color: 'bg-green-50 text-green-600' },
+    { icon: FileText, label: 'Jana Bil', to: '/bil', color: 'bg-amber-50 text-amber-600' },
+    { icon: Receipt, label: 'Lihat Bil', to: '/bil', color: 'bg-green-50 text-green-600' },
+    { icon: BarChart3, label: 'Laporan', to: '/account/reports/monthly', color: 'bg-purple-50 text-purple-600' },
   ]
 
   return (
@@ -120,6 +138,36 @@ export default function DashboardPage() {
 
       {/* Quick actions */}
       <QuickActions actions={quickActions} />
+
+      {/* Overdue action section */}
+      {overdueBills.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={14} className="text-red-500" />
+            <h2 className="text-sm font-bold text-gray-800">Perlu Tindakan</h2>
+          </div>
+          <Card variant="elevated" padding="p-0">
+            <div className="divide-y divide-gray-100">
+              {overdueBills.slice(0, 5).map((bill) => (
+                <div key={bill.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{bill.tenant?.name}</p>
+                    <p className="text-xs text-gray-500">{bill.room?.label} — RM{(bill.total_due - bill.total_paid).toLocaleString()}</p>
+                  </div>
+                  <a
+                    href={`https://wa.me/${bill.tenant?.phone?.replace(/[^0-9]/g, '').replace(/^0/, '60')}?text=${encodeURIComponent(`Assalamualaikum ${bill.tenant?.name}, ini peringatan mesra bahawa bayaran sewa RM${bill.total_due - bill.total_paid} untuk bulan ini masih belum diterima. Mohon jelaskan secepat mungkin. Terima kasih.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 active:scale-95"
+                  >
+                    <MessageCircle size={12} /> Ingatkan
+                  </a>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Key metrics — 2x2 grid */}
       <div className="grid grid-cols-2 gap-3">
