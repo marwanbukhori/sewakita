@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
+import Button from './Button'
 
 interface EmptyStateProps {
   icon: LucideIcon
@@ -10,16 +11,15 @@ interface EmptyStateProps {
 
 export default function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-      <Icon className="mx-auto text-gray-300 mb-3" size={40} />
-      <h3 className="font-semibold text-gray-900">{title}</h3>
-      {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+    <div className="bg-white rounded-2xl shadow-card p-8 text-center">
+      <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+        <Icon size={28} className="text-gray-400" />
+      </div>
+      <h3 className="text-base font-semibold text-gray-800">{title}</h3>
+      {description && <p className="text-sm text-gray-500 mt-1 max-w-[240px] mx-auto">{description}</p>}
       {action && (
-        <Link
-          to={action.to}
-          className="inline-flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium mt-4 hover:bg-primary-700 transition-colors"
-        >
-          {action.label}
+        <Link to={action.to} className="inline-block mt-4">
+          <Button variant="primary" size="md">{action.label}</Button>
         </Link>
       )}
     </div>
