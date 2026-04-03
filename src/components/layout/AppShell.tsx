@@ -97,9 +97,6 @@ export default function AppShell() {
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <span className="text-lg font-bold tracking-tight text-primary-600">SewaKita</span>
           <div className="flex items-center gap-2">
-            {/* Language toggle — desktop only, mobile goes in hamburger */}
-            <div className="hidden sm:block"><LanguageToggle /></div>
-            <span className="text-sm text-gray-500 hidden sm:block">{profile?.name}</span>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="sm:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
@@ -201,6 +198,15 @@ export default function AppShell() {
             <NavLink to="/faq" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
             }><HelpCircle size={20} /><span>{t('menu.faq')}</span></NavLink>
+
+            {/* Language toggle */}
+            <div className="flex items-center justify-between px-3 h-11">
+              <div className="flex items-center gap-3 text-sm text-gray-600 font-medium">
+                <Globe size={20} />
+                <span>Language</span>
+              </div>
+              <LanguageToggle />
+            </div>
           </div>
         </nav>
 
