@@ -21,6 +21,7 @@ import AgreementViewPage from '@/pages/landlord/AgreementViewPage'
 import TenantDashboard from '@/pages/tenant/TenantDashboard'
 import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
 import TenantPaymentsPage from '@/pages/tenant/TenantPaymentsPage'
+import PaymentSuccessPage from '@/pages/tenant/PaymentSuccessPage'
 import AccountPage from '@/pages/shared/AccountPage'
 import FAQPage from '@/pages/shared/FAQPage'
 import MonthlyReportPage from '@/pages/shared/MonthlyReportPage'
@@ -73,6 +74,7 @@ function AppRoutes() {
           <Route path="/tenant/dashboard" element={<TenantDashboard />} />
           <Route path="/tenant/bills" element={<TenantBillsPage />} />
           <Route path="/tenant/payments" element={<TenantPaymentsPage />} />
+          <Route path="/tenant/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/agreements/:id" element={<AgreementViewPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/faq" element={<FAQPage />} />

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt, ChevronDown, ChevronUp } from 'lucide-react'
+import { Receipt, ChevronDown, ChevronUp, CreditCard } from 'lucide-react'
 import type { MonthlyBill } from '@/types/database'
+import toast from 'react-hot-toast'
 import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 import StatusBadge from '@/components/ui/StatusBadge'
 import SectionHeader from '@/components/ui/SectionHeader'
 import EmptyState from '@/components/ui/EmptyState'
@@ -14,6 +16,7 @@ export default function TenantBillsPage() {
   const [bills, setBills] = useState<MonthlyBill[]>([])
   const [expandedBill, setExpandedBill] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [paying, setPaying] = useState(false)
 
   useEffect(() => {
     if (!profile) return
@@ -29,6 +32,41 @@ export default function TenantBillsPage() {
 
     setBills(data || [])
     setLoading(false)
+  }
+
+  async function handlePayNow(bill: MonthlyBill) {
+    if (!profile) return
+    setPaying(true)
+
+    try {
+      const amount = bill.total_due - bill.total_paid
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-billplz-bill`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bill_id: bill.id,
+            amount,
+            tenant_email: profile.email,
+            tenant_name: profile.name,
+            description: `SewaKita rent - ${bill.month}`,
+            redirect_url: `${window.location.origin}/tenant/payment-success`,
+          }),
+        }
+      )
+
+      const data = await response.json()
+      if (data.payment_url) {
+        window.location.href = data.payment_url
+      } else {
+        toast.error(data.error || 'Payment failed')
+      }
+    } catch {
+      toast.error('Failed to initiate payment')
+    }
+
+    setPaying(false)
   }
 
   if (loading) return <SkeletonList count={3} />
@@ -80,7 +118,7 @@ export default function TenantBillsPage() {
                         </button>
 
                         {isExpanded && (
-                          <div className="px-4 pb-3 space-y-1.5">
+                          <div className="px-4 pb-3 space-y-3">
                             <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 text-sm">
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Sewa</span>
@@ -102,6 +140,11 @@ export default function TenantBillsPage() {
                                 <span>RM{bill.total_due}</span>
                               </div>
                             </div>
+                            {bill.status !== 'paid' && (
+                              <Button icon={CreditCard} fullWidth loading={paying} onClick={() => handlePayNow(bill)}>
+                                Pay Now — RM{bill.total_due - bill.total_paid}
+                              </Button>
+                            )}
                           </div>
                         )}
                       </div>
