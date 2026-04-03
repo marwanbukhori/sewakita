@@ -59,7 +59,7 @@ export default function PropertiesPage() {
           action={{ label: t('dashboard.add_property'), to: '/properties/new' }}
         />
       ) : (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-4">
           {properties.map((property) => {
             const activeRooms = property.rooms.filter((r) => r.is_active)
             const occupied = activeRooms.filter((r) => r.status === 'occupied').length
@@ -67,7 +67,7 @@ export default function PropertiesPage() {
             const occupancyPercent = activeRooms.length > 0 ? Math.round((occupied / activeRooms.length) * 100) : 0
 
             return (
-              <Link key={property.id} to={`/properties/${property.id}`}>
+              <Link key={property.id} to={`/properties/${property.id}`} className="block">
                 <Card variant="elevated" pressable padding="p-4" className="relative overflow-hidden">
                   {/* Full-card subtle batik background */}
                   <div className="absolute inset-0 pointer-events-none"
