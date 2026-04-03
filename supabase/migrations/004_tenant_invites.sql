@@ -1,10 +1,13 @@
+-- Enable pgcrypto for token generation
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Invite tokens table for tenant self-registration
 CREATE TABLE invites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID NOT NULL REFERENCES properties(id),
   room_id UUID NOT NULL REFERENCES rooms(id),
   landlord_id UUID NOT NULL REFERENCES profiles(id),
-  token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+  token TEXT NOT NULL UNIQUE DEFAULT replace(gen_random_uuid()::text, '-', ''),
   email TEXT,
   agreed_rent NUMERIC NOT NULL,
   deposit NUMERIC NOT NULL DEFAULT 0,
