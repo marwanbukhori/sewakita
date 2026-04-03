@@ -4,6 +4,10 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import toast from 'react-hot-toast'
 import { ArrowLeft } from 'lucide-react'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
+import Card from '@/components/ui/Card'
 
 export default function PropertyFormPage() {
   const { profile } = useAuth()
@@ -39,60 +43,47 @@ export default function PropertyFormPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-        <ArrowLeft size={16} /> Kembali
-      </button>
+    <div className="max-w-lg mx-auto space-y-4 animate-in">
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>
+        Kembali
+      </Button>
 
-      <h1 className="text-xl font-bold text-gray-900">Tambah Hartanah</h1>
+      <h1 className="text-xl font-bold text-gray-800">Tambah Hartanah</h1>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nama hartanah</label>
-          <input
+      <Card variant="elevated" padding="p-6" className="!rounded-3xl">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Nama hartanah"
             type="text"
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="cth: Rumah Taman Melati"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-          <input
+          <Input
+            label="Alamat"
             type="text"
             required
             value={form.address}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
-            placeholder="cth: No 12, Jalan Melati 3, Taman Melati, 53100 KL"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            placeholder="cth: No 12, Jalan Melati 3, 53100 KL"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tarikh bil bulanan</label>
-          <select
+          <Select
+            label="Tarikh bil bulanan"
             value={form.billing_date}
             onChange={(e) => setForm({ ...form, billing_date: Number(e.target.value) })}
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            helperText="Tarikh bil akan dijana setiap bulan"
           >
             {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
               <option key={d} value={d}>Hari {d}</option>
             ))}
-          </select>
-          <p className="text-xs text-gray-400 mt-1">Tarikh bil akan dijana setiap bulan</p>
-        </div>
+          </Select>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-primary-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
-        >
-          {loading ? 'Menyimpan...' : 'Simpan Hartanah'}
-        </button>
-      </form>
+          <Button type="submit" loading={loading} fullWidth size="lg">
+            Simpan Hartanah
+          </Button>
+        </form>
+      </Card>
     </div>
   )
 }

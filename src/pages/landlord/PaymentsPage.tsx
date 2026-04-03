@@ -9,6 +9,11 @@ import Card from '@/components/ui/Card'
 import StatusBadge from '@/components/ui/StatusBadge'
 import SectionHeader from '@/components/ui/SectionHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import BottomSheet from '@/components/ui/BottomSheet'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
+import { SkeletonList } from '@/components/ui/Skeleton'
 
 interface BillWithDetails extends MonthlyBill {
   room: Room & { property: Property }
@@ -88,9 +93,7 @@ export default function PaymentsPage() {
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank')
   }
 
-  if (loading) {
-    return <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary-600 border-t-transparent rounded-full" /></div>
-  }
+  if (loading) return <SkeletonList count={3} />
 
   const totalExpected = bills.reduce((s, b) => s + b.total_due, 0)
   const totalCollected = bills.reduce((s, b) => s + b.total_paid, 0)
@@ -234,45 +237,42 @@ export default function PaymentsPage() {
         </button>
       )}
 
-      {/* Payment modal */}
-      {paymentModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">Rekod Bayaran</h2>
+      {/* Payment bottom sheet */}
+      <BottomSheet
+        open={!!paymentModal}
+        onClose={() => setPaymentModal(null)}
+        title="Rekod Bayaran"
+      >
+        {paymentModal && (
+          <div className="space-y-4">
             <p className="text-sm text-gray-500">{paymentModal.bill.tenant?.name} — RM{paymentModal.bill.total_due}</p>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah (RM)</label>
-              <input type="number" value={paymentModal.amount}
-                onChange={(e) => setPaymentModal({ ...paymentModal, amount: e.target.value })}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kaedah bayaran</label>
-              <select value={paymentModal.method}
-                onChange={(e) => setPaymentModal({ ...paymentModal, method: e.target.value as PaymentMethod })}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm">
-                <option value="bank_transfer">Pindahan bank</option>
-                <option value="duitnow">DuitNow</option>
-                <option value="cash">Tunai</option>
-                <option value="other">Lain-lain</option>
-              </select>
-            </div>
-
-            <div className="flex gap-3">
-              <button onClick={() => setPaymentModal(null)}
-                className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Input
+              label="Jumlah (RM)"
+              type="number"
+              value={paymentModal.amount}
+              onChange={(e) => setPaymentModal({ ...paymentModal, amount: e.target.value })}
+            />
+            <Select
+              label="Kaedah bayaran"
+              value={paymentModal.method}
+              onChange={(e) => setPaymentModal({ ...paymentModal, method: e.target.value as PaymentMethod })}
+            >
+              <option value="bank_transfer">Pindahan bank</option>
+              <option value="duitnow">DuitNow</option>
+              <option value="cash">Tunai</option>
+              <option value="other">Lain-lain</option>
+            </Select>
+            <div className="flex gap-3 pt-2">
+              <Button variant="secondary" className="flex-1" onClick={() => setPaymentModal(null)}>
                 Batal
-              </button>
-              <button onClick={handleRecordPayment}
-                className="flex-1 py-2.5 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
+              </Button>
+              <Button className="flex-1" onClick={handleRecordPayment}>
                 Simpan
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </BottomSheet>
     </div>
   )
 }

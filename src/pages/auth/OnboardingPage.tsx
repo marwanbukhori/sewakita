@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase'
 import type { UserRole } from '@/types/database'
 import toast from 'react-hot-toast'
 import { Building2, User } from 'lucide-react'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Card from '@/components/ui/Card'
 
 export default function OnboardingPage() {
   const { user } = useAuth()
@@ -41,78 +44,81 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-[#F7FAFC] flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-sm animate-in">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary-700">SewaKita</h1>
-          <p className="text-gray-500 mt-2 text-sm">Selamat datang! Mari sediakan akaun anda.</p>
+          <h1 className="text-2xl font-bold text-gray-800">SewaKita</h1>
+          <p className="text-gray-500 mt-1.5 text-sm">Selamat datang! Mari sediakan akaun anda.</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {/* Step indicator */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className={`w-2 h-2 rounded-full ${step === 'role' ? 'bg-primary-600 w-6' : 'bg-gray-300'} transition-all duration-200`} />
+          <div className={`w-2 h-2 rounded-full ${step === 'details' ? 'bg-primary-600 w-6' : 'bg-gray-300'} transition-all duration-200`} />
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-lg p-7">
           {step === 'role' ? (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900">Anda adalah...</h2>
-              <button
-                onClick={() => { setRole('landlord'); setStep('details') }}
-                className="w-full flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors text-left"
-              >
-                <Building2 className="text-primary-600 shrink-0" size={24} />
-                <div>
-                  <div className="font-medium text-gray-900">Tuan Rumah</div>
-                  <div className="text-sm text-gray-500">Saya menyewakan bilik atau unit</div>
-                </div>
-              </button>
-              <button
-                onClick={() => { setRole('tenant'); setStep('details') }}
-                className="w-full flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors text-left"
-              >
-                <User className="text-primary-600 shrink-0" size={24} />
-                <div>
-                  <div className="font-medium text-gray-900">Penyewa</div>
-                  <div className="text-sm text-gray-500">Saya menyewa bilik atau unit</div>
-                </div>
-              </button>
+            <div className="space-y-4 animate-in">
+              <h2 className="text-lg font-semibold text-gray-800">Anda adalah...</h2>
+              {[
+                { value: 'landlord' as UserRole, icon: Building2, title: 'Tuan Rumah', desc: 'Saya menyewakan bilik atau unit' },
+                { value: 'tenant' as UserRole, icon: User, title: 'Penyewa', desc: 'Saya menyewa bilik atau unit' },
+              ].map((opt) => (
+                <Card
+                  key={opt.value}
+                  variant="outlined"
+                  pressable
+                  padding="p-4"
+                  className="!rounded-xl"
+                >
+                  <button
+                    onClick={() => { setRole(opt.value); setStep('details') }}
+                    className="w-full flex items-center gap-4 text-left"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
+                      <opt.icon className="text-primary-600" size={24} />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">{opt.title}</div>
+                      <div className="text-sm text-gray-500">{opt.desc}</div>
+                    </div>
+                  </button>
+                </Card>
+              ))}
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900">Maklumat anda</h2>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama penuh</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Nama anda"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">No. telefon</label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="012-3456789"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
+            <form onSubmit={handleSubmit} className="space-y-4 animate-in">
+              <h2 className="text-lg font-semibold text-gray-800">Maklumat anda</h2>
+              <Input
+                label="Nama penuh"
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Nama anda"
+              />
+              <Input
+                label="No. telefon"
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="012-3456789"
+              />
+              <div className="flex gap-3 pt-2">
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="lg"
                   onClick={() => setStep('role')}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1"
                 >
                   Kembali
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-primary-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
-                >
-                  {loading ? 'Menyimpan...' : 'Mula guna'}
-                </button>
+                </Button>
+                <Button type="submit" size="lg" loading={loading} className="flex-1">
+                  Mula guna
+                </Button>
               </div>
             </form>
           )}
