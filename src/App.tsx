@@ -12,8 +12,7 @@ import PropertyFormPage from '@/pages/landlord/PropertyFormPage'
 import PropertyDetailPage from '@/pages/landlord/PropertyDetailPage'
 import TenantsPage from '@/pages/landlord/TenantsPage'
 import TenantFormPage from '@/pages/landlord/TenantFormPage'
-import BillingPage from '@/pages/landlord/BillingPage'
-import PaymentsPage from '@/pages/landlord/PaymentsPage'
+import BilPage from '@/pages/landlord/BilPage'
 
 import TenantDashboard from '@/pages/tenant/TenantDashboard'
 import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
@@ -77,11 +76,10 @@ function AppRoutes() {
         <Route path="/properties/:id" element={<PropertyDetailPage />} />
         <Route path="/tenants" element={<TenantsPage />} />
         <Route path="/tenants/new" element={<TenantFormPage />} />
-        {/* Unified bil route — temporary alias to BillingPage until Phase 2 merge */}
-        <Route path="/bil" element={<BillingPage />} />
-        {/* Legacy routes — redirect to new paths */}
+        <Route path="/bil" element={<BilPage />} />
+        {/* Legacy route redirects */}
         <Route path="/billing" element={<Navigate to="/bil" replace />} />
-        <Route path="/payments" element={<PaymentsPage />} />
+        <Route path="/payments" element={<Navigate to="/bil" replace />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/faq" element={<FAQPage />} />
       </Route>
