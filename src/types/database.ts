@@ -5,6 +5,7 @@ export type BillStatus = 'pending' | 'partial' | 'paid' | 'overdue'
 export type SplitMethod = 'sub_meter' | 'equal' | 'fixed' | 'absorbed'
 export type UtilityType = 'electric' | 'water' | 'internet'
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'duitnow' | 'other'
+export type InviteStatus = 'pending' | 'accepted' | 'expired' | 'revoked'
 
 export interface Profile {
   id: string
@@ -112,6 +113,21 @@ export interface Payment {
   created_at: string
 }
 
+export interface Invite {
+  id: string
+  property_id: string
+  room_id: string
+  landlord_id: string
+  token: string
+  email: string | null
+  agreed_rent: number
+  deposit: number
+  move_in: string
+  status: InviteStatus
+  expires_at: string
+  created_at: string
+}
+
 // Supabase Database type for client generation
 export interface Database {
   public: {
@@ -150,6 +166,11 @@ export interface Database {
         Row: Payment
         Insert: Omit<Payment, 'id' | 'created_at'>
         Update: Partial<Omit<Payment, 'id' | 'created_at'>>
+      }
+      invites: {
+        Row: Invite
+        Insert: Omit<Invite, 'id' | 'token' | 'expires_at' | 'created_at'>
+        Update: Partial<Omit<Invite, 'id' | 'created_at'>>
       }
     }
   }

@@ -64,9 +64,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle() {
+    // Preserve current path for post-auth redirect (e.g., invite pages)
+    const currentPath = window.location.pathname
+    const redirectTo = currentPath.startsWith('/invite/')
+      ? `${window.location.origin}${currentPath}`
+      : window.location.origin
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo },
     })
     return { error: error as Error | null }
   }

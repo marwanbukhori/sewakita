@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2, Phone, Mail, Calendar, LogOut as LogOutIcon, History } from 'lucide-react'
+import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2, Phone, Mail, Calendar, LogOut as LogOutIcon, History, Link as LinkIcon, Clock, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
-import type { Property, Room, Tenancy, Profile } from '@/types/database'
+import type { Property, Room, Tenancy, Profile, Invite } from '@/types/database'
 import toast from 'react-hot-toast'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -27,6 +27,7 @@ export default function PropertyDetailPage() {
   const [showAddRoom, setShowAddRoom] = useState(false)
   const [newRoom, setNewRoom] = useState({ label: '', rent_amount: '' })
   const [saving, setSaving] = useState(false)
+  const [pendingInvites, setPendingInvites] = useState<Invite[]>([])
 
   // Edit property state
   const [editingProperty, setEditingProperty] = useState(false)
@@ -53,7 +54,23 @@ export default function PropertyDetailPage() {
 
     setProperty(prop)
     setRooms((roomsData as RoomWithTenancy[]) || [])
+
+    // Load pending invites for this property
+    const { data: invitesData } = await supabase
+      .from('invites')
+      .select('*')
+      .eq('property_id', id!)
+      .eq('status', 'pending')
+    setPendingInvites(invitesData || [])
+
     setLoading(false)
+  }
+
+  async function handleRevokeInvite(inviteId: string) {
+    const { error } = await supabase.from('invites').update({ status: 'revoked' }).eq('id', inviteId)
+    if (error) { toast.error('Gagal membatalkan jemputan.'); return }
+    toast.success('Jemputan dibatalkan.')
+    loadProperty()
   }
 
   async function handleAddRoom(e: React.FormEvent) {
@@ -227,12 +244,24 @@ export default function PropertyDetailPage() {
                   </div>
                 )}
 
-                {/* Vacant: add tenant CTA */}
+                {/* Vacant: invite tenant CTA + pending invites */}
                 {room.status !== 'occupied' && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                    {pendingInvites.filter(inv => inv.room_id === room.id).map(inv => (
+                      <div key={inv.id} className="flex items-center gap-2 bg-amber-50 rounded-lg p-2.5">
+                        <Clock size={14} className="text-amber-600 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-amber-800">Jemputan menunggu</p>
+                          <p className="text-xs text-amber-600 truncate">{inv.email || 'Tiada email'} — tamat {format(new Date(inv.expires_at), 'dd MMM')}</p>
+                        </div>
+                        <button onClick={() => handleRevokeInvite(inv.id)} className="p-1 rounded-lg text-amber-500 hover:text-red-500 hover:bg-red-50">
+                          <XCircle size={14} />
+                        </button>
+                      </div>
+                    ))}
                     <Link to={`/tenants/new?room_id=${room.id}&property_id=${property.id}`}>
                       <Button variant="ghost" size="sm" icon={UserPlus} fullWidth>
-                        Tambah Penyewa
+                        Jemput Penyewa
                       </Button>
                     </Link>
                   </div>

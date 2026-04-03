@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import toast from 'react-hot-toast'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Copy, MessageCircle, Check, Link as LinkIcon } from 'lucide-react'
 import type { Property, Room } from '@/types/database'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -19,14 +19,12 @@ export default function TenantFormPage() {
 
   const [loading, setLoading] = useState(false)
   const [properties, setProperties] = useState<(Property & { rooms: Room[] })[]>([])
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    ic_number: '',
-    emergency_contact: '',
     property_id: preselectedPropertyId || '',
     room_id: preselectedRoomId || '',
+    email: '',
     agreed_rent: '',
     deposit: '',
     move_in: new Date().toISOString().split('T')[0],
@@ -67,44 +65,100 @@ export default function TenantFormPage() {
 
     setLoading(true)
 
-    const tenantId = crypto.randomUUID()
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: tenantId,
-      auth_id: tenantId,
-      role: 'tenant',
-      name: form.name,
-      email: form.email,
-      phone: form.phone,
-      ic_number: form.ic_number || undefined,
-      emergency_contact: form.emergency_contact || undefined,
-    })
-
-    if (profileError) {
-      toast.error('Gagal menambah penyewa.')
-      setLoading(false)
-      return
-    }
-
-    const { error: tenancyError } = await supabase.from('tenancies').insert({
-      tenant_id: tenantId,
+    const { data, error } = await supabase.from('invites').insert({
+      property_id: form.property_id,
       room_id: form.room_id,
-      move_in: form.move_in,
-      deposit: Number(form.deposit),
+      landlord_id: profile.id,
+      email: form.email || null,
       agreed_rent: Number(form.agreed_rent),
-      status: 'active',
-    })
-
-    if (tenancyError) {
-      toast.error('Gagal membuat penyewaan.')
-      setLoading(false)
-      return
-    }
-
-    await supabase.from('rooms').update({ status: 'occupied' }).eq('id', form.room_id)
+      deposit: Number(form.deposit),
+      move_in: form.move_in,
+      status: 'pending',
+    }).select().single()
 
     setLoading(false)
-    toast.success('Penyewa berjaya ditambah!')
-    navigate('/tenants')
+
+    if (error || !data) {
+      toast.error('Gagal mencipta jemputan.')
+      return
+    }
+
+    const link = `${window.location.origin}/invite/${data.token}`
+    setInviteLink(link)
+    toast.success('Jemputan berjaya dicipta!')
+  }
+
+  async function handleCopy() {
+    if (!inviteLink) return
+    await navigator.clipboard.writeText(inviteLink)
+    setCopied(true)
+    toast.success('Pautan disalin!')
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  function handleWhatsAppShare() {
+    if (!inviteLink) return
+    const room = vacantRooms.find((r) => r.id === form.room_id)
+    const property = properties.find((p) => p.id === form.property_id)
+    const message = `Assalamualaikum,\n\nAnda dijemput untuk menyewa di *${property?.name}* (${room?.label}).\n\nSewa: RM${form.agreed_rent}/bulan\nDeposit: RM${form.deposit}\n\nSila klik pautan di bawah untuk mendaftar:\n${inviteLink}\n\n— SewaKita`
+    window.open(`https://wa.me/${form.email ? '' : ''}?text=${encodeURIComponent(message)}`, '_blank')
+  }
+
+  // After invite created — show success with share options
+  if (inviteLink) {
+    const room = vacantRooms.find((r) => r.id === form.room_id)
+    const property = properties.find((p) => p.id === form.property_id)
+
+    return (
+      <div className="max-w-lg mx-auto space-y-4 animate-in">
+        <div className="text-center py-4">
+          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+            <Check className="text-green-600" size={28} />
+          </div>
+          <h1 className="text-xl font-bold text-gray-800">Jemputan Dicipta</h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Kongsi pautan ini dengan penyewa untuk {property?.name} — {room?.label}
+          </p>
+        </div>
+
+        <Card variant="elevated" padding="p-5">
+          <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3 mb-4">
+            <LinkIcon size={16} className="text-gray-400 shrink-0" />
+            <p className="text-xs text-gray-600 truncate flex-1">{inviteLink}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button icon={copied ? Check : Copy} variant="secondary" onClick={handleCopy} fullWidth>
+              {copied ? 'Disalin!' : 'Salin Pautan'}
+            </Button>
+            <Button icon={MessageCircle} className="!bg-green-600 hover:!bg-green-700" onClick={handleWhatsAppShare} fullWidth>
+              WhatsApp
+            </Button>
+          </div>
+        </Card>
+
+        <Card variant="outlined" padding="p-4">
+          <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Butiran Jemputan</p>
+          <div className="space-y-1.5 text-sm">
+            <div className="flex justify-between"><span className="text-gray-500">Hartanah</span><span className="font-medium text-gray-800">{property?.name}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Bilik</span><span className="font-medium text-gray-800">{room?.label}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Sewa</span><span className="font-medium text-gray-800">RM{form.agreed_rent}/bulan</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Deposit</span><span className="font-medium text-gray-800">RM{form.deposit}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Tarikh Masuk</span><span className="font-medium text-gray-800">{form.move_in}</span></div>
+          </div>
+          <p className="text-xs text-gray-400 mt-3">Jemputan tamat tempoh dalam 7 hari.</p>
+        </Card>
+
+        <div className="flex gap-3">
+          <Button variant="secondary" fullWidth onClick={() => { setInviteLink(null); setForm({ ...form, room_id: '', email: '' }) }}>
+            Jemput Lagi
+          </Button>
+          <Button fullWidth onClick={() => navigate('/tenants')}>
+            Selesai
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -113,30 +167,11 @@ export default function TenantFormPage() {
         Kembali
       </Button>
 
-      <h1 className="text-xl font-bold text-gray-800">Tambah Penyewa</h1>
+      <h1 className="text-xl font-bold text-gray-800">Jemput Penyewa</h1>
+      <p className="text-sm text-gray-500">Cipta pautan jemputan untuk penyewa mendaftar sendiri dan terikat ke unit ini.</p>
 
       <Card variant="elevated" padding="p-6" className="!rounded-3xl">
         <form onSubmit={handleSubmit} className="space-y-5">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Maklumat Penyewa</p>
-
-          <Input label="Nama penuh *" type="text" required value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })} />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Email *" type="email" required value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <Input label="No. telefon *" type="tel" required value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="No. IC (pilihan)" type="text" value={form.ic_number}
-              onChange={(e) => setForm({ ...form, ic_number: e.target.value })} />
-            <Input label="Kecemasan (pilihan)" type="text" value={form.emergency_contact}
-              onChange={(e) => setForm({ ...form, emergency_contact: e.target.value })} />
-          </div>
-
-          <hr className="border-gray-100" />
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Maklumat Penyewaan</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -164,8 +199,15 @@ export default function TenantFormPage() {
               onChange={(e) => setForm({ ...form, move_in: e.target.value })} />
           </div>
 
+          <hr className="border-gray-100" />
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Pilihan</p>
+
+          <Input label="Email penyewa (pilihan)" type="email" value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            helperText="Jika diisi, penyewa boleh log masuk dengan email ini." />
+
           <Button type="submit" loading={loading} fullWidth size="lg">
-            Simpan Penyewa
+            Cipta Jemputan
           </Button>
         </form>
       </Card>

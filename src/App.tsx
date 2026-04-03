@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from '@/lib/auth-context'
 import AppShell from '@/components/layout/AppShell'
 import LoginPage from '@/pages/auth/LoginPage'
 import OnboardingPage from '@/pages/auth/OnboardingPage'
+import AcceptInvitePage from '@/pages/auth/AcceptInvitePage'
 
 import DashboardPage from '@/pages/landlord/DashboardPage'
 import PropertiesPage from '@/pages/landlord/PropertiesPage'
@@ -28,20 +29,26 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7FAFC]">
-        <div className="text-center animate-in">
-          <div className="w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-md">
-            <span className="text-white text-xl font-bold">S</span>
+      <Routes>
+        <Route path="/invite/:token" element={<AcceptInvitePage />} />
+        <Route path="*" element={
+          <div className="min-h-screen flex items-center justify-center bg-[#F7FAFC]">
+            <div className="text-center animate-in">
+              <div className="w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-md">
+                <span className="text-white text-xl font-bold">S</span>
+              </div>
+              <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full mx-auto mt-4" />
+            </div>
           </div>
-          <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full mx-auto mt-4" />
-        </div>
-      </div>
+        } />
+      </Routes>
     )
   }
 
   if (!user) {
     return (
       <Routes>
+        <Route path="/invite/:token" element={<AcceptInvitePage />} />
         <Route path="*" element={<LoginPage />} />
       </Routes>
     )
@@ -50,6 +57,7 @@ function AppRoutes() {
   if (!profile) {
     return (
       <Routes>
+        <Route path="/invite/:token" element={<AcceptInvitePage />} />
         <Route path="*" element={<OnboardingPage />} />
       </Routes>
     )
@@ -58,6 +66,7 @@ function AppRoutes() {
   if (profile.role === 'tenant') {
     return (
       <Routes>
+        <Route path="/invite/:token" element={<AcceptInvitePage />} />
         <Route element={<AppShell />}>
           <Route path="/tenant/dashboard" element={<TenantDashboard />} />
           <Route path="/tenant/bills" element={<TenantBillsPage />} />
@@ -72,6 +81,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/invite/:token" element={<AcceptInvitePage />} />
       <Route element={<AppShell />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/properties" element={<PropertiesPage />} />
