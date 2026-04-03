@@ -6,6 +6,7 @@ export type SplitMethod = 'sub_meter' | 'equal' | 'fixed' | 'absorbed'
 export type UtilityType = 'electric' | 'water' | 'internet'
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'duitnow' | 'other'
 export type InviteStatus = 'pending' | 'accepted' | 'expired' | 'revoked'
+export type ActivityType = 'bill_generated' | 'payment_received' | 'tenant_joined' | 'tenant_left' | 'overdue'
 
 export interface Profile {
   id: string
@@ -61,6 +62,28 @@ export interface DepositDeduction {
   item: string
   amount: number
   photo_url?: string
+}
+
+export interface ActivityLog {
+  id: string
+  landlord_id: string
+  type: ActivityType
+  title: string
+  detail: string | null
+  related_id: string | null
+  read: boolean
+  created_at: string
+}
+
+export interface UtilityTemplate {
+  id: string
+  property_id: string
+  type: UtilityType
+  split_method: SplitMethod
+  default_amount: number | null
+  fixed_amount_per_room: number | null
+  is_active: boolean
+  created_at: string
 }
 
 export interface UtilityBill {

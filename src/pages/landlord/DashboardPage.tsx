@@ -7,6 +7,7 @@ import type { Room, MonthlyBill, Profile, Property } from '@/types/database'
 import Card from '@/components/ui/Card'
 import QuickActions from '@/components/ui/QuickActions'
 import EmptyState from '@/components/ui/EmptyState'
+import ActivityFeed from '@/components/ui/ActivityFeed'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
 
 interface OverdueBill extends MonthlyBill {
@@ -138,6 +139,9 @@ export default function DashboardPage() {
 
       {/* Quick actions */}
       <QuickActions actions={quickActions} />
+
+      {/* Activity feed */}
+      <ActivityFeed />
 
       {/* Overdue action section */}
       {overdueBills.length > 0 && (

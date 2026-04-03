@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, Receipt, Plus, Zap, Droplets, Wifi } from 'lucide-react'
-import type { MonthlyBill, Property, Room, Profile, PaymentMethod, Tenancy, UtilityBill, SplitMethod, UtilityType } from '@/types/database'
+import type { MonthlyBill, Property, Room, Profile, PaymentMethod, Tenancy, UtilityBill, SplitMethod, UtilityType, UtilityTemplate } from '@/types/database'
 import toast from 'react-hot-toast'
 import { generateBillMessage, generateReminderMessage, generateReceiptMessage } from '@/lib/whatsapp'
 import Card from '@/components/ui/Card'
@@ -46,6 +46,7 @@ export default function BilPage() {
   const [propertyBills, setPropertyBills] = useState<MonthlyBill[]>([])
   const [showUtilityForm, setShowUtilityForm] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [templates, setTemplates] = useState<UtilityTemplate[]>([])
   const [utilityForm, setUtilityForm] = useState({
     type: 'electric' as UtilityType,
     total_amount: '',
@@ -72,6 +73,7 @@ export default function BilPage() {
       loadRooms()
       loadPropertyBills()
       loadUtilities()
+      loadTemplates()
     }
   }, [selectedProperty, month])
 
@@ -110,6 +112,53 @@ export default function BilPage() {
     const { data } = await supabase
       .from('utility_bills').select('*').eq('property_id', selectedProperty).eq('month', month)
     setExistingUtilities(data || [])
+  }
+
+  async function loadTemplates() {
+    const { data } = await supabase
+      .from('utility_templates')
+      .select('*')
+      .eq('property_id', selectedProperty)
+      .eq('is_active', true)
+    setTemplates(data || [])
+  }
+
+  async function saveAsTemplate() {
+    if (!selectedProperty || existingUtilities.length === 0) return
+    // Delete old templates for this property
+    await supabase.from('utility_templates').update({ is_active: false }).eq('property_id', selectedProperty)
+    // Save current utilities as templates
+    for (const ub of existingUtilities) {
+      await supabase.from('utility_templates').insert({
+        property_id: selectedProperty,
+        type: ub.type,
+        split_method: ub.split_method,
+        default_amount: ub.total_amount,
+        fixed_amount_per_room: ub.fixed_amount_per_room || null,
+        is_active: true,
+      })
+    }
+    toast.success('Template disimpan!')
+    loadTemplates()
+  }
+
+  async function loadFromTemplates() {
+    if (templates.length === 0) return
+    for (const tmpl of templates) {
+      // Check if utility already exists for this month
+      const exists = existingUtilities.find(u => u.type === tmpl.type)
+      if (exists) continue
+      await supabase.from('utility_bills').insert({
+        property_id: selectedProperty,
+        month,
+        type: tmpl.type,
+        total_amount: tmpl.default_amount || 0,
+        split_method: tmpl.split_method,
+        fixed_amount_per_room: tmpl.fixed_amount_per_room || undefined,
+      })
+    }
+    toast.success('Template dimuatkan!')
+    loadUtilities()
   }
 
   // === Payment functions ===
@@ -399,6 +448,16 @@ export default function BilPage() {
               </Button>
             </div>
 
+            {/* Template buttons */}
+            {existingUtilities.length === 0 && templates.length > 0 && (
+              <div className="mb-4">
+                <button onClick={loadFromTemplates}
+                  className="w-full py-3 bg-primary-50 text-primary-600 text-sm font-medium rounded-xl hover:bg-primary-100 transition-colors">
+                  Muat template bulan lepas ({templates.length} utiliti)
+                </button>
+              </div>
+            )}
+
             {existingUtilities.length > 0 && (
               <div className="space-y-2 mb-4">
                 {existingUtilities.map((ub) => {
@@ -415,6 +474,11 @@ export default function BilPage() {
                     </div>
                   )
                 })}
+                {/* Save as template */}
+                <button onClick={saveAsTemplate}
+                  className="w-full py-2 text-xs text-primary-600 hover:text-primary-700 font-medium">
+                  Simpan sebagai template →
+                </button>
               </div>
             )}
 
