@@ -1,12 +1,12 @@
 import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
-import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, FileText, Shield } from 'lucide-react'
+import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, FileText, Globe } from 'lucide-react'
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
 import Button from '@/components/ui/Button'
 import LanguageToggle from '@/components/ui/LanguageToggle'
-import { BatikNavRing, BatikBorder } from '@/assets/batik/patterns'
+import { BatikNavOverlay, BatikNavRing } from '@/assets/batik/patterns'
 import { useTranslation } from 'react-i18next'
 
 interface NavItem {
@@ -65,7 +65,6 @@ export default function AppShell() {
     signOut()
   }
 
-  // 3-icon bottom nav: Home | Billing (center, raised) | Properties/Payments
   const landlordNav: NavItem[] = [
     { to: '/dashboard', label: t('nav.home'), icon: Home },
     { to: '/bil', label: t('nav.billing'), icon: Receipt, badge: overdueCount, isCenter: true },
@@ -78,12 +77,9 @@ export default function AppShell() {
     { to: '/tenant/payments', label: t('nav.payments'), icon: CreditCard },
   ]
 
-  // Sidebar nav includes account section
   const sidebarMainNav = role === 'tenant' ? tenantNav : landlordNav
-
   const nav = role === 'tenant' ? tenantNav : landlordNav
 
-  // Menu items for hamburger dropdown
   const menuItems = [
     { icon: User, label: t('account.personal_info'), to: '/account' },
     ...(role === 'landlord' ? [
@@ -96,14 +92,14 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-[#F7FAFC]">
-      {/* Clean white header */}
+      {/* Header */}
       <header className={`bg-white sticky top-0 z-50 safe-top transition-shadow duration-200 ${scrolled ? 'shadow-md' : 'border-b border-gray-100'}`}>
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <span className="text-lg font-bold tracking-tight text-primary-600">SewaKita</span>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
+            {/* Language toggle — desktop only, mobile goes in hamburger */}
+            <div className="hidden sm:block"><LanguageToggle /></div>
             <span className="text-sm text-gray-500 hidden sm:block">{profile?.name}</span>
-            {/* Mobile hamburger */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="sm:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
@@ -114,7 +110,7 @@ export default function AppShell() {
         </div>
       </header>
 
-      {/* Mobile dropdown menu — expanded with account items */}
+      {/* Mobile dropdown menu */}
       {menuOpen && (
         <div className="sm:hidden fixed inset-0 top-14 z-40">
           <div className="absolute inset-0 bg-black/30" onClick={() => setMenuOpen(false)} />
@@ -145,6 +141,15 @@ export default function AppShell() {
               ))}
             </div>
 
+            {/* Language toggle in hamburger */}
+            <div className="border-t border-gray-100 px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Globe size={18} className="text-gray-500" />
+                <span className="text-sm text-gray-800">Language</span>
+              </div>
+              <LanguageToggle />
+            </div>
+
             {/* Logout */}
             <div className="border-t border-gray-100 py-2">
               <button onClick={handleLogout} className="flex items-center gap-3 px-5 py-3 w-full hover:bg-red-50">
@@ -159,7 +164,6 @@ export default function AppShell() {
       <div className="max-w-5xl mx-auto flex">
         {/* Desktop sidebar */}
         <nav className="hidden sm:flex flex-col w-56 shrink-0 bg-white shadow-sm min-h-[calc(100vh-3.5rem)] py-4 px-3">
-          {/* Main nav */}
           <div className="space-y-1">
             {sidebarMainNav.map((item) => (
               <NavLink
@@ -167,91 +171,66 @@ export default function AppShell() {
                 to={item.to}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${
-                    isActive
-                      ? 'bg-primary-50 text-primary-700 font-semibold'
-                      : 'text-gray-600 font-medium hover:bg-gray-50'
+                    isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'
                   }`
                 }
               >
                 <item.icon size={20} />
                 <span className="flex-1">{item.label}</span>
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="bg-danger-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                    {item.badge}
-                  </span>
+                  <span className="bg-danger-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">{item.badge}</span>
                 )}
               </NavLink>
             ))}
           </div>
-
-          {/* Divider */}
           <div className="my-4 border-t border-gray-100" />
-
-          {/* Account section */}
           <div className="space-y-1">
             <NavLink to="/account" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
-            }>
-              <User size={20} />
-              <span>{t('nav.account')}</span>
-            </NavLink>
+            }><User size={20} /><span>{t('nav.account')}</span></NavLink>
             {role === 'landlord' && (
               <>
                 <NavLink to="/account/reports/monthly" className={({ isActive }) =>
                   `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
-                }>
-                  <BarChart3 size={20} />
-                  <span>{t('reports.monthly_title')}</span>
-                </NavLink>
+                }><BarChart3 size={20} /><span>{t('reports.monthly_title')}</span></NavLink>
                 <NavLink to="/account/reports/annual" className={({ isActive }) =>
                   `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
-                }>
-                  <FileText size={20} />
-                  <span>{t('reports.annual_title')}</span>
-                </NavLink>
+                }><FileText size={20} /><span>{t('reports.annual_title')}</span></NavLink>
               </>
             )}
             <NavLink to="/faq" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
-            }>
-              <HelpCircle size={20} />
-              <span>{t('menu.faq')}</span>
-            </NavLink>
+            }><HelpCircle size={20} /><span>{t('menu.faq')}</span></NavLink>
           </div>
         </nav>
 
-        {/* Main content */}
         <main className="flex-1 p-4 sm:p-6 min-h-[calc(100vh-3.5rem)] pb-24 sm:pb-6">
           <Outlet />
         </main>
       </div>
 
-      {/* Mobile bottom nav — 3 icons with raised center */}
+      {/* Mobile bottom nav — BLUE with white batik */}
       <nav className="sm:hidden fixed bottom-0 inset-x-0 z-50 safe-bottom">
-        {/* Curved background with notch for center button */}
         <div className="relative">
-          {/* Background shape */}
-          <div className="absolute inset-0 bg-white shadow-[0_-2px_20px_rgba(0,0,0,0.08)] rounded-t-2xl" />
+          {/* Blue background with batik */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 rounded-t-2xl shadow-[0_-4px_24px_rgba(0,0,0,0.12)]">
+            <BatikNavOverlay />
+          </div>
 
-          <div className="relative grid grid-cols-3 items-end h-16">
+          <div className="relative grid grid-cols-3 items-end h-[68px]">
             {nav.map((item) => {
               const isActive = location.pathname === item.to ||
                 (item.to !== '/dashboard' && item.to !== '/tenant/dashboard' && location.pathname.startsWith(item.to))
 
-              // Center icon — raised with gradient circle
               if (item.isCenter) {
                 return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className="relative flex flex-col items-center -mt-4"
-                  >
-                    <div className={`relative flex items-center justify-center w-[56px] h-[56px] rounded-full transition-all active:scale-95 ${
+                  <NavLink key={item.to} to={item.to} className="relative flex flex-col items-center -mt-3">
+                    <div className={`relative flex items-center justify-center w-[54px] h-[54px] rounded-full transition-all active:scale-95 ${
                       isActive
-                        ? 'bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-[0_4px_20px_rgba(0,144,209,0.4)]'
-                        : 'bg-gradient-to-br from-primary-50 to-primary-100 text-primary-600 shadow-md'
+                        ? 'bg-white text-primary-600 shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
+                        : 'bg-white/20 text-white shadow-lg backdrop-blur-sm'
                     }`}>
-                      <BatikNavRing active={isActive} />
+                      <BatikNavRing active={!isActive} />
                       <item.icon size={24} strokeWidth={2} />
                       {item.badge !== undefined && item.badge > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 bg-danger-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm">
@@ -259,25 +238,22 @@ export default function AppShell() {
                         </span>
                       )}
                     </div>
-                    <span className={`text-[10px] mt-1 mb-1 ${isActive ? 'font-bold text-primary-600' : 'font-medium text-gray-400'}`}>
+                    <span className={`text-[10px] mt-1 mb-1 font-semibold ${isActive ? 'text-white' : 'text-white/60'}`}>
                       {item.label}
                     </span>
                   </NavLink>
                 )
               }
 
-              // Regular nav items
               return (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={`relative flex flex-col items-center justify-center pb-2 pt-3 active:scale-95 ${
-                    isActive ? 'text-primary-600' : 'text-gray-400'
+                  className={`relative flex flex-col items-center justify-center pb-2.5 pt-3 active:scale-95 ${
+                    isActive ? 'text-white' : 'text-white/50'
                   }`}
                 >
-                  {isActive && (
-                    <div className="absolute top-0 w-8 h-1 rounded-full bg-primary-500" />
-                  )}
+                  {isActive && <div className="absolute top-0 w-8 h-1 rounded-full bg-white" />}
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
                   <span className={`text-[10px] mt-1 ${isActive ? 'font-bold' : 'font-medium'}`}>
                     {item.label}
@@ -289,17 +265,12 @@ export default function AppShell() {
         </div>
       </nav>
 
-      {/* Logout confirmation */}
       <BottomSheet open={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)} title={t('account.logout')}>
         <div className="space-y-4">
           <p className="text-sm text-gray-500">{t('account.logout_confirm')}</p>
           <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={() => setShowLogoutConfirm(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button variant="danger" className="flex-1" onClick={confirmLogout}>
-              {t('account.logout')}
-            </Button>
+            <Button variant="secondary" className="flex-1" onClick={() => setShowLogoutConfirm(false)}>{t('common.cancel')}</Button>
+            <Button variant="danger" className="flex-1" onClick={confirmLogout}>{t('account.logout')}</Button>
           </div>
         </div>
       </BottomSheet>

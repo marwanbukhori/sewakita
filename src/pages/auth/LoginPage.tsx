@@ -40,7 +40,7 @@ export default function LoginPage() {
       <BatikBackground className="absolute top-0 left-0 w-full h-full text-primary-600 pointer-events-none" />
 
       <div className="w-full max-w-sm animate-in relative z-10">
-        {/* Language toggle */}
+        {/* Language toggle — login page keeps it since no hamburger here */}
         <div className="flex justify-end mb-4">
           <LanguageToggle />
         </div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Building2, Users, AlertTriangle, Plus, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { Room, MonthlyBill, Profile, Property } from '@/types/database'
 import Card from '@/components/ui/Card'
 import QuickActions from '@/components/ui/QuickActions'
@@ -26,6 +27,7 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { profile } = useAuth()
+  const { t } = useTranslation()
   const [stats, setStats] = useState<DashboardStats>({
     totalProperties: 0, totalRooms: 0, occupiedRooms: 0,
     overdueCount: 0, expectedIncome: 0, collectedIncome: 0,
@@ -78,33 +80,33 @@ export default function DashboardPage() {
   const occupancyPercent = stats.totalRooms > 0 ? Math.round((stats.occupiedRooms / stats.totalRooms) * 100) : 0
 
   const quickActions = [
-    { icon: Building2, label: 'Tambah Hartanah', to: '/properties/new', color: 'bg-primary-50 text-primary-600' },
-    { icon: FileText, label: 'Jana Bil', to: '/bil?tab=generate', color: 'bg-amber-50 text-amber-600' },
-    { icon: Receipt, label: 'Lihat Bil', to: '/bil', color: 'bg-green-50 text-green-600' },
-    { icon: BarChart3, label: 'Laporan', to: '/account/reports/monthly', color: 'bg-purple-50 text-purple-600' },
+    { icon: Building2, label: t('quick_actions.add_property'), to: '/properties/new', color: 'bg-primary-50 text-primary-600' },
+    { icon: FileText, label: t('quick_actions.generate_bills'), to: '/bil?tab=generate', color: 'bg-amber-50 text-amber-600' },
+    { icon: Receipt, label: t('quick_actions.view_bills'), to: '/bil', color: 'bg-green-50 text-green-600' },
+    { icon: BarChart3, label: t('quick_actions.reports'), to: '/account/reports/monthly', color: 'bg-purple-50 text-purple-600' },
   ]
 
   return (
     <div className="space-y-5 animate-in">
       {/* Greeting */}
       <div>
-        <p className="text-sm text-gray-500">Selamat kembali,</p>
+        <p className="text-sm text-gray-500">{t('dashboard.welcome_back')}</p>
         <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
       </div>
 
       {/* Revenue overview */}
       <Card variant="hero" padding="p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-white/70 text-sm font-medium">Kutipan Bulan Ini</p>
+          <p className="text-white/70 text-sm font-medium">{t('dashboard.collection_this_month')}</p>
           <Link to="/payments" className="text-white/60 hover:text-white text-xs flex items-center gap-1">
-            Lihat semua <ArrowUpRight size={12} />
+            {t('dashboard.view_all')} <ArrowUpRight size={12} />
           </Link>
         </div>
 
         <div className="flex items-end justify-between mb-4">
           <div>
             <p className="text-3xl font-bold tracking-tight">RM{stats.collectedIncome.toLocaleString()}</p>
-            <p className="text-white/60 text-sm mt-0.5">daripada RM{stats.expectedIncome.toLocaleString()}</p>
+            <p className="text-white/60 text-sm mt-0.5">{t('dashboard.of')} RM{stats.expectedIncome.toLocaleString()}</p>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-1 text-white/90">
@@ -126,12 +128,12 @@ export default function DashboardPage() {
         <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/10">
           {outstanding > 0 && (
             <span className="text-xs text-white/70">
-              Baki: <strong className="text-white">RM{outstanding.toLocaleString()}</strong>
+              {t('dashboard.remaining')}: <strong className="text-white">RM{outstanding.toLocaleString()}</strong>
             </span>
           )}
           {stats.overdueCount > 0 && (
             <span className="bg-red-500/30 text-white text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-              <AlertTriangle size={10} /> {stats.overdueCount} tertunggak
+              <AlertTriangle size={10} /> {t('dashboard.overdue_count', { count: stats.overdueCount })}
             </span>
           )}
         </div>
@@ -148,7 +150,7 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={14} className="text-red-500" />
-            <h2 className="text-sm font-bold text-gray-800">Perlu Tindakan</h2>
+            <h2 className="text-sm font-bold text-gray-800">{t('dashboard.needs_action')}</h2>
           </div>
           <Card variant="elevated" padding="p-0">
             <div className="divide-y divide-gray-100">
@@ -164,7 +166,7 @@ export default function DashboardPage() {
                     rel="noopener noreferrer"
                     className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 active:scale-95"
                   >
-                    <MessageCircle size={12} /> Ingatkan
+                    <MessageCircle size={12} /> {t('dashboard.remind')}
                   </a>
                 </div>
               ))}
@@ -185,7 +187,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <p className="text-2xl font-bold text-gray-800">{stats.totalProperties}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Hartanah</p>
+          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.properties_label')}</p>
         </Card>
 
         <Card variant="default" padding="p-4">
@@ -196,7 +198,7 @@ export default function DashboardPage() {
             <span className="text-xs text-gray-400">{occupancyPercent}%</span>
           </div>
           <p className="text-2xl font-bold text-gray-800">{stats.occupiedRooms}<span className="text-base text-gray-400 font-normal">/{stats.totalRooms}</span></p>
-          <p className="text-xs text-gray-500 mt-0.5">Bilik Berisi</p>
+          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.rooms_filled')}</p>
         </Card>
 
         <Card variant="default" padding="p-4">
@@ -206,7 +208,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-800">RM{stats.expectedIncome.toLocaleString()}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Dijangka</p>
+          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.expected')}</p>
         </Card>
 
         <Card variant="default" padding="p-4">
@@ -221,7 +223,7 @@ export default function DashboardPage() {
             )}
           </div>
           <p className={`text-2xl font-bold ${stats.overdueCount > 0 ? 'text-red-600' : 'text-gray-800'}`}>{stats.overdueCount}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Tertunggak</p>
+          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.overdue')}</p>
         </Card>
       </div>
 
@@ -229,9 +231,9 @@ export default function DashboardPage() {
       {stats.totalProperties === 0 && (
         <EmptyState
           icon={Building2}
-          title="Mula dengan menambah hartanah anda"
-          description="Tambah hartanah pertama anda dan mula urus sewa dengan mudah."
-          action={{ label: 'Tambah Hartanah', to: '/properties/new' }}
+          title={t('dashboard.start_add_property')}
+          description={t('dashboard.start_desc')}
+          action={{ label: t('dashboard.add_property'), to: '/properties/new' }}
         />
       )}
     </div>

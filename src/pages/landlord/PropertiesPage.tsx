@@ -105,22 +105,10 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Stats row */}
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-primary-50 rounded-lg p-2 text-center">
-                        <Home size={14} className="text-primary-600 mx-auto mb-0.5" />
-                        <p className="text-xs font-bold text-gray-800">{activeRooms.length}</p>
-                        <p className="text-[10px] text-gray-500">{t('properties.rooms')}</p>
-                      </div>
-                      <div className="bg-green-50 rounded-lg p-2 text-center">
-                        <Users size={14} className="text-green-600 mx-auto mb-0.5" />
-                        <p className="text-xs font-bold text-gray-800">{occupied}</p>
-                        <p className="text-[10px] text-gray-500">Occupied</p>
-                      </div>
-                      <div className="bg-amber-50 rounded-lg p-2 text-center">
-                        <Home size={14} className="text-amber-600 mx-auto mb-0.5" />
-                        <p className="text-xs font-bold text-gray-800">{vacant}</p>
-                        <p className="text-[10px] text-gray-500">Vacant</p>
-                      </div>
+                    <div className="flex gap-3 text-sm">
+                      <span className="text-gray-500"><strong className="text-gray-800">{activeRooms.length}</strong> {t('properties.rooms')}</span>
+                      <span className="text-green-600"><strong>{occupied}</strong> filled</span>
+                      <span className="text-amber-600"><strong>{vacant}</strong> vacant</span>
                     </div>
                   </div>
 

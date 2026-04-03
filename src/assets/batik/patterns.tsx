@@ -1,8 +1,8 @@
-// Indonesian batik patterns using real batik images
-// Images: Batak geometric + Traditional floral, applied with blue tinting
+// Indonesian batik patterns using real images
+// White-on-blue for hero cards, subtle tint for backgrounds
 
 /**
- * Geometric Batak batik — used as subtle page backgrounds
+ * Subtle page background — geometric batak at very low opacity
  */
 export function BatikBackground({ className = '' }: { className?: string }) {
   return (
@@ -12,8 +12,8 @@ export function BatikBackground({ className = '' }: { className?: string }) {
         backgroundImage: 'url(/batik/batak-geometric.png)',
         backgroundSize: '300px',
         backgroundRepeat: 'repeat',
-        opacity: 0.04,
-        filter: 'hue-rotate(180deg) saturate(2)',
+        opacity: 0.03,
+        filter: 'grayscale(1)',
         mixBlendMode: 'multiply',
       }}
     />
@@ -21,7 +21,7 @@ export function BatikBackground({ className = '' }: { className?: string }) {
 }
 
 /**
- * Floral batik overlay for hero/blue cards — white-ish on dark blue
+ * White batik overlay for blue/hero cards — clearly visible white pattern
  */
 export function BatikHeroOverlay({ className = '' }: { className?: string }) {
   return (
@@ -29,48 +29,46 @@ export function BatikHeroOverlay({ className = '' }: { className?: string }) {
       className={`absolute inset-0 pointer-events-none ${className}`}
       style={{
         backgroundImage: 'url(/batik/floral-traditional.png)',
-        backgroundSize: '400px',
+        backgroundSize: '350px',
         backgroundRepeat: 'repeat',
-        opacity: 0.08,
-        filter: 'brightness(3) contrast(0.8)',
-        mixBlendMode: 'soft-light',
+        opacity: 0.12,
+        filter: 'brightness(10) grayscale(1)',
       }}
     />
   )
 }
 
 /**
- * Geometric batik strip — horizontal border decoration
+ * White batik for bottom nav blue background
  */
-export function BatikBorder({ className = '', position = 'top' }: { className?: string; position?: 'top' | 'bottom' }) {
+export function BatikNavOverlay({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`absolute ${position === 'top' ? 'top-0' : 'bottom-0'} left-0 right-0 h-3 pointer-events-none overflow-hidden ${className}`}
+      className={`absolute inset-0 pointer-events-none overflow-hidden rounded-t-2xl ${className}`}
       style={{
         backgroundImage: 'url(/batik/batak-geometric.png)',
         backgroundSize: '200px',
-        backgroundRepeat: 'repeat-x',
-        backgroundPosition: 'center',
-        opacity: 0.15,
-        filter: 'hue-rotate(180deg) saturate(3)',
+        backgroundRepeat: 'repeat',
+        opacity: 0.1,
+        filter: 'brightness(10) grayscale(1)',
       }}
     />
   )
 }
 
 /**
- * Floral batik corner accent for cards
+ * Card corner accent — floral batik
  */
 export function BatikCardAccent({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`absolute top-0 right-0 w-28 h-28 pointer-events-none overflow-hidden rounded-tr-2xl ${className}`}
+      className={`absolute top-0 right-0 w-24 h-24 pointer-events-none overflow-hidden rounded-tr-2xl ${className}`}
       style={{
         backgroundImage: 'url(/batik/floral-traditional.png)',
-        backgroundSize: '250px',
+        backgroundSize: '200px',
         backgroundPosition: 'center',
-        opacity: 0.06,
-        filter: 'hue-rotate(180deg) saturate(2)',
+        opacity: 0.05,
+        filter: 'grayscale(1)',
         mixBlendMode: 'multiply',
       }}
     />
@@ -78,20 +76,21 @@ export function BatikCardAccent({ className = '' }: { className?: string }) {
 }
 
 /**
- * Batik divider — geometric strip between sections
+ * Batik divider strip
  */
 export function BatikDivider({ className = '' }: { className?: string }) {
   return (
     <div className={`py-2 ${className}`}>
       <div
-        className="h-4 w-full rounded-sm overflow-hidden"
+        className="h-3 w-full overflow-hidden rounded-sm"
         style={{
           backgroundImage: 'url(/batik/batak-geometric.png)',
           backgroundSize: '150px',
           backgroundRepeat: 'repeat-x',
           backgroundPosition: 'center',
-          opacity: 0.12,
-          filter: 'hue-rotate(180deg) saturate(3)',
+          opacity: 0.1,
+          filter: 'grayscale(1)',
+          mixBlendMode: 'multiply',
         }}
       />
     </div>
@@ -99,7 +98,7 @@ export function BatikDivider({ className = '' }: { className?: string }) {
 }
 
 /**
- * Batik ring around center nav icon
+ * Batik ring on center nav button
  */
 export function BatikNavRing({ active = false }: { active?: boolean }) {
   return (
@@ -107,11 +106,10 @@ export function BatikNavRing({ active = false }: { active?: boolean }) {
       className="absolute -inset-2 rounded-full pointer-events-none overflow-hidden"
       style={{
         backgroundImage: 'url(/batik/floral-traditional.png)',
-        backgroundSize: '120px',
+        backgroundSize: '100px',
         backgroundPosition: 'center',
-        opacity: active ? 0.15 : 0.1,
-        filter: active ? 'brightness(3)' : 'hue-rotate(180deg) saturate(2)',
-        mixBlendMode: active ? 'soft-light' : 'multiply',
+        opacity: active ? 0.15 : 0.08,
+        filter: 'brightness(10) grayscale(1)',
       }}
     />
   )
