@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, AlertTriangle } from 'lucide-react'
 import type { Payment, MonthlyBill } from '@/types/database'
 import { format } from 'date-fns'
+import Card from '@/components/ui/Card'
+import SectionHeader from '@/components/ui/SectionHeader'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface PaymentWithBill extends Payment {
   bill: MonthlyBill
@@ -21,7 +24,6 @@ export default function TenantPaymentsPage() {
   }, [profile])
 
   async function loadPayments() {
-    // Get all bills for this tenant
     const { data: bills } = await supabase
       .from('monthly_bills')
       .select('*, payments(*)')
@@ -57,33 +59,57 @@ export default function TenantPaymentsPage() {
     other: 'Lain-lain',
   }
 
+  // Group payments by month
+  const grouped = payments.reduce<Record<string, PaymentWithBill[]>>((acc, p) => {
+    const monthKey = p.date.slice(0, 7)
+    if (!acc[monthKey]) acc[monthKey] = []
+    acc[monthKey].push(p)
+    return acc
+  }, {})
+
+  const formatMonthHeader = (m: string) => {
+    const [year, month] = m.split('-')
+    const months = ['JANUARI', 'FEBRUARI', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DISEMBER']
+    return `${months[parseInt(month) - 1]} ${year}`
+  }
+
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-gray-900">Bayaran Saya</h1>
 
       {totalOutstanding > 0 && (
-        <div className="bg-danger-50 rounded-xl border border-red-200 p-4">
-          <p className="text-sm text-red-700">Jumlah tertunggak: <strong className="text-lg">RM{totalOutstanding.toLocaleString()}</strong></p>
-        </div>
+        <Card variant="default" padding="p-4" className="border-amber-200 bg-amber-50">
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={20} className="text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">
+                Jumlah tertunggak: RM{totalOutstanding.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </Card>
       )}
 
       {payments.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <CreditCard className="mx-auto text-gray-300 mb-3" size={40} />
-          <p className="text-gray-500">Tiada rekod bayaran lagi.</p>
-        </div>
+        <EmptyState icon={CreditCard} title="Tiada rekod bayaran lagi" />
       ) : (
-        <div className="space-y-2">
-          {payments.map((p) => (
-            <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-gray-900">RM{p.amount}</div>
-                <div className="text-xs text-gray-500">
-                  {format(new Date(p.date), 'dd MMM yyyy')} • {methodLabels[p.method] || p.method}
+        <div className="space-y-5">
+          {Object.entries(grouped).map(([month, monthPayments]) => (
+            <div key={month}>
+              <SectionHeader title={formatMonthHeader(month)} />
+              <Card variant="elevated" padding="p-0">
+                <div className="divide-y divide-gray-100">
+                  {monthPayments.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between px-4 py-3">
+                      <div>
+                        <p className="text-sm text-gray-900">{format(new Date(p.date), 'dd MMM yyyy')}</p>
+                        <p className="text-xs text-gray-400">{methodLabels[p.method] || p.method}</p>
+                      </div>
+                      <span className="font-semibold text-green-600 text-sm">+RM{p.amount}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="text-xs text-gray-400">Bil: {p.bill.month}</div>
-              </div>
-              <span className="text-xs bg-success-50 text-green-700 px-2 py-1 rounded-full">Dibayar</span>
+              </Card>
             </div>
           ))}
         </div>

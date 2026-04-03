@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt, CreditCard, Home, Calendar } from 'lucide-react'
+import { Receipt, CreditCard, Home, Calendar, AlertTriangle } from 'lucide-react'
 import type { MonthlyBill, Tenancy, Room, Property, Payment } from '@/types/database'
 import { format } from 'date-fns'
+import Card from '@/components/ui/Card'
+import StatusBadge from '@/components/ui/StatusBadge'
 
 export default function TenantDashboard() {
   const { profile } = useAuth()
   const [tenancy, setTenancy] = useState<(Tenancy & { room: Room & { property: Property } }) | null>(null)
   const [currentBill, setCurrentBill] = useState<MonthlyBill | null>(null)
   const [recentPayments, setRecentPayments] = useState<Payment[]>([])
+  const [totalOutstanding, setTotalOutstanding] = useState(0)
+  const [overdueMonths, setOverdueMonths] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -18,7 +22,6 @@ export default function TenantDashboard() {
   }, [profile])
 
   async function loadData() {
-    // Load active tenancy
     const { data: tenancyData } = await supabase
       .from('tenancies')
       .select('*, room:rooms(*, property:properties(*))')
@@ -28,7 +31,6 @@ export default function TenantDashboard() {
 
     setTenancy(tenancyData)
 
-    // Load current month's bill
     const currentMonth = new Date().toISOString().slice(0, 7)
     const { data: billData } = await supabase
       .from('monthly_bills')
@@ -39,7 +41,17 @@ export default function TenantDashboard() {
 
     setCurrentBill(billData)
 
-    // Load recent payments
+    // Load all unpaid bills for outstanding balance
+    const { data: allBills } = await supabase
+      .from('monthly_bills')
+      .select('*')
+      .eq('tenant_id', profile!.id)
+      .neq('status', 'paid')
+
+    const outstanding = (allBills || []).reduce((sum: number, b: MonthlyBill) => sum + (b.total_due - b.total_paid), 0)
+    setTotalOutstanding(outstanding)
+    setOverdueMonths((allBills || []).filter((b: MonthlyBill) => b.status === 'overdue').length)
+
     if (billData) {
       const { data: payments } = await supabase
         .from('payments')
@@ -57,97 +69,118 @@ export default function TenantDashboard() {
     return <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary-600 border-t-transparent rounded-full" /></div>
   }
 
+  const currentMonthLabel = new Date().toLocaleDateString('ms-MY', { month: 'long', year: 'numeric' })
+
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Selamat datang, {profile?.name}</h1>
-        <p className="text-sm text-gray-500">Portal Penyewa</p>
+        <p className="text-sm text-gray-500">Selamat datang,</p>
+        <h1 className="text-xl font-bold text-gray-900">{profile?.name}</h1>
       </div>
 
-      {/* Tenancy info */}
-      {tenancy && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Home size={16} /> Maklumat Penyewaan</h2>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div><span className="text-gray-500">Hartanah:</span> <strong>{tenancy.room.property.name}</strong></div>
-            <div><span className="text-gray-500">Bilik:</span> <strong>{tenancy.room.label}</strong></div>
-            <div><span className="text-gray-500">Sewa:</span> <strong>RM{tenancy.agreed_rent}/bulan</strong></div>
-            <div><span className="text-gray-500">Deposit:</span> <strong>RM{tenancy.deposit}</strong></div>
-            <div className="flex items-center gap-1"><Calendar size={14} className="text-gray-400" /> <span className="text-gray-500">Masuk:</span> <strong>{format(new Date(tenancy.move_in), 'dd MMM yyyy')}</strong></div>
+      {/* Outstanding balance warning */}
+      {totalOutstanding > 0 && (
+        <Card variant="default" padding="p-4" className="border-amber-200 bg-amber-50">
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={20} className="text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">
+                Baki tertunggak: RM{totalOutstanding.toLocaleString()}
+              </p>
+              <p className="text-xs text-amber-600">dari {overdueMonths} bulan</p>
+            </div>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* Current bill */}
+      {/* Hero bill card */}
       {currentBill ? (
-        <div className={`bg-white rounded-xl border p-4 ${currentBill.status === 'overdue' ? 'border-danger-500/30' : 'border-gray-200'}`}>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Receipt size={16} /> Bil Bulan Ini</h2>
-          <div className="space-y-2">
+        <Card variant="hero" padding="p-5">
+          <p className="text-primary-200 text-sm font-medium mb-1">Bil {currentMonthLabel}</p>
+          <p className="text-3xl font-bold mb-4">RM{currentBill.total_due.toLocaleString()}</p>
+
+          {/* Breakdown nested card */}
+          <div className="bg-white/15 rounded-xl p-3 space-y-1.5 mb-4">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Sewa bilik</span>
+              <span className="text-white/80">Sewa bilik</span>
               <span className="font-medium">RM{currentBill.rent_amount}</span>
             </div>
             {currentBill.utility_breakdown?.map((u, i) => (
               u.amount > 0 && (
                 <div key={i} className="flex justify-between text-sm">
-                  <span className="text-gray-500">{u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}</span>
+                  <span className="text-white/80">{u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}</span>
                   <span className="font-medium">RM{u.amount}</span>
                 </div>
               )
             ))}
-            <hr className="border-gray-200" />
-            <div className="flex justify-between text-sm font-bold">
-              <span>Jumlah</span>
-              <span>RM{currentBill.total_due}</span>
-            </div>
             {currentBill.total_paid > 0 && (
               <>
-                <div className="flex justify-between text-sm text-green-700">
+                <hr className="border-white/20" />
+                <div className="flex justify-between text-sm text-green-300">
                   <span>Dibayar</span>
                   <span>-RM{currentBill.total_paid}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-danger-500">
+                <div className="flex justify-between text-sm font-bold">
                   <span>Baki</span>
                   <span>RM{currentBill.total_due - currentBill.total_paid}</span>
                 </div>
               </>
             )}
           </div>
-          <div className="mt-3">
-            <span className={`text-xs px-3 py-1 rounded-full ${
-              currentBill.status === 'paid' ? 'bg-success-50 text-green-700' :
-              currentBill.status === 'overdue' ? 'bg-danger-50 text-red-700' :
-              currentBill.status === 'partial' ? 'bg-warning-50 text-amber-700' :
-              'bg-gray-100 text-gray-600'
-            }`}>
-              {currentBill.status === 'paid' ? 'Selesai Dibayar' :
-               currentBill.status === 'overdue' ? 'Tertunggak' :
-               currentBill.status === 'partial' ? 'Bayaran Separa' : 'Belum Dibayar'}
-            </span>
-          </div>
-        </div>
+
+          <StatusBadge
+            status={currentBill.status as 'paid' | 'overdue' | 'partial' | 'pending'}
+            label={
+              currentBill.status === 'paid' ? 'Selesai Dibayar ✓' :
+              currentBill.status === 'overdue' ? 'Tertunggak' :
+              currentBill.status === 'partial' ? 'Bayaran Separa' : 'Belum Dibayar'
+            }
+            size="md"
+          />
+        </Card>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+        <Card variant="default" padding="p-6" className="text-center">
           <Receipt className="mx-auto text-gray-300 mb-2" size={32} />
           <p className="text-sm text-gray-500">Tiada bil untuk bulan ini lagi.</p>
-        </div>
+        </Card>
+      )}
+
+      {/* Tenancy info */}
+      {tenancy && (
+        <Card variant="elevated" padding="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
+              <Home size={18} className="text-primary-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900 text-sm">{tenancy.room.property.name}</p>
+              <p className="text-xs text-gray-500">{tenancy.room.label} — RM{tenancy.agreed_rent}/bulan</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100 pt-3">
+            <span>Deposit: RM{tenancy.deposit}</span>
+            <span className="flex items-center gap-1"><Calendar size={12} /> {format(new Date(tenancy.move_in), 'dd MMM yyyy')}</span>
+          </div>
+        </Card>
       )}
 
       {/* Recent payments */}
       {recentPayments.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><CreditCard size={16} /> Bayaran Terkini</h2>
-          <div className="space-y-2">
-            {recentPayments.map((p) => (
-              <div key={p.id} className="flex justify-between text-sm bg-gray-50 rounded-lg p-3">
-                <div>
-                  <span className="text-gray-500">{format(new Date(p.date), 'dd MMM yyyy')}</span>
-                  <span className="ml-2 text-xs text-gray-400">{p.method}</span>
+        <div>
+          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Bayaran Terkini</h2>
+          <Card variant="elevated" padding="p-0">
+            <div className="divide-y divide-gray-100">
+              {recentPayments.map((p) => (
+                <div key={p.id} className="flex items-center justify-between px-4 py-3">
+                  <div>
+                    <p className="text-sm text-gray-900">{format(new Date(p.date), 'dd MMM yyyy')}</p>
+                    <p className="text-xs text-gray-400">{p.method === 'bank_transfer' ? 'Pindahan Bank' : p.method === 'duitnow' ? 'DuitNow' : p.method === 'cash' ? 'Tunai' : 'Lain-lain'}</p>
+                  </div>
+                  <span className="font-semibold text-green-600 text-sm">+RM{p.amount}</span>
                 </div>
-                <span className="font-medium text-green-700">RM{p.amount}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </Card>
         </div>
       )}
     </div>

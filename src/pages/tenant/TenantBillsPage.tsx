@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt } from 'lucide-react'
+import { Receipt, ChevronDown, ChevronUp } from 'lucide-react'
 import type { MonthlyBill } from '@/types/database'
+import Card from '@/components/ui/Card'
+import StatusBadge from '@/components/ui/StatusBadge'
+import SectionHeader from '@/components/ui/SectionHeader'
+import EmptyState from '@/components/ui/EmptyState'
 
 export default function TenantBillsPage() {
   const { profile } = useAuth()
   const [bills, setBills] = useState<MonthlyBill[]>([])
+  const [expandedBill, setExpandedBill] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,52 +36,80 @@ export default function TenantBillsPage() {
 
   const formatMonth = (m: string) => {
     const [year, month] = m.split('-')
-    const months = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis']
+    const months = ['JANUARI', 'FEBRUARI', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DISEMBER']
     return `${months[parseInt(month) - 1]} ${year}`
   }
+
+  // Group by month
+  const grouped = bills.reduce<Record<string, MonthlyBill[]>>((acc, bill) => {
+    if (!acc[bill.month]) acc[bill.month] = []
+    acc[bill.month].push(bill)
+    return acc
+  }, {})
 
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-gray-900">Bil Saya</h1>
 
       {bills.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <Receipt className="mx-auto text-gray-300 mb-3" size={40} />
-          <p className="text-gray-500">Tiada sejarah bil.</p>
-        </div>
+        <EmptyState icon={Receipt} title="Tiada sejarah bil" />
       ) : (
-        <div className="space-y-3">
-          {bills.map((bill) => (
-            <div key={bill.id} className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium text-gray-900">{formatMonth(bill.month)}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  bill.status === 'paid' ? 'bg-success-50 text-green-700' :
-                  bill.status === 'overdue' ? 'bg-danger-50 text-red-700' :
-                  bill.status === 'partial' ? 'bg-warning-50 text-amber-700' :
-                  'bg-gray-100 text-gray-600'
-                }`}>
-                  {bill.status === 'paid' ? 'Dibayar' :
-                   bill.status === 'overdue' ? 'Tertunggak' :
-                   bill.status === 'partial' ? 'Separa' : 'Belum bayar'}
-                </span>
-              </div>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Sewa</span><span>RM{bill.rent_amount}</span></div>
-                {bill.utility_breakdown?.map((u, i) => (
-                  u.amount > 0 && (
-                    <div key={i} className="flex justify-between">
-                      <span className="text-gray-500">{u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}</span>
-                      <span>RM{u.amount}</span>
-                    </div>
-                  )
-                ))}
-                <hr className="border-gray-100" />
-                <div className="flex justify-between font-bold"><span>Jumlah</span><span>RM{bill.total_due}</span></div>
-                {bill.total_paid > 0 && bill.status !== 'paid' && (
-                  <div className="flex justify-between text-danger-500"><span>Baki</span><span>RM{bill.total_due - bill.total_paid}</span></div>
-                )}
-              </div>
+        <div className="space-y-5">
+          {Object.entries(grouped).map(([month, monthBills]) => (
+            <div key={month}>
+              <SectionHeader title={formatMonth(month)} />
+              <Card variant="elevated" padding="p-0">
+                <div className="divide-y divide-gray-100">
+                  {monthBills.map((bill) => {
+                    const isExpanded = expandedBill === bill.id
+                    const hasBalance = bill.total_paid > 0 && bill.status !== 'paid'
+                    return (
+                      <div key={bill.id}>
+                        <button
+                          onClick={() => setExpandedBill(isExpanded ? null : bill.id)}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 text-sm">Sewa + Utiliti</p>
+                            {hasBalance && (
+                              <p className="text-xs text-danger-500">Baki: RM{bill.total_due - bill.total_paid}</p>
+                            )}
+                          </div>
+                          <span className="font-bold text-gray-900 text-sm shrink-0">RM{bill.total_due}</span>
+                          <StatusBadge status={bill.status as 'paid' | 'overdue' | 'partial' | 'pending'} />
+                          {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                        </button>
+
+                        {isExpanded && (
+                          <div className="px-4 pb-3 space-y-1.5">
+                            <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Sewa</span>
+                                <span>RM{bill.rent_amount}</span>
+                              </div>
+                              {bill.utility_breakdown?.map((u, i) => (
+                                u.amount > 0 && (
+                                  <div key={i} className="flex justify-between">
+                                    <span className="text-gray-500">
+                                      {u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}
+                                    </span>
+                                    <span>RM{u.amount}</span>
+                                  </div>
+                                )
+                              ))}
+                              <hr className="border-gray-200" />
+                              <div className="flex justify-between font-bold">
+                                <span>Jumlah</span>
+                                <span>RM{bill.total_due}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
             </div>
           ))}
         </div>
