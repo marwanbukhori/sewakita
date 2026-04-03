@@ -77,7 +77,10 @@ function AppRoutes() {
         <Route path="/properties/:id" element={<PropertyDetailPage />} />
         <Route path="/tenants" element={<TenantsPage />} />
         <Route path="/tenants/new" element={<TenantFormPage />} />
-        <Route path="/billing" element={<BillingPage />} />
+        {/* Unified bil route — temporary alias to BillingPage until Phase 2 merge */}
+        <Route path="/bil" element={<BillingPage />} />
+        {/* Legacy routes — redirect to new paths */}
+        <Route path="/billing" element={<Navigate to="/bil" replace />} />
         <Route path="/payments" element={<PaymentsPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/faq" element={<FAQPage />} />

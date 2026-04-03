@@ -61,29 +61,23 @@ export default function AppShell() {
   }
 
   const landlordNav: NavItem[] = [
-    { to: '/dashboard', label: 'Dashboard', icon: Home },
+    { to: '/dashboard', label: 'Utama', icon: Home },
     { to: '/properties', label: 'Hartanah', icon: Building2 },
-    { to: '/billing', label: 'Bil', icon: Receipt, badge: overdueCount },
-    { to: '/payments', label: 'Bayaran', icon: CreditCard },
+    { to: '/bil', label: 'Bil', icon: Receipt, badge: overdueCount },
+    { to: '/account', label: 'Akaun', icon: CircleUser },
   ]
 
   const tenantNav: NavItem[] = [
-    { to: '/tenant/dashboard', label: 'Dashboard', icon: Home },
-    { to: '/tenant/bills', label: 'Bil Saya', icon: Receipt },
-    { to: '/tenant/payments', label: 'Bayaran', icon: CreditCard },
+    { to: '/tenant/dashboard', label: 'Utama', icon: Home },
+    { to: '/tenant/bills', label: 'Bil', icon: Receipt },
+    { to: '/account', label: 'Akaun', icon: CircleUser },
   ]
 
-  const landlordSidebarNav: NavItem[] = [
-    ...landlordNav,
-    { to: '/account', label: 'Akaun', icon: CircleUser },
-  ]
-  const tenantSidebarNav: NavItem[] = [
-    ...tenantNav,
-    { to: '/account', label: 'Akaun', icon: CircleUser },
-  ]
+  // Sidebar same as bottom nav for both roles
+  const sidebarNavItems = role === 'tenant' ? tenantNav : landlordNav
 
   const nav = role === 'tenant' ? tenantNav : landlordNav
-  const sidebarNav = role === 'tenant' ? tenantSidebarNav : landlordSidebarNav
+  const sidebarNav = sidebarNavItems
 
   return (
     <div className="min-h-screen bg-[#F7FAFC]">
@@ -126,11 +120,6 @@ export default function AppShell() {
 
             {/* Menu items */}
             <div className="py-2">
-              <Link to="/account" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50">
-                <CircleUser size={18} className="text-gray-500" />
-                <span className="flex-1 text-sm text-gray-800">Akaun Saya</span>
-                <ChevronRight size={16} className="text-gray-300" />
-              </Link>
               <Link to="/faq" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50">
                 <HelpCircle size={18} className="text-gray-500" />
                 <span className="flex-1 text-sm text-gray-800">Soalan Lazim</span>
