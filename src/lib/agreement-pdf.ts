@@ -1,0 +1,148 @@
+import { jsPDF } from 'jspdf'
+import type { RentAgreement, Property, Room } from '@/types/database'
+
+export function generateAgreementPDF(
+  agreement: RentAgreement,
+  property: Property,
+  room: Room
+) {
+  const doc = new jsPDF()
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const margin = 20
+  const contentWidth = pageWidth - margin * 2
+  let y = 20
+
+  function addLine(text: string, fontSize = 10, bold = false, align: 'left' | 'center' = 'left') {
+    doc.setFontSize(fontSize)
+    doc.setFont('helvetica', bold ? 'bold' : 'normal')
+    const lines = doc.splitTextToSize(text, contentWidth)
+    if (align === 'center') {
+      lines.forEach((line: string) => {
+        const textWidth = doc.getStringUnitWidth(line) * fontSize / doc.internal.scaleFactor
+        doc.text(line, (pageWidth - textWidth) / 2, y)
+        y += fontSize * 0.5
+      })
+    } else {
+      doc.text(lines, margin, y)
+      y += lines.length * fontSize * 0.5
+    }
+    y += 2
+  }
+
+  function checkPage() {
+    if (y > 270) {
+      doc.addPage()
+      y = 20
+    }
+  }
+
+  // Title
+  addLine('SURAT PERJANJIAN SEWA', 16, true, 'center')
+  addLine('TENANCY AGREEMENT', 12, false, 'center')
+  y += 8
+
+  // Date
+  addLine(`Date / Tarikh: ${new Date(agreement.created_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' })}`)
+  y += 4
+
+  // Parties
+  addLine('BETWEEN / ANTARA:', 11, true)
+  addLine(`Landlord / Tuan Rumah: ${agreement.landlord_name}`)
+  if (agreement.landlord_ic) addLine(`IC No: ${agreement.landlord_ic}`)
+  addLine(`Phone / Telefon: ${agreement.landlord_phone}`)
+  if (agreement.landlord_address) addLine(`Address / Alamat: ${agreement.landlord_address}`)
+  y += 2
+  addLine('AND / DAN:', 11, true)
+  if (agreement.tenant_name) {
+    addLine(`Tenant / Penyewa: ${agreement.tenant_name}`)
+    if (agreement.tenant_ic) addLine(`IC No: ${agreement.tenant_ic}`)
+    if (agreement.tenant_phone) addLine(`Phone / Telefon: ${agreement.tenant_phone}`)
+  } else {
+    addLine('Tenant / Penyewa: [To be filled / Akan diisi]')
+  }
+  y += 6
+
+  // Property Details
+  checkPage()
+  addLine('1. PROPERTY DETAILS / BUTIRAN HARTANAH', 11, true)
+  addLine(`Property / Hartanah: ${property.name}`)
+  addLine(`Address / Alamat: ${property.address}`)
+  addLine(`Unit / Bilik: ${room.label}`)
+  y += 4
+
+  // Tenancy Terms
+  checkPage()
+  addLine('2. TENANCY TERMS / TERMA PENYEWAAN', 11, true)
+  addLine(`Start Date / Tarikh Mula: ${agreement.start_date}`)
+  addLine(`End Date / Tarikh Tamat: ${agreement.end_date || 'Month-to-month / Bulanan'}`)
+  addLine(`Monthly Rent / Sewa Bulanan: RM ${agreement.rent_amount}`)
+  addLine(`Security Deposit / Deposit: RM ${agreement.deposit_amount}`)
+  addLine(`Payment Due Day / Hari Bayaran: Day ${agreement.payment_due_day} of each month`)
+  addLine(`Notice Period / Tempoh Notis: ${agreement.notice_period_days} days / hari`)
+  y += 4
+
+  // Utilities
+  checkPage()
+  addLine('3. UTILITIES / UTILITI', 11, true)
+  if (agreement.utilities_included && agreement.utilities_included.length > 0) {
+    const utilLabels: Record<string, string> = { electric: 'Electricity / Elektrik (TNB)', water: 'Water / Air (SYABAS)', internet: 'Internet' }
+    agreement.utilities_included.forEach(u => {
+      addLine(`${utilLabels[u.type] || u.type}: ${u.included ? 'Included in rent / Termasuk' : 'Tenant pays / Penyewa bayar'}`)
+    })
+  }
+  y += 4
+
+  // Rules
+  checkPage()
+  if (agreement.rules && agreement.rules.length > 0) {
+    addLine('4. HOUSE RULES / PERATURAN RUMAH', 11, true)
+    agreement.rules.forEach((r, i) => {
+      checkPage()
+      addLine(`${i + 1}. ${r.rule}`)
+    })
+    y += 4
+  }
+
+  // Additional Terms
+  checkPage()
+  if (agreement.additional_terms) {
+    addLine('5. ADDITIONAL TERMS / TERMA TAMBAHAN', 11, true)
+    addLine(agreement.additional_terms)
+    y += 4
+  }
+
+  // Signatures
+  checkPage()
+  y += 10
+  addLine('SIGNATURES / TANDATANGAN', 11, true)
+  y += 10
+
+  const sigY = y
+  // Landlord signature
+  doc.setFontSize(10)
+  doc.text('____________________________', margin, sigY)
+  doc.text(agreement.landlord_name, margin, sigY + 6)
+  doc.text('Landlord / Tuan Rumah', margin, sigY + 12)
+  if (agreement.landlord_signed_at) {
+    doc.setFontSize(8)
+    doc.text(`Signed: ${new Date(agreement.landlord_signed_at).toLocaleDateString('en-MY')}`, margin, sigY + 18)
+  }
+
+  // Tenant signature
+  const rightX = pageWidth / 2 + 10
+  doc.setFontSize(10)
+  doc.text('____________________________', rightX, sigY)
+  doc.text(agreement.tenant_name || '[Tenant Name]', rightX, sigY + 6)
+  doc.text('Tenant / Penyewa', rightX, sigY + 12)
+  if (agreement.tenant_signed_at) {
+    doc.setFontSize(8)
+    doc.text(`Signed: ${new Date(agreement.tenant_signed_at).toLocaleDateString('en-MY')}`, rightX, sigY + 18)
+  }
+
+  // Footer
+  doc.setFontSize(7)
+  doc.setTextColor(150)
+  doc.text('Generated by SewaKita', margin, 285)
+
+  return doc
+}

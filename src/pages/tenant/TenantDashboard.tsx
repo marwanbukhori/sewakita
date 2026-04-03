@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt, CreditCard, Home, Calendar, AlertTriangle } from 'lucide-react'
-import type { MonthlyBill, Tenancy, Room, Property, Payment } from '@/types/database'
+import { Receipt, CreditCard, Home, Calendar, AlertTriangle, FileText } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import type { MonthlyBill, Tenancy, Room, Property, Payment, RentAgreement } from '@/types/database'
 import { format } from 'date-fns'
 import Card from '@/components/ui/Card'
 import StatusBadge from '@/components/ui/StatusBadge'
@@ -15,6 +16,7 @@ export default function TenantDashboard() {
   const [recentPayments, setRecentPayments] = useState<Payment[]>([])
   const [totalOutstanding, setTotalOutstanding] = useState(0)
   const [overdueMonths, setOverdueMonths] = useState(0)
+  const [agreementId, setAgreementId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,6 +33,19 @@ export default function TenantDashboard() {
       .single()
 
     setTenancy(tenancyData)
+
+    // Load agreement
+    if (tenancyData) {
+      const { data: agr } = await supabase
+        .from('rent_agreements')
+        .select('id')
+        .eq('tenant_id', profile!.id)
+        .eq('room_id', tenancyData.room_id)
+        .eq('status', 'signed')
+        .limit(1)
+        .single()
+      if (agr) setAgreementId(agr.id)
+    }
 
     const currentMonth = new Date().toISOString().slice(0, 7)
     const { data: billData } = await supabase
@@ -159,6 +174,11 @@ export default function TenantDashboard() {
           <div className="flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100 pt-3">
             <span>Deposit: RM{tenancy.deposit}</span>
             <span className="flex items-center gap-1"><Calendar size={12} /> {format(new Date(tenancy.move_in), 'dd MMM yyyy')}</span>
+            {agreementId && (
+              <Link to={`/agreements/${agreementId}`} className="flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium">
+                <FileText size={12} /> Perjanjian
+              </Link>
+            )}
           </div>
         </Card>
       )}

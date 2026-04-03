@@ -113,6 +113,46 @@ export interface Payment {
   created_at: string
 }
 
+export interface RentAgreement {
+  id: string
+  property_id: string
+  room_id: string
+  landlord_id: string
+  tenant_id: string | null
+  tenancy_id: string | null
+  start_date: string
+  end_date: string | null
+  rent_amount: number
+  deposit_amount: number
+  payment_due_day: number
+  notice_period_days: number
+  utilities_included: UtilityIncluded[]
+  rules: AgreementRule[]
+  additional_terms: string | null
+  landlord_name: string
+  landlord_ic: string | null
+  landlord_phone: string
+  landlord_address: string | null
+  tenant_name: string | null
+  tenant_ic: string | null
+  tenant_phone: string | null
+  landlord_signed_at: string | null
+  tenant_signed_at: string | null
+  status: 'draft' | 'sent' | 'signed' | 'expired' | 'terminated'
+  created_at: string
+  updated_at: string
+}
+
+export interface UtilityIncluded {
+  type: UtilityType
+  included: boolean
+  note?: string
+}
+
+export interface AgreementRule {
+  rule: string
+}
+
 export interface Invite {
   id: string
   property_id: string

@@ -3,13 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import toast from 'react-hot-toast'
-import { Building2, Home, Calendar, Mail, AlertTriangle, Check } from 'lucide-react'
-import type { Invite, Property, Room } from '@/types/database'
+import { Building2, Home, Calendar, Mail, AlertTriangle, Check, FileText, Zap, Droplets, Wifi } from 'lucide-react'
+import type { Invite, Property, Room, RentAgreement } from '@/types/database'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Card from '@/components/ui/Card'
 
-type InviteWithDetails = Invite & { property: Property; room: Room }
+type InviteWithDetails = Invite & { property: Property; room: Room; agreement_id?: string | null }
 
 export default function AcceptInvitePage() {
   const { token } = useParams<{ token: string }>()
@@ -24,6 +24,10 @@ export default function AcceptInvitePage() {
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
+
+  // Agreement state
+  const [agreement, setAgreement] = useState<RentAgreement | null>(null)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   // Profile form state
   const [profileForm, setProfileForm] = useState({
@@ -73,6 +77,17 @@ export default function AcceptInvitePage() {
 
     setInvite(inv)
     if (inv.email) setEmail(inv.email)
+
+    // Load agreement if linked
+    if (inv.agreement_id) {
+      const { data: agreementData } = await supabase
+        .from('rent_agreements')
+        .select('*')
+        .eq('id', inv.agreement_id)
+        .single()
+      if (agreementData) setAgreement(agreementData)
+    }
+
     setLoading(false)
   }
 
@@ -192,11 +207,21 @@ export default function AcceptInvitePage() {
       return
     }
 
-    // Update room and invite
-    await Promise.all([
-      supabase.from('rooms').update({ status: 'occupied' }).eq('id', invite.room_id),
-      supabase.from('invites').update({ status: 'accepted' }).eq('id', invite.id),
-    ])
+    // Update room, invite, and agreement
+    await supabase.from('rooms').update({ status: 'occupied' }).eq('id', invite.room_id)
+    await supabase.from('invites').update({ status: 'accepted' }).eq('id', invite.id)
+
+    // Sign agreement if exists
+    if (agreement) {
+      await supabase.from('rent_agreements').update({
+        tenant_id: newProfile.id,
+        tenant_name: profileForm.name,
+        tenant_ic: profileForm.ic_number || null,
+        tenant_phone: profileForm.phone,
+        tenant_signed_at: new Date().toISOString(),
+        status: 'signed',
+      }).eq('id', agreement.id)
+    }
 
     setSaving(false)
     toast.success('Selamat datang ke SewaKita!')
@@ -361,8 +386,47 @@ export default function AcceptInvitePage() {
               <Input label="Nombor kecemasan (pilihan)" type="text" value={profileForm.emergency_contact}
                 onChange={(e) => setProfileForm({ ...profileForm, emergency_contact: e.target.value })} placeholder="012-3456789" />
 
-              <Button type="submit" size="lg" loading={saving} fullWidth>
-                Terima & Mula
+              {/* Agreement terms (if linked) */}
+              {agreement && (
+                <div className="space-y-3 border-t border-gray-100 pt-4">
+                  <p className="text-sm font-semibold text-gray-800">Perjanjian Sewa</p>
+
+                  <div className="bg-gray-50 rounded-xl p-3 space-y-2 text-xs text-gray-600 max-h-48 overflow-y-auto">
+                    <p><strong>Sewa:</strong> RM{agreement.rent_amount}/bulan</p>
+                    <p><strong>Deposit:</strong> RM{agreement.deposit_amount}</p>
+                    <p><strong>Hari Bayaran:</strong> Hari {agreement.payment_due_day}</p>
+                    <p><strong>Tempoh Notis:</strong> {agreement.notice_period_days} hari</p>
+
+                    {agreement.rules && agreement.rules.length > 0 && (
+                      <div>
+                        <p className="font-semibold mt-2">Peraturan:</p>
+                        <ol className="list-decimal list-inside space-y-0.5">
+                          {agreement.rules.map((r, i) => <li key={i}>{r.rule}</li>)}
+                        </ol>
+                      </div>
+                    )}
+
+                    {agreement.additional_terms && (
+                      <div>
+                        <p className="font-semibold mt-2">Terma Tambahan:</p>
+                        <p>{agreement.additional_terms}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                    <span className="text-xs text-gray-600">
+                      Saya telah membaca dan bersetuju dengan terma perjanjian sewa di atas.
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              <Button type="submit" size="lg" loading={saving} fullWidth
+                disabled={agreement ? !agreedToTerms : false}>
+                {agreement ? 'Setuju & Terima' : 'Terima & Mula'}
               </Button>
             </form>
           </div>

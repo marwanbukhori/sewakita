@@ -15,6 +15,8 @@ import MoveOutPage from '@/pages/landlord/MoveOutPage'
 import TenantsPage from '@/pages/landlord/TenantsPage'
 import TenantFormPage from '@/pages/landlord/TenantFormPage'
 import BilPage from '@/pages/landlord/BilPage'
+import AgreementFormPage from '@/pages/landlord/AgreementFormPage'
+import AgreementViewPage from '@/pages/landlord/AgreementViewPage'
 
 import TenantDashboard from '@/pages/tenant/TenantDashboard'
 import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
@@ -71,6 +73,7 @@ function AppRoutes() {
           <Route path="/tenant/dashboard" element={<TenantDashboard />} />
           <Route path="/tenant/bills" element={<TenantBillsPage />} />
           <Route path="/tenant/payments" element={<TenantPaymentsPage />} />
+          <Route path="/agreements/:id" element={<AgreementViewPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/faq" element={<FAQPage />} />
         </Route>
@@ -90,6 +93,8 @@ function AppRoutes() {
         <Route path="/properties/:propertyId/rooms/:roomId/move-out" element={<MoveOutPage />} />
         <Route path="/tenants" element={<TenantsPage />} />
         <Route path="/tenants/new" element={<TenantFormPage />} />
+        <Route path="/agreements/new" element={<AgreementFormPage />} />
+        <Route path="/agreements/:id" element={<AgreementViewPage />} />
         <Route path="/bil" element={<BilPage />} />
         {/* Legacy route redirects */}
         <Route path="/billing" element={<Navigate to="/bil" replace />} />
