@@ -25,10 +25,12 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin h-10 w-10 border-4 border-primary-600 border-t-transparent rounded-full mx-auto" />
-          <p className="text-sm text-gray-500 mt-3">Memuatkan...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#F7FAFC]">
+        <div className="text-center animate-in">
+          <div className="w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-md">
+            <span className="text-white text-xl font-bold">S</span>
+          </div>
+          <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full mx-auto mt-4" />
         </div>
       </div>
     )
@@ -87,7 +89,21 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
-        <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              fontFamily: 'Inter, system-ui, sans-serif',
+              fontSize: '14px',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              boxShadow: '0 8px 28px rgba(0,0,0,0.1)',
+            },
+            success: { style: { background: '#f0fdf4', color: '#15803d' } },
+            error: { style: { background: '#fef2f2', color: '#b91c1c' } },
+          }}
+        />
       </AuthProvider>
     </BrowserRouter>
   )

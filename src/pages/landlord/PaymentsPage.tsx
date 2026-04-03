@@ -148,16 +148,16 @@ export default function PaymentsPage() {
       {/* Filters */}
       <div className="flex items-center gap-2">
         <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" />
-        <div className="flex gap-1 flex-1 overflow-x-auto">
+          className="h-10 px-3 border border-gray-200 rounded-lg text-base bg-white" />
+        <div className="flex gap-1.5 flex-1 overflow-x-auto scrollbar-none">
           {filterOptions.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setStatusFilter(opt.value)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`px-3.5 h-10 rounded-full text-xs font-semibold whitespace-nowrap active:scale-95 ${
                 statusFilter === opt.value
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'bg-white text-gray-600 shadow-card hover:bg-gray-50'
               }`}
             >
               {opt.label}
@@ -230,7 +230,8 @@ export default function PaymentsPage() {
           onClick={() => {
             unpaidBills.forEach(bill => handleWhatsApp(bill, bill.status === 'overdue' ? 'reminder' : 'bill'))
           }}
-          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 bg-green-600 text-white px-4 py-3 rounded-full shadow-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm font-medium z-40"
+          className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 bg-green-600 text-white px-5 py-3.5 rounded-full shadow-xl hover:bg-green-700 hover:scale-105 active:scale-95 flex items-center gap-2 text-sm font-semibold z-40 animate-in"
+          style={{ animationDelay: '300ms' }}
         >
           <MessageCircle size={18} />
           Hantar Semua Bil

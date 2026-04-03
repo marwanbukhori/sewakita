@@ -22,7 +22,7 @@ export default function QuickActions({ actions }: QuickActionsProps) {
           to={action.to}
           className="flex flex-col items-center gap-1.5 py-2 group"
         >
-          <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-transform group-hover:scale-105 ${action.color || 'bg-primary-50 text-primary-600'}`}>
+          <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-150 group-hover:scale-105 group-hover:shadow-sm group-active:scale-90 ${action.color || 'bg-primary-50 text-primary-600'}`}>
             <action.icon size={22} />
             {action.badge !== undefined && action.badge > 0 && (
               <span className="absolute -top-1 -right-1 bg-danger-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
