@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2, Phone, Mail, Calendar, LogOut as LogOutIcon, History, Link as LinkIcon, Clock, XCircle } from 'lucide-react'
+import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2, Phone, Mail, Calendar, LogOut as LogOutIcon, History, Link as LinkIcon, Clock, XCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { format } from 'date-fns'
 import type { Property, Room, Tenancy, Profile, Invite } from '@/types/database'
 import toast from 'react-hot-toast'
@@ -30,6 +30,7 @@ export default function PropertyDetailPage() {
   const [newRoom, setNewRoom] = useState({ label: '', rent_amount: '' })
   const [saving, setSaving] = useState(false)
   const [pendingInvites, setPendingInvites] = useState<Invite[]>([])
+  const [expandedPastTenants, setExpandedPastTenants] = useState<string | null>(null)
 
   // Edit property state
   const [editingProperty, setEditingProperty] = useState(false)
@@ -273,11 +274,22 @@ export default function PropertyDetailPage() {
                 {pastTenancies.length > 0 && (
                   <div className="mt-2">
                     <button
-                      onClick={() => {/* toggle could be added */ }}
+                      onClick={() => setExpandedPastTenants(expandedPastTenants === room.id ? null : room.id)}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
                     >
                       <History size={10} /> {t('properties.past_tenants', { count: pastTenancies.length })}
+                      {expandedPastTenants === room.id ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
                     </button>
+                    {expandedPastTenants === room.id && (
+                      <div className="mt-2 space-y-1.5 animate-in">
+                        {pastTenancies.map(pt => (
+                          <div key={pt.id} className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2 flex items-center justify-between">
+                            <span>{pt.tenant?.name || 'Unknown'}</span>
+                            <span>{pt.move_in} → {pt.move_out || '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </Card>
