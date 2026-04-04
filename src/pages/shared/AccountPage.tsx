@@ -21,7 +21,7 @@ export default function AccountPage() {
     {
       title: t('account.title'),
       items: [
-        { icon: User, label: t('account.personal_info'), to: '#' },
+        { icon: User, label: t('account.personal_info'), to: '/account/edit' },
         ...(role === 'landlord' ? [{ icon: Building2, label: t('account.my_properties'), to: '/properties' }] : []),
       ],
     },
@@ -35,7 +35,7 @@ export default function AccountPage() {
     {
       title: t('account.security'),
       items: [
-        { icon: Shield, label: t('account.change_password'), to: '#' },
+        { icon: Shield, label: t('account.change_password'), to: '/account/password' },
       ],
     },
   ]
