@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import toast from 'react-hot-toast'
 import { Building2, Home, Calendar, Mail, AlertTriangle, Check, FileText, Zap, Droplets, Wifi } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { Invite, Property, Room, RentAgreement } from '@/types/database'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -15,6 +16,7 @@ export default function AcceptInvitePage() {
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
   const { user, profile, signInWithMagicLink, signInWithGoogle } = useAuth()
+  const { t } = useTranslation()
 
   const [invite, setInvite] = useState<InviteWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
@@ -386,47 +388,78 @@ export default function AcceptInvitePage() {
               <Input label="Nombor kecemasan (pilihan)" type="text" value={profileForm.emergency_contact}
                 onChange={(e) => setProfileForm({ ...profileForm, emergency_contact: e.target.value })} placeholder="012-3456789" />
 
-              {/* Agreement terms (if linked) */}
+              {/* Agreement — full display if linked */}
               {agreement && (
-                <div className="space-y-3 border-t border-gray-100 pt-4">
-                  <p className="text-sm font-semibold text-gray-800">Perjanjian Sewa</p>
+                <div className="space-y-4 border-t border-gray-100 pt-4">
+                  <p className="text-base font-bold text-gray-800">{t('invite.agreement_title')}</p>
 
-                  <div className="bg-gray-50 rounded-xl p-3 space-y-2 text-xs text-gray-600 max-h-48 overflow-y-auto">
-                    <p><strong>Sewa:</strong> RM{agreement.rent_amount}/bulan</p>
-                    <p><strong>Deposit:</strong> RM{agreement.deposit_amount}</p>
-                    <p><strong>Hari Bayaran:</strong> Hari {agreement.payment_due_day}</p>
-                    <p><strong>Tempoh Notis:</strong> {agreement.notice_period_days} hari</p>
-
-                    {agreement.rules && agreement.rules.length > 0 && (
-                      <div>
-                        <p className="font-semibold mt-2">Peraturan:</p>
-                        <ol className="list-decimal list-inside space-y-0.5">
-                          {agreement.rules.map((r, i) => <li key={i}>{r.rule}</li>)}
-                        </ol>
-                      </div>
-                    )}
-
-                    {agreement.additional_terms && (
-                      <div>
-                        <p className="font-semibold mt-2">Terma Tambahan:</p>
-                        <p>{agreement.additional_terms}</p>
-                      </div>
-                    )}
+                  {/* Terms grid */}
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="bg-gray-50 rounded-lg p-2.5">
+                      <p className="text-[10px] text-gray-500 uppercase">{t('agreement.rent')}</p>
+                      <p className="font-bold text-gray-800">RM{agreement.rent_amount}/mo</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2.5">
+                      <p className="text-[10px] text-gray-500 uppercase">{t('agreement.deposit')}</p>
+                      <p className="font-bold text-gray-800">RM{agreement.deposit_amount}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2.5">
+                      <p className="text-[10px] text-gray-500 uppercase">{t('agreement.payment_day')}</p>
+                      <p className="font-bold text-gray-800">Day {agreement.payment_due_day}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2.5">
+                      <p className="text-[10px] text-gray-500 uppercase">{t('agreement.notice_period')}</p>
+                      <p className="font-bold text-gray-800">{agreement.notice_period_days} days</p>
+                    </div>
                   </div>
 
-                  <label className="flex items-start gap-2 cursor-pointer">
+                  {/* Utilities */}
+                  {agreement.utilities_included && agreement.utilities_included.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-2">{t('agreement.utilities_section')}</p>
+                      <div className="space-y-1.5">
+                        {agreement.utilities_included.map(u => (
+                          <div key={u.type} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
+                            <span className="text-gray-700">{u.type === 'electric' ? 'Electricity' : u.type === 'water' ? 'Water' : 'Internet'}</span>
+                            <span className={`text-xs font-medium ${u.included ? 'text-green-600' : 'text-gray-500'}`}>
+                              {u.included ? t('agreement.included') : t('agreement.tenant_pays')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Rules */}
+                  {agreement.rules && agreement.rules.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-2">{t('agreement.house_rules')}</p>
+                      <ol className="space-y-1 list-decimal list-inside text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
+                        {agreement.rules.map((r, i) => <li key={i}>{r.rule}</li>)}
+                      </ol>
+                    </div>
+                  )}
+
+                  {/* Additional terms */}
+                  {agreement.additional_terms && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-2">{t('agreement.additional_terms')}</p>
+                      <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 whitespace-pre-wrap">{agreement.additional_terms}</p>
+                    </div>
+                  )}
+
+                  {/* Agree checkbox */}
+                  <label className="flex items-start gap-3 cursor-pointer bg-primary-50 rounded-xl p-3">
                     <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                    <span className="text-xs text-gray-600">
-                      Saya telah membaca dan bersetuju dengan terma perjanjian sewa di atas.
-                    </span>
+                      className="mt-0.5 w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                    <span className="text-sm text-gray-700 font-medium">{t('invite.agree_terms')}</span>
                   </label>
                 </div>
               )}
 
               <Button type="submit" size="lg" loading={saving} fullWidth
                 disabled={agreement ? !agreedToTerms : false}>
-                {agreement ? 'Setuju & Terima' : 'Terima & Mula'}
+                {agreement ? t('invite.agree_accept') : t('invite.accept_start')}
               </Button>
             </form>
           </div>
