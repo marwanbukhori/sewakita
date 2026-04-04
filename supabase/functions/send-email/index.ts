@@ -14,7 +14,7 @@ const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'SewaKita <noreply@sewakita.app
 
 interface EmailRequest {
   to: string
-  template: 'bill' | 'receipt' | 'overdue' | 'agreement' | 'welcome'
+  template: 'bill' | 'receipt' | 'overdue' | 'agreement' | 'welcome' | 'report'
   data: Record<string, any>
   language: 'en' | 'ms'
   tenant_id: string
@@ -119,6 +119,38 @@ const TEMPLATES: Record<string, Record<string, { subject: string; body: (data: a
         <p>Anda telah didaftarkan sebagai penyewa di <strong>${d.property_name}</strong> (${d.room_label}).</p>
         <p>Anda kini boleh melihat bil, menjejaki bayaran, dan mengurus penyewaan anda melalui SewaKita.</p>
         <p>— SewaKita</p>
+      `,
+    },
+  },
+  report: {
+    en: {
+      subject: '[SewaKita Report] {{category}}: {{subject}}',
+      body: (d) => `
+        <h2>User Report</h2>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;width:120px">From</td><td style="padding:8px;border-bottom:1px solid #eee">${d.user_name} (${d.user_email})</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Role</td><td style="padding:8px;border-bottom:1px solid #eee">${d.user_role}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Category</td><td style="padding:8px;border-bottom:1px solid #eee">${d.category}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Subject</td><td style="padding:8px;border-bottom:1px solid #eee">${d.subject}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Time</td><td style="padding:8px;border-bottom:1px solid #eee">${d.timestamp}</td></tr>
+        </table>
+        <h3>Description</h3>
+        <p style="white-space:pre-wrap;background:#f7f7f7;padding:16px;border-radius:8px">${d.description}</p>
+      `,
+    },
+    ms: {
+      subject: '[SewaKita Laporan] {{category}}: {{subject}}',
+      body: (d) => `
+        <h2>Laporan Pengguna</h2>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;width:120px">Dari</td><td style="padding:8px;border-bottom:1px solid #eee">${d.user_name} (${d.user_email})</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Peranan</td><td style="padding:8px;border-bottom:1px solid #eee">${d.user_role}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Kategori</td><td style="padding:8px;border-bottom:1px solid #eee">${d.category}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Subjek</td><td style="padding:8px;border-bottom:1px solid #eee">${d.subject}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold">Masa</td><td style="padding:8px;border-bottom:1px solid #eee">${d.timestamp}</td></tr>
+        </table>
+        <h3>Penerangan</h3>
+        <p style="white-space:pre-wrap;background:#f7f7f7;padding:16px;border-radius:8px">${d.description}</p>
       `,
     },
   },

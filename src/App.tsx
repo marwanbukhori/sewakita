@@ -25,6 +25,7 @@ import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
 import TenantPaymentsPage from '@/pages/tenant/TenantPaymentsPage'
 import PaymentSuccessPage from '@/pages/tenant/PaymentSuccessPage'
 import AccountPage from '@/pages/shared/AccountPage'
+import ReportPage from '@/pages/shared/ReportPage'
 import FAQPage from '@/pages/shared/FAQPage'
 import MonthlyReportPage from '@/pages/shared/MonthlyReportPage'
 import AnnualReportPage from '@/pages/shared/AnnualReportPage'
@@ -81,6 +82,7 @@ function AppRoutes() {
           <Route path="/tenant/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/agreements/:id" element={<AgreementViewPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/report" element={<ReportPage />} />
           <Route path="/faq" element={<FAQPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/tenant/dashboard" replace />} />
@@ -107,6 +109,7 @@ function AppRoutes() {
         <Route path="/billing" element={<Navigate to="/bil" replace />} />
         <Route path="/payments" element={<Navigate to="/bil" replace />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/report" element={<ReportPage />} />
         <Route path="/account/reports/monthly" element={<MonthlyReportPage />} />
         <Route path="/account/reports/annual" element={<AnnualReportPage />} />
         <Route path="/faq" element={<FAQPage />} />

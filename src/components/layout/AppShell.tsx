@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
-import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, FileText, Globe } from 'lucide-react'
+import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, FileText, Globe, Flag } from 'lucide-react'
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
@@ -88,6 +88,7 @@ export default function AppShell() {
       { icon: FileText, label: t('account.annual_report'), to: '/account/reports/annual' },
     ] : []),
     { icon: HelpCircle, label: t('menu.faq'), to: '/faq' },
+    { icon: Flag, label: t('report.title'), to: '/report' },
   ]
 
   return (
@@ -198,6 +199,9 @@ export default function AppShell() {
             <NavLink to="/faq" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
             }><HelpCircle size={20} /><span>{t('menu.faq')}</span></NavLink>
+            <NavLink to="/report" className={({ isActive }) =>
+              `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
+            }><Flag size={20} /><span>{t('report.title')}</span></NavLink>
 
             {/* Language toggle */}
             <div className="flex items-center justify-between px-3 h-11">
