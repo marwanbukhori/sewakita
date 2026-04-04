@@ -7,6 +7,8 @@ import LandingPage from '@/pages/public/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import OnboardingPage from '@/pages/auth/OnboardingPage'
 import AcceptInvitePage from '@/pages/auth/AcceptInvitePage'
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 
 import DashboardPage from '@/pages/landlord/DashboardPage'
 import PropertiesPage from '@/pages/landlord/PropertiesPage'
@@ -58,6 +60,8 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/invite/:token" element={<AcceptInvitePage />} />
         <Route path="*" element={<LandingPage />} />
       </Routes>

@@ -9,8 +9,10 @@ interface AuthState {
   profile: Profile | null
   role: UserRole | null
   loading: boolean
-  signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string) => Promise<{ error: Error | null }>
   signInWithGoogle: () => Promise<{ error: Error | null }>
+  resetPassword: (email: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
 }
 
@@ -55,10 +57,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false)
   }
 
-  async function signInWithMagicLink(email: string) {
-    const { error } = await supabase.auth.signInWithOtp({
+  async function signIn(email: string, password: string) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    return { error: error as Error | null }
+  }
+
+  async function signUp(email: string, password: string) {
+    const { error } = await supabase.auth.signUp({
       email,
+      password,
       options: { emailRedirectTo: window.location.origin },
+    })
+    return { error: error as Error | null }
+  }
+
+  async function resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
     })
     return { error: error as Error | null }
   }
@@ -91,8 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         role: profile?.role ?? null,
         loading,
-        signInWithMagicLink,
+        signIn,
+        signUp,
         signInWithGoogle,
+        resetPassword,
         signOut,
       }}
     >
