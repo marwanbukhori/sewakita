@@ -1,0 +1,25 @@
+-- Enable pg_net for HTTP calls from SQL
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+
+-- Note: pg_cron scheduling must be done via Supabase Dashboard > Database > Cron Jobs
+-- because pg_cron extension is managed by Supabase and requires superuser.
+--
+-- Schedule these two cron jobs in the dashboard:
+--
+-- 1. Auto-generate bills (daily at midnight MYT = 4pm UTC)
+--    Name: auto-generate-bills
+--    Schedule: 0 16 * * *
+--    Command: SELECT net.http_post(
+--      url := 'https://ijvzuuwihymlkbapauiy.supabase.co/functions/v1/auto-generate-bills',
+--      headers := '{"Authorization": "Bearer <service_role_key>"}'::jsonb,
+--      body := '{}'::jsonb
+--    );
+--
+-- 2. Overdue reminder (daily at 9am MYT = 1am UTC)
+--    Name: overdue-reminder
+--    Schedule: 0 1 * * *
+--    Command: SELECT net.http_post(
+--      url := 'https://ijvzuuwihymlkbapauiy.supabase.co/functions/v1/overdue-reminder',
+--      headers := '{"Authorization": "Bearer <service_role_key>"}'::jsonb,
+--      body := '{}'::jsonb
+--    );

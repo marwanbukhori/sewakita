@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
           .eq('id', bill.property_id)
           .single()
 
-        // Create activity log
+        // Create activity log + send receipt email
         if (property) {
           await supabase.from('activity_log').insert({
             landlord_id: property.landlord_id,
@@ -62,6 +62,45 @@ Deno.serve(async (req) => {
             detail: `${property.name} — Online payment via Billplz`,
             related_id: payment.id,
           })
+
+          // Send receipt email to tenant
+          const { data: tenant } = await supabase
+            .from('profiles').select('name, email').eq('id', bill.tenant_id).single()
+          const { data: room } = await supabase
+            .from('rooms').select('label').eq('id', bill.room_id).single()
+
+          if (tenant?.email) {
+            const { data: notifSettings } = await supabase
+              .from('notification_settings').select('email_enabled, on_payment_received')
+              .eq('property_id', bill.property_id).single()
+
+            if (!notifSettings || (notifSettings.email_enabled && notifSettings.on_payment_received)) {
+              try {
+                await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    to: tenant.email,
+                    template: 'receipt',
+                    language: 'en',
+                    tenant_id: bill.tenant_id,
+                    property_id: bill.property_id,
+                    data: {
+                      tenant_name: tenant.name,
+                      property_name: property.name,
+                      room_label: room?.label,
+                      month: bill.month,
+                      amount: payment.amount,
+                      status: newTotalPaid >= bill.total_due ? 'paid' : 'partial',
+                    },
+                  }),
+                })
+              } catch { /* don't block on email failure */ }
+            }
+          }
         }
       }
     } else {

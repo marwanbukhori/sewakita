@@ -124,7 +124,7 @@ Deno.serve(async (_req) => {
         if (!insertError) billsCreated++
       }
 
-      // Log generation
+      // Log generation + send email notifications
       if (billsCreated > 0) {
         await supabase.from('bill_generation_log').insert({
           property_id: property.id,
@@ -133,7 +133,6 @@ Deno.serve(async (_req) => {
           triggered_by: 'auto',
         })
 
-        // Create activity log
         await supabase.from('activity_log').insert({
           landlord_id: property.landlord_id,
           type: 'bill_generated',
@@ -141,6 +140,52 @@ Deno.serve(async (_req) => {
           detail: `${billsCreated} bill(s) for ${currentMonth}`,
           related_id: property.id,
         })
+
+        // Check notification settings and send emails
+        const { data: notifSettings } = await supabase
+          .from('notification_settings')
+          .select('*')
+          .eq('property_id', property.id)
+          .single()
+
+        if (notifSettings?.email_enabled && notifSettings?.on_bill_generated) {
+          // Get generated bills with tenant info
+          const { data: newBills } = await supabase
+            .from('monthly_bills')
+            .select('*, tenant:profiles!monthly_bills_tenant_id_fkey(name, email), room:rooms(label)')
+            .eq('property_id', property.id)
+            .eq('month', currentMonth)
+
+          for (const bill of (newBills || [])) {
+            if (!bill.tenant?.email) continue
+            try {
+              await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  to: bill.tenant.email,
+                  template: 'bill',
+                  language: 'en',
+                  tenant_id: bill.tenant_id,
+                  property_id: property.id,
+                  data: {
+                    tenant_name: bill.tenant.name,
+                    property_name: property.name,
+                    room_label: bill.room?.label,
+                    month: currentMonth,
+                    rent_amount: bill.rent_amount,
+                    utilities: bill.utility_breakdown,
+                    total_due: bill.total_due,
+                    payment_due_day: property.billing_date,
+                  },
+                }),
+              })
+            } catch { /* email failures shouldn't block billing */ }
+          }
+        }
       }
 
       totalBillsCreated += billsCreated
