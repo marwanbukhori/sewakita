@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt, CreditCard, Home, Calendar, AlertTriangle, FileText } from 'lucide-react'
+import { Receipt, CreditCard, Home, Calendar, AlertTriangle, FileText, MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { MonthlyBill, Tenancy, Room, Property, Payment, RentAgreement } from '@/types/database'
 import { format } from 'date-fns'
@@ -19,6 +19,7 @@ export default function TenantDashboard() {
   const [totalOutstanding, setTotalOutstanding] = useState(0)
   const [overdueMonths, setOverdueMonths] = useState(0)
   const [agreementId, setAgreementId] = useState<string | null>(null)
+  const [landlordPhone, setLandlordPhone] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,8 +37,14 @@ export default function TenantDashboard() {
 
     setTenancy(tenancyData)
 
-    // Load agreement
+    // Load landlord phone + agreement
     if (tenancyData) {
+      const { data: landlord } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('id', tenancyData.room.property.landlord_id)
+        .single()
+      if (landlord?.phone) setLandlordPhone(landlord.phone)
       const { data: agr } = await supabase
         .from('rent_agreements')
         .select('id')
@@ -183,6 +190,18 @@ export default function TenantDashboard() {
             )}
           </div>
         </Card>
+      )}
+
+      {/* Contact landlord */}
+      {landlordPhone && tenancy && (
+        <a
+          href={`https://wa.me/${landlordPhone.replace(/[^0-9]/g, '').replace(/^0/, '60')}?text=${encodeURIComponent(`Hi, I'm ${profile?.name} from ${tenancy.room.property.name} (${tenancy.room.label})`)}`}
+          target="_blank" rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-green-700 active:scale-95 transition-all"
+        >
+          <MessageCircle size={18} />
+          Contact Landlord
+        </a>
       )}
 
       {/* Recent payments */}
