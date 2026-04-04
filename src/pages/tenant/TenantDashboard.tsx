@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Receipt, CreditCard, Home, Calendar, AlertTriangle, FileText } from 'lucide-react'
@@ -10,6 +11,7 @@ import StatusBadge from '@/components/ui/StatusBadge'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
 
 export default function TenantDashboard() {
+  const { t } = useTranslation()
   const { profile } = useAuth()
   const [tenancy, setTenancy] = useState<(Tenancy & { room: Room & { property: Property } }) | null>(null)
   const [currentBill, setCurrentBill] = useState<MonthlyBill | null>(null)
@@ -88,7 +90,7 @@ export default function TenantDashboard() {
   return (
     <div className="space-y-4 animate-in">
       <div>
-        <p className="text-sm text-gray-500">Selamat datang,</p>
+        <p className="text-sm text-gray-500">{t('dashboard.welcome')}</p>
         <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
       </div>
 
@@ -99,9 +101,9 @@ export default function TenantDashboard() {
             <AlertTriangle size={20} className="text-amber-600 shrink-0" />
             <div>
               <p className="text-sm font-semibold text-amber-800">
-                Baki tertunggak: RM{totalOutstanding.toLocaleString()}
+                {t('dashboard.outstanding_balance')}: RM{totalOutstanding.toLocaleString()}
               </p>
-              <p className="text-xs text-amber-600">dari {overdueMonths} bulan</p>
+              <p className="text-xs text-amber-600">{t('dashboard.from_months', { count: overdueMonths })}</p>
             </div>
           </div>
         </Card>
@@ -116,13 +118,13 @@ export default function TenantDashboard() {
           {/* Breakdown nested card */}
           <div className="bg-white/15 rounded-xl p-3 space-y-1.5 mb-4">
             <div className="flex justify-between text-sm">
-              <span className="text-white/80">Sewa bilik</span>
+              <span className="text-white/80">{t('billing.room_rent')}</span>
               <span className="font-medium">RM{currentBill.rent_amount}</span>
             </div>
             {currentBill.utility_breakdown?.map((u, i) => (
               u.amount > 0 && (
                 <div key={i} className="flex justify-between text-sm">
-                  <span className="text-white/80">{u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}</span>
+                  <span className="text-white/80">{u.type === 'electric' ? t('billing.electricity') : u.type === 'water' ? t('billing.water') : t('billing.internet')}</span>
                   <span className="font-medium">RM{u.amount}</span>
                 </div>
               )
@@ -131,11 +133,11 @@ export default function TenantDashboard() {
               <>
                 <hr className="border-white/20" />
                 <div className="flex justify-between text-sm text-green-300">
-                  <span>Dibayar</span>
+                  <span>{t('billing.amount_paid')}</span>
                   <span>-RM{currentBill.total_paid}</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold">
-                  <span>Baki</span>
+                  <span>{t('billing.balance')}</span>
                   <span>RM{currentBill.total_due - currentBill.total_paid}</span>
                 </div>
               </>
@@ -145,9 +147,9 @@ export default function TenantDashboard() {
           <StatusBadge
             status={currentBill.status as 'paid' | 'overdue' | 'partial' | 'pending'}
             label={
-              currentBill.status === 'paid' ? 'Selesai Dibayar ✓' :
-              currentBill.status === 'overdue' ? 'Tertunggak' :
-              currentBill.status === 'partial' ? 'Bayaran Separa' : 'Belum Dibayar'
+              currentBill.status === 'paid' ? t('billing.paid_label') :
+              currentBill.status === 'overdue' ? t('billing.overdue_label') :
+              currentBill.status === 'partial' ? t('billing.partial_label') : t('billing.pending_label')
             }
             size="md"
           />
@@ -155,7 +157,7 @@ export default function TenantDashboard() {
       ) : (
         <Card variant="default" padding="p-6" className="text-center">
           <Receipt className="mx-auto text-gray-300 mb-2" size={32} />
-          <p className="text-sm text-gray-500">Tiada bil untuk bulan ini lagi.</p>
+          <p className="text-sm text-gray-500">{t('billing.no_bills')}</p>
         </Card>
       )}
 
@@ -176,7 +178,7 @@ export default function TenantDashboard() {
             <span className="flex items-center gap-1"><Calendar size={12} /> {format(new Date(tenancy.move_in), 'dd MMM yyyy')}</span>
             {agreementId && (
               <Link to={`/agreements/${agreementId}`} className="flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium">
-                <FileText size={12} /> Perjanjian
+                <FileText size={12} /> {t('agreement.view')}
               </Link>
             )}
           </div>
@@ -186,14 +188,14 @@ export default function TenantDashboard() {
       {/* Recent payments */}
       {recentPayments.length > 0 && (
         <div>
-          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Bayaran Terkini</h2>
+          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">{t('payments.history')}</h2>
           <Card variant="elevated" padding="p-0">
             <div className="divide-y divide-gray-100">
               {recentPayments.map((p) => (
                 <div key={p.id} className="flex items-center justify-between px-4 py-3">
                   <div>
                     <p className="text-sm text-gray-900">{format(new Date(p.date), 'dd MMM yyyy')}</p>
-                    <p className="text-xs text-gray-400">{p.method === 'bank_transfer' ? 'Pindahan Bank' : p.method === 'duitnow' ? 'DuitNow' : p.method === 'cash' ? 'Tunai' : 'Lain-lain'}</p>
+                    <p className="text-xs text-gray-400">{p.method === 'bank_transfer' ? t('billing.bank_transfer') : p.method === 'duitnow' ? t('billing.duitnow') : p.method === 'cash' ? t('billing.cash') : t('billing.other')}</p>
                   </div>
                   <span className="font-semibold text-green-600 text-sm">+RM{p.amount}</span>
                 </div>

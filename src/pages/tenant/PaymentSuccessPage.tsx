@@ -14,22 +14,22 @@ export default function PaymentSuccessPage() {
         <CheckCircle className="text-green-600" size={40} />
       </div>
 
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('payments.success_title')}</h1>
       <p className="text-sm text-gray-500 mb-8">
-        Your payment has been received. The landlord will be notified automatically.
+        {t('payments.success_desc')}
       </p>
 
       <Card variant="outlined" padding="p-4" className="mb-6 text-left">
-        <p className="text-xs text-gray-500 mb-1">What happens next:</p>
+        <p className="text-xs text-gray-500 mb-1">{t('payments.success_next')}</p>
         <ul className="text-sm text-gray-700 space-y-1">
-          <li>Your bill status will update to "Paid"</li>
-          <li>The landlord will receive a notification</li>
-          <li>A receipt will be available in your payment history</li>
+          <li>{t('payments.success_step1')}</li>
+          <li>{t('payments.success_step2')}</li>
+          <li>{t('payments.success_step3')}</li>
         </ul>
       </Card>
 
       <Button fullWidth size="lg" onClick={() => navigate('/tenant/dashboard')}>
-        Back to Dashboard
+        {t('payments.back_to_dashboard')}
       </Button>
     </div>
   )

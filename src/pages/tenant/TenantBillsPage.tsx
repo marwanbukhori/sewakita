@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Receipt, ChevronDown, ChevronUp, CreditCard } from 'lucide-react'
@@ -12,6 +13,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import { SkeletonList } from '@/components/ui/Skeleton'
 
 export default function TenantBillsPage() {
+  const { t } = useTranslation()
   const { profile } = useAuth()
   const [bills, setBills] = useState<MonthlyBill[]>([])
   const [expandedBill, setExpandedBill] = useState<string | null>(null)
@@ -73,7 +75,7 @@ export default function TenantBillsPage() {
 
   const formatMonth = (m: string) => {
     const [year, month] = m.split('-')
-    const months = ['JANUARI', 'FEBRUARI', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DISEMBER']
+    const months = t('payments.months', { returnObjects: true }) as string[]
     return `${months[parseInt(month) - 1]} ${year}`
   }
 
@@ -86,10 +88,10 @@ export default function TenantBillsPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      <h1 className="text-xl font-bold text-gray-800">Bil Saya</h1>
+      <h1 className="text-xl font-bold text-gray-800">{t('billing.title')}</h1>
 
       {bills.length === 0 ? (
-        <EmptyState icon={Receipt} title="Tiada sejarah bil" />
+        <EmptyState icon={Receipt} title={t('billing.no_history')} />
       ) : (
         <div className="space-y-5">
           {Object.entries(grouped).map(([month, monthBills]) => (
@@ -107,9 +109,9 @@ export default function TenantBillsPage() {
                           className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 text-sm">Sewa + Utiliti</p>
+                            <p className="font-medium text-gray-900 text-sm">{t('billing.rent_utilities')}</p>
                             {hasBalance && (
-                              <p className="text-xs text-danger-500">Baki: RM{bill.total_due - bill.total_paid}</p>
+                              <p className="text-xs text-danger-500">{t('billing.balance')}: RM{bill.total_due - bill.total_paid}</p>
                             )}
                           </div>
                           <span className="font-bold text-gray-900 text-sm shrink-0">RM{bill.total_due}</span>
@@ -121,14 +123,14 @@ export default function TenantBillsPage() {
                           <div className="px-4 pb-3 space-y-3">
                             <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 text-sm">
                               <div className="flex justify-between">
-                                <span className="text-gray-500">Sewa</span>
+                                <span className="text-gray-500">{t('billing.room_rent')}</span>
                                 <span>RM{bill.rent_amount}</span>
                               </div>
                               {bill.utility_breakdown?.map((u, i) => (
                                 u.amount > 0 && (
                                   <div key={i} className="flex justify-between">
                                     <span className="text-gray-500">
-                                      {u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}
+                                      {u.type === 'electric' ? t('billing.electricity') : u.type === 'water' ? t('billing.water') : t('billing.internet')}
                                     </span>
                                     <span>RM{u.amount}</span>
                                   </div>
@@ -136,7 +138,7 @@ export default function TenantBillsPage() {
                               ))}
                               <hr className="border-gray-200" />
                               <div className="flex justify-between font-bold">
-                                <span>Jumlah</span>
+                                <span>{t('billing.total')}</span>
                                 <span>RM{bill.total_due}</span>
                               </div>
                             </div>

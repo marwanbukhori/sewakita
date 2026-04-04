@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
@@ -13,6 +14,7 @@ import { format } from 'date-fns'
 export default function MoveOutPage() {
   const { propertyId, roomId } = useParams<{ propertyId: string; roomId: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [property, setProperty] = useState<Property | null>(null)
@@ -77,7 +79,7 @@ export default function MoveOutPage() {
     }).eq('id', tenancy.id)
 
     if (tenancyError) {
-      toast.error('Gagal mengemaskini penyewaan.')
+      toast.error(t('move_out.failed_update_tenancy'))
       setSaving(false)
       return
     }
@@ -88,20 +90,20 @@ export default function MoveOutPage() {
     }).eq('id', room.id)
 
     if (roomError) {
-      toast.error('Gagal mengemaskini status bilik.')
+      toast.error(t('move_out.failed_update_room'))
       setSaving(false)
       return
     }
 
     setSaving(false)
-    toast.success('Penyewa berjaya dipindahkan keluar!')
+    toast.success(t('move_out.success'))
     navigate(`/properties/${propertyId}`)
   }
 
   if (loading) return <SkeletonList count={2} />
 
   if (!property || !room || !tenancy) {
-    return <div className="text-center py-12 text-gray-500">Data tidak dijumpai.</div>
+    return <div className="text-center py-12 text-gray-500">{t('move_out.not_found')}</div>
   }
 
   const totalDeductions = deductions.reduce((sum, d) => sum + (d.amount || 0), 0)
@@ -110,11 +112,11 @@ export default function MoveOutPage() {
   return (
     <div className="max-w-lg mx-auto space-y-4 animate-in">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>
-        Kembali
+        {t('common.back')}
       </Button>
 
       <div>
-        <h1 className="text-xl font-bold text-gray-800">Pindah Keluar</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('move_out.title')}</h1>
         <p className="text-sm text-gray-500">{property.name} — {room.label}</p>
       </div>
 
@@ -126,18 +128,18 @@ export default function MoveOutPage() {
           </div>
           <div>
             <p className="font-semibold text-gray-800">{tenancy.tenant?.name}</p>
-            <p className="text-xs text-gray-500">Masuk: {format(new Date(tenancy.move_in), 'dd MMM yyyy')}</p>
+            <p className="text-xs text-gray-500">{t('move_out.move_in_label')}: {format(new Date(tenancy.move_in), 'dd MMM yyyy')}</p>
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm text-gray-600">
-          <span>Sewa: <strong>RM{tenancy.agreed_rent}/bln</strong></span>
-          <span>Deposit: <strong>RM{tenancy.deposit}</strong></span>
+          <span>{t('move_out.rent_label')}: <strong>RM{tenancy.agreed_rent}{t('move_out.per_month')}</strong></span>
+          <span>{t('move_out.deposit_label')}: <strong>RM{tenancy.deposit}</strong></span>
         </div>
       </Card>
 
       {/* Move-out date */}
       <Input
-        label="Tarikh pindah keluar"
+        label={t('move_out.date')}
         type="date"
         value={moveOutDate}
         onChange={(e) => setMoveOutDate(e.target.value)}
@@ -146,27 +148,27 @@ export default function MoveOutPage() {
       {/* Deposit deductions */}
       <Card variant="elevated" padding="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-gray-800">Potongan Deposit</h2>
+          <h2 className="text-sm font-bold text-gray-800">{t('move_out.deductions')}</h2>
           <Button variant="ghost" size="sm" icon={Plus} onClick={addDeduction}>
-            Tambah
+            {t('move_out.add_deduction')}
           </Button>
         </div>
 
         {deductions.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">Tiada potongan. Tekan "Tambah" jika ada kerosakan atau hutang.</p>
+          <p className="text-sm text-gray-400 text-center py-4">{t('move_out.no_deductions')}</p>
         ) : (
           <div className="space-y-3">
             {deductions.map((d, i) => (
               <div key={i} className="flex items-start gap-2">
                 <div className="flex-1 space-y-2">
                   <Input
-                    placeholder="Sebab (cth: Kerosakan pintu)"
+                    placeholder={t('move_out.deduction_reason')}
                     value={d.item}
                     onChange={(e) => updateDeduction(i, 'item', e.target.value)}
                   />
                   <Input
                     type="number"
-                    placeholder="Jumlah (RM)"
+                    placeholder={t('move_out.deduction_amount')}
                     value={d.amount || ''}
                     onChange={(e) => updateDeduction(i, 'amount', e.target.value)}
                   />
@@ -182,17 +184,17 @@ export default function MoveOutPage() {
         {/* Deposit calculation */}
         <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Deposit dibayar</span>
+            <span className="text-gray-500">{t('move_out.total_deposit')}</span>
             <span className="font-medium text-gray-800">RM{tenancy.deposit.toLocaleString()}</span>
           </div>
           {totalDeductions > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Jumlah potongan</span>
+              <span className="text-gray-500">{t('move_out.total_deductions')}</span>
               <span className="font-medium text-danger-500">-RM{totalDeductions.toLocaleString()}</span>
             </div>
           )}
           <div className="flex justify-between text-base font-bold pt-1">
-            <span className="text-gray-800">Pulangan deposit</span>
+            <span className="text-gray-800">{t('move_out.refund')}</span>
             <span className={refundAmount >= 0 ? 'text-green-600' : 'text-danger-500'}>
               RM{refundAmount.toLocaleString()}
             </span>
@@ -202,9 +204,9 @@ export default function MoveOutPage() {
 
       {/* Confirm */}
       <Button variant="danger" fullWidth size="lg" loading={saving} onClick={handleConfirmMoveOut}>
-        Sahkan Pindah Keluar
+        {t('move_out.confirm')}
       </Button>
-      <p className="text-xs text-gray-400 text-center">Tindakan ini tidak boleh dibatalkan. Status bilik akan bertukar kepada "Kosong".</p>
+      <p className="text-xs text-gray-400 text-center">{t('move_out.warning')}</p>
     </div>
   )
 }

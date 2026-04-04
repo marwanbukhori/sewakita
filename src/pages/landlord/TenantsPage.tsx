@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Users, Plus, Phone, Mail } from 'lucide-react'
@@ -16,6 +17,7 @@ interface TenantWithTenancy extends Profile {
 
 export default function TenantsPage() {
   const { profile } = useAuth()
+  const { t } = useTranslation()
   const [tenants, setTenants] = useState<TenantWithTenancy[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -44,14 +46,14 @@ export default function TenantsPage() {
   return (
     <div className="space-y-4 animate-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Penyewa</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('tenants.title')}</h1>
         <Link to="/tenants/new">
-          <Button size="sm" icon={Plus}>Tambah</Button>
+          <Button size="sm" icon={Plus}>{t('common.add')}</Button>
         </Link>
       </div>
 
       {tenants.length === 0 ? (
-        <EmptyState icon={Users} title="Tiada penyewa lagi" />
+        <EmptyState icon={Users} title={t('tenants.no_tenants')} />
       ) : (
         <div className="space-y-3">
           {tenants.map((tenant) => {
@@ -74,7 +76,7 @@ export default function TenantsPage() {
                       {activeTenancy ? (
                         <StatusBadge status="active" label={`${activeTenancy.room?.property?.name}`} />
                       ) : (
-                        <StatusBadge status="ended" label="Tidak aktif" />
+                        <StatusBadge status="ended" label={t('tenants.inactive')} />
                       )}
                     </div>
                   </div>

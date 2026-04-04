@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2, Phone, Mail, Calendar, LogOut as LogOutIcon, History, Link as LinkIcon, Clock, XCircle } from 'lucide-react'
@@ -21,6 +22,7 @@ interface RoomWithTenancy extends Room {
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [property, setProperty] = useState<Property | null>(null)
   const [rooms, setRooms] = useState<RoomWithTenancy[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,8 +70,8 @@ export default function PropertyDetailPage() {
 
   async function handleRevokeInvite(inviteId: string) {
     const { error } = await supabase.from('invites').update({ status: 'revoked' }).eq('id', inviteId)
-    if (error) { toast.error('Gagal membatalkan jemputan.'); return }
-    toast.success('Jemputan dibatalkan.')
+    if (error) { toast.error(t('properties.failed_revoke_invite')); return }
+    toast.success(t('properties.invite_revoked'))
     loadProperty()
   }
 
@@ -81,8 +83,8 @@ export default function PropertyDetailPage() {
       status: 'vacant', is_active: true,
     })
     setSaving(false)
-    if (error) { toast.error('Gagal menambah bilik.'); return }
-    toast.success('Bilik berjaya ditambah!')
+    if (error) { toast.error(t('properties.failed_add_room')); return }
+    toast.success(t('properties.room_added'))
     setNewRoom({ label: '', rent_amount: '' })
     setShowAddRoom(false)
     loadProperty()
@@ -101,8 +103,8 @@ export default function PropertyDetailPage() {
       name: editPropertyForm.name, address: editPropertyForm.address, billing_date: editPropertyForm.billing_date,
     }).eq('id', id!)
     setSaving(false)
-    if (error) { toast.error('Gagal mengemaskini hartanah.'); return }
-    toast.success('Hartanah dikemaskini!')
+    if (error) { toast.error(t('properties.failed_update_property')); return }
+    toast.success(t('properties.property_updated'))
     setEditingProperty(false)
     loadProperty()
   }
@@ -120,8 +122,8 @@ export default function PropertyDetailPage() {
       label: editRoomForm.label, rent_amount: Number(editRoomForm.rent_amount),
     }).eq('id', editingRoom.id)
     setSaving(false)
-    if (error) { toast.error('Gagal mengemaskini bilik.'); return }
-    toast.success('Bilik dikemaskini!')
+    if (error) { toast.error(t('properties.failed_update_room')); return }
+    toast.success(t('properties.room_updated'))
     setEditingRoom(null)
     loadProperty()
   }
@@ -129,14 +131,14 @@ export default function PropertyDetailPage() {
   async function handleDeactivateRoom() {
     if (!editingRoom) return
     if (editingRoom.status === 'occupied') {
-      toast.error('Tidak boleh nyahaktif bilik yang berisi.')
+      toast.error(t('properties.cannot_deactivate_occupied'))
       return
     }
     setSaving(true)
     const { error } = await supabase.from('rooms').update({ is_active: false }).eq('id', editingRoom.id)
     setSaving(false)
-    if (error) { toast.error('Gagal menyahaktif bilik.'); return }
-    toast.success('Bilik dinyahaktifkan.')
+    if (error) { toast.error(t('properties.failed_deactivate_room')); return }
+    toast.success(t('properties.room_deactivated'))
     setEditingRoom(null)
     loadProperty()
   }
@@ -144,20 +146,20 @@ export default function PropertyDetailPage() {
   if (loading) return <SkeletonList count={3} />
 
   if (!property) {
-    return <div className="text-center py-12 text-gray-500">Hartanah tidak dijumpai.</div>
+    return <div className="text-center py-12 text-gray-500">{t('properties.not_found')}</div>
   }
 
   return (
     <div className="space-y-4 animate-in">
       <Button variant="ghost" size="sm" onClick={() => navigate('/properties')} icon={ArrowLeft}>
-        Semua Hartanah
+        {t('properties.all_properties')}
       </Button>
 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{property.name}</h1>
           <p className="text-sm text-gray-500">{property.address}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Bil: hari {property.billing_date} setiap bulan</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t('properties.billing_day', { day: property.billing_date })}</p>
         </div>
         <Button variant="ghost" size="sm" icon={Pencil} onClick={openEditProperty}>
           Edit
@@ -165,9 +167,9 @@ export default function PropertyDetailPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Bilik ({rooms.length})</h2>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">{t('properties.rooms')} ({rooms.length})</h2>
         <Button variant="ghost" size="sm" icon={Plus} onClick={() => setShowAddRoom(true)}>
-          Tambah
+          {t('common.add')}
         </Button>
       </div>
 
@@ -177,21 +179,21 @@ export default function PropertyDetailPage() {
             <div className="grid grid-cols-2 gap-3">
               <Input type="text" required value={newRoom.label}
                 onChange={(e) => setNewRoom({ ...newRoom, label: e.target.value })}
-                placeholder="Label (cth: Bilik A)" />
+                placeholder={t('properties.room_label')} />
               <Input type="number" required value={newRoom.rent_amount}
                 onChange={(e) => setNewRoom({ ...newRoom, rent_amount: e.target.value })}
-                placeholder="Sewa (RM)" />
+                placeholder={t('properties.room_rent')} />
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddRoom(false)}>Batal</Button>
-              <Button type="submit" size="sm" loading={saving}>Simpan</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddRoom(false)}>{t('common.cancel')}</Button>
+              <Button type="submit" size="sm" loading={saving}>{t('common.save')}</Button>
             </div>
           </form>
         </Card>
       )}
 
       {rooms.length === 0 ? (
-        <EmptyState icon={Home} title="Tiada bilik lagi" description="Tambah bilik pertama." />
+        <EmptyState icon={Home} title={t('properties.no_rooms')} description={t('properties.add_first_room')} />
       ) : (
         <div className="grid gap-3">
           {rooms.map((room) => {
@@ -204,7 +206,7 @@ export default function PropertyDetailPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-gray-800">{room.label}</h3>
-                    <p className="text-sm text-gray-500">RM{room.rent_amount}/bulan</p>
+                    <p className="text-sm text-gray-500">RM{room.rent_amount}{t('common.per_month')}</p>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => openEditRoom(room)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100">
@@ -230,15 +232,15 @@ export default function PropertyDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1"><Calendar size={10} /> Masuk: {format(new Date(activeTenancy.move_in), 'dd MMM yyyy')}</span>
-                      <span>Deposit: RM{activeTenancy.deposit}</span>
+                      <span className="flex items-center gap-1"><Calendar size={10} /> {t('move_out.move_in_label')}: {format(new Date(activeTenancy.move_in), 'dd MMM yyyy')}</span>
+                      <span>{t('move_out.deposit_label')}: RM{activeTenancy.deposit}</span>
                     </div>
                     <div className="flex gap-2 mt-3">
                       <Link to={`/bil`}>
-                        <Button variant="ghost" size="sm">Lihat Bil</Button>
+                        <Button variant="ghost" size="sm">{t('properties.view_bills')}</Button>
                       </Link>
                       <Link to={`/properties/${property.id}/rooms/${room.id}/move-out`}>
-                        <Button variant="ghost" size="sm" icon={LogOutIcon} className="!text-danger-500">Pindah Keluar</Button>
+                        <Button variant="ghost" size="sm" icon={LogOutIcon} className="!text-danger-500">{t('properties.move_out')}</Button>
                       </Link>
                     </div>
                   </div>
@@ -251,8 +253,8 @@ export default function PropertyDetailPage() {
                       <div key={inv.id} className="flex items-center gap-2 bg-amber-50 rounded-lg p-2.5">
                         <Clock size={14} className="text-amber-600 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-amber-800">Jemputan menunggu</p>
-                          <p className="text-xs text-amber-600 truncate">{inv.email || 'Tiada email'} — tamat {format(new Date(inv.expires_at), 'dd MMM')}</p>
+                          <p className="text-xs font-medium text-amber-800">{t('properties.invite_pending')}</p>
+                          <p className="text-xs text-amber-600 truncate">{inv.email || t('properties.no_email')} — {t('properties.expires', { date: format(new Date(inv.expires_at), 'dd MMM') })}</p>
                         </div>
                         <button onClick={() => handleRevokeInvite(inv.id)} className="p-1 rounded-lg text-amber-500 hover:text-red-500 hover:bg-red-50">
                           <XCircle size={14} />
@@ -261,7 +263,7 @@ export default function PropertyDetailPage() {
                     ))}
                     <Link to={`/tenants/new?room_id=${room.id}&property_id=${property.id}`}>
                       <Button variant="ghost" size="sm" icon={UserPlus} fullWidth>
-                        Jemput Penyewa
+                        {t('properties.invite_tenant')}
                       </Button>
                     </Link>
                   </div>
@@ -274,7 +276,7 @@ export default function PropertyDetailPage() {
                       onClick={() => {/* toggle could be added */ }}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
                     >
-                      <History size={10} /> {pastTenancies.length} penyewa lepas
+                      <History size={10} /> {t('properties.past_tenants', { count: pastTenancies.length })}
                     </button>
                   </div>
                 )}
@@ -285,45 +287,45 @@ export default function PropertyDetailPage() {
       )}
 
       {/* Edit Property BottomSheet */}
-      <BottomSheet open={editingProperty} onClose={() => setEditingProperty(false)} title="Edit Hartanah">
+      <BottomSheet open={editingProperty} onClose={() => setEditingProperty(false)} title={t('properties.edit_property')}>
         <div className="space-y-4">
-          <Input label="Nama hartanah" value={editPropertyForm.name}
+          <Input label={t('properties.name')} value={editPropertyForm.name}
             onChange={(e) => setEditPropertyForm({ ...editPropertyForm, name: e.target.value })} />
-          <Input label="Alamat" value={editPropertyForm.address}
+          <Input label={t('properties.address')} value={editPropertyForm.address}
             onChange={(e) => setEditPropertyForm({ ...editPropertyForm, address: e.target.value })} />
-          <Select label="Tarikh bil bulanan" value={editPropertyForm.billing_date}
+          <Select label={t('properties.billing_date')} value={editPropertyForm.billing_date}
             onChange={(e) => setEditPropertyForm({ ...editPropertyForm, billing_date: Number(e.target.value) })}>
             {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
-              <option key={d} value={d}>Hari {d}</option>
+              <option key={d} value={d}>{t('properties.day', { day: d })}</option>
             ))}
           </Select>
           <div className="flex gap-3 pt-2">
-            <Button variant="secondary" className="flex-1" onClick={() => setEditingProperty(false)}>Batal</Button>
-            <Button className="flex-1" loading={saving} onClick={handleSaveProperty}>Simpan</Button>
+            <Button variant="secondary" className="flex-1" onClick={() => setEditingProperty(false)}>{t('common.cancel')}</Button>
+            <Button className="flex-1" loading={saving} onClick={handleSaveProperty}>{t('common.save')}</Button>
           </div>
         </div>
       </BottomSheet>
 
       {/* Edit Room BottomSheet */}
-      <BottomSheet open={!!editingRoom} onClose={() => setEditingRoom(null)} title="Edit Bilik">
+      <BottomSheet open={!!editingRoom} onClose={() => setEditingRoom(null)} title={t('properties.edit_room')}>
         {editingRoom && (
           <div className="space-y-4">
-            <Input label="Label bilik" value={editRoomForm.label}
+            <Input label={t('properties.room_label_edit')} value={editRoomForm.label}
               onChange={(e) => setEditRoomForm({ ...editRoomForm, label: e.target.value })} />
-            <Input label="Sewa bulanan (RM)" type="number" value={editRoomForm.rent_amount}
+            <Input label={t('properties.room_rent_edit')} type="number" value={editRoomForm.rent_amount}
               onChange={(e) => setEditRoomForm({ ...editRoomForm, rent_amount: e.target.value })} />
             <div className="flex gap-3 pt-2">
-              <Button variant="secondary" className="flex-1" onClick={() => setEditingRoom(null)}>Batal</Button>
-              <Button className="flex-1" loading={saving} onClick={handleSaveRoom}>Simpan</Button>
+              <Button variant="secondary" className="flex-1" onClick={() => setEditingRoom(null)}>{t('common.cancel')}</Button>
+              <Button className="flex-1" loading={saving} onClick={handleSaveRoom}>{t('common.save')}</Button>
             </div>
 
             {/* Deactivate — only for vacant rooms */}
             {editingRoom.status === 'vacant' && (
               <div className="pt-3 border-t border-gray-100">
                 <Button variant="danger" fullWidth size="sm" icon={Trash2} onClick={handleDeactivateRoom} loading={saving}>
-                  Nyahaktif Bilik
+                  {t('properties.deactivate_room')}
                 </Button>
-                <p className="text-xs text-gray-400 text-center mt-2">Sejarah bilik akan dikekalkan</p>
+                <p className="text-xs text-gray-400 text-center mt-2">{t('properties.deactivate_warning')}</p>
               </div>
             )}
           </div>

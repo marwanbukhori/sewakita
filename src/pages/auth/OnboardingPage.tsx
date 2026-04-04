@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import type { UserRole } from '@/types/database'
@@ -17,6 +18,7 @@ export default function OnboardingPage() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
+  const { t } = useTranslation()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -34,11 +36,11 @@ export default function OnboardingPage() {
     setLoading(false)
 
     if (error) {
-      toast.error('Gagal menyimpan. Sila cuba lagi.')
+      toast.error(t('onboarding.failed_save'))
       return
     }
 
-    toast.success('Selamat datang ke SewaKita!')
+    toast.success(t('onboarding.welcome_toast'))
     navigate(role === 'landlord' ? '/dashboard' : '/tenant/dashboard')
     window.location.reload()
   }
@@ -48,7 +50,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-sm animate-in">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">SewaKita</h1>
-          <p className="text-gray-500 mt-1.5 text-sm">Selamat datang! Mari sediakan akaun anda.</p>
+          <p className="text-gray-500 mt-1.5 text-sm">{t('onboarding.welcome')}</p>
         </div>
 
         {/* Step indicator */}
@@ -60,10 +62,10 @@ export default function OnboardingPage() {
         <div className="bg-white rounded-3xl shadow-lg p-7">
           {step === 'role' ? (
             <div className="space-y-4 animate-in">
-              <h2 className="text-lg font-semibold text-gray-800">Anda adalah...</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t('onboarding.you_are')}</h2>
               {[
-                { value: 'landlord' as UserRole, icon: Building2, title: 'Tuan Rumah', desc: 'Saya menyewakan bilik atau unit' },
-                { value: 'tenant' as UserRole, icon: User, title: 'Penyewa', desc: 'Saya menyewa bilik atau unit' },
+                { value: 'landlord' as UserRole, icon: Building2, title: t('onboarding.landlord'), desc: t('onboarding.landlord_desc') },
+                { value: 'tenant' as UserRole, icon: User, title: t('onboarding.tenant'), desc: t('onboarding.tenant_desc') },
               ].map((opt) => (
                 <Card
                   key={opt.value}
@@ -89,22 +91,22 @@ export default function OnboardingPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 animate-in">
-              <h2 className="text-lg font-semibold text-gray-800">Maklumat anda</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t('onboarding.your_info')}</h2>
               <Input
-                label="Nama penuh"
+                label={t('onboarding.full_name')}
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nama anda"
+                placeholder={t('onboarding.full_name')}
               />
               <Input
-                label="No. telefon"
+                label={t('onboarding.phone')}
                 type="tel"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="012-3456789"
+                placeholder={t('onboarding.phone_placeholder')}
               />
               <div className="flex gap-3 pt-2">
                 <Button
@@ -114,10 +116,10 @@ export default function OnboardingPage() {
                   onClick={() => setStep('role')}
                   className="flex-1"
                 >
-                  Kembali
+                  {t('onboarding.back')}
                 </Button>
                 <Button type="submit" size="lg" loading={loading} className="flex-1">
-                  Mula guna
+                  {t('onboarding.get_started')}
                 </Button>
               </div>
             </form>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, AlertTriangle } from 'lucide-react'
@@ -15,6 +16,7 @@ interface PaymentWithBill extends Payment {
 
 export default function TenantPaymentsPage() {
   const { profile } = useAuth()
+  const { t } = useTranslation()
   const [payments, setPayments] = useState<PaymentWithBill[]>([])
   const [totalOutstanding, setTotalOutstanding] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -52,10 +54,10 @@ export default function TenantPaymentsPage() {
   if (loading) return <SkeletonList count={3} />
 
   const methodLabels: Record<string, string> = {
-    bank_transfer: 'Pindahan Bank',
-    duitnow: 'DuitNow',
-    cash: 'Tunai',
-    other: 'Lain-lain',
+    bank_transfer: t('billing.bank_transfer'),
+    duitnow: t('billing.duitnow'),
+    cash: t('billing.cash'),
+    other: t('billing.other'),
   }
 
   // Group payments by month
@@ -68,13 +70,13 @@ export default function TenantPaymentsPage() {
 
   const formatMonthHeader = (m: string) => {
     const [year, month] = m.split('-')
-    const months = ['JANUARI', 'FEBRUARI', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DISEMBER']
+    const months = t('payments.months', { returnObjects: true }) as string[]
     return `${months[parseInt(month) - 1]} ${year}`
   }
 
   return (
     <div className="space-y-4 animate-in">
-      <h1 className="text-xl font-bold text-gray-800">Bayaran Saya</h1>
+      <h1 className="text-xl font-bold text-gray-800">{t('payments.title')}</h1>
 
       {totalOutstanding > 0 && (
         <Card variant="default" padding="p-4" className="border-amber-200 bg-amber-50">
@@ -82,7 +84,7 @@ export default function TenantPaymentsPage() {
             <AlertTriangle size={20} className="text-amber-600 shrink-0" />
             <div>
               <p className="text-sm font-semibold text-amber-800">
-                Jumlah tertunggak: RM{totalOutstanding.toLocaleString()}
+                {t('payments.outstanding', { amount: totalOutstanding.toLocaleString() })}
               </p>
             </div>
           </div>
@@ -90,7 +92,7 @@ export default function TenantPaymentsPage() {
       )}
 
       {payments.length === 0 ? (
-        <EmptyState icon={CreditCard} title="Tiada rekod bayaran lagi" />
+        <EmptyState icon={CreditCard} title={t('payments.no_payments')} />
       ) : (
         <div className="space-y-5">
           {Object.entries(grouped).map(([month, monthPayments]) => (

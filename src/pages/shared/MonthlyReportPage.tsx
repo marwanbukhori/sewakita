@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { ArrowLeft, Download } from 'lucide-react'
@@ -18,6 +19,7 @@ interface BillReport extends MonthlyBill {
 }
 
 export default function MonthlyReportPage() {
+  const { t } = useTranslation()
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7))
@@ -46,14 +48,14 @@ export default function MonthlyReportPage() {
   }
 
   function handleExport() {
-    const headers = ['Hartanah', 'Bilik', 'Penyewa', 'Dijangka (RM)', 'Dikutip (RM)', 'Status', 'Bulan']
+    const headers = [t('reports.property_header'), t('reports.room_header'), t('reports.tenant_header'), t('reports.expected_rm'), t('reports.collected_rm'), t('reports.status'), t('reports.month')]
     const rows = bills.map(b => [
       b.room?.property?.name || '',
       b.room?.label || '',
       b.tenant?.name || '',
       String(b.total_due),
       String(b.total_paid),
-      b.status === 'paid' ? 'Dibayar' : b.status === 'overdue' ? 'Tertunggak' : b.status === 'partial' ? 'Separa' : 'Belum bayar',
+      b.status === 'paid' ? t('billing.paid_label') : b.status === 'overdue' ? t('billing.overdue_label') : b.status === 'partial' ? t('billing.partial_label') : t('billing.pending_label'),
       b.month,
     ])
     downloadCSV(`sewakita-kutipan-${month}.csv`, headers, rows)
@@ -77,11 +79,11 @@ export default function MonthlyReportPage() {
   return (
     <div className="space-y-4 animate-in">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>
-        Kembali
+        {t('common.back')}
       </Button>
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Ringkasan Kutipan</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('reports.monthly_title')}</h1>
         <Button variant="ghost" size="sm" icon={Download} onClick={handleExport}>
           CSV
         </Button>
@@ -93,15 +95,15 @@ export default function MonthlyReportPage() {
       <Card variant="hero" padding="p-5">
         <div className="grid grid-cols-3 gap-2 text-center">
           <div>
-            <p className="text-white/60 text-xs">Dijangka</p>
+            <p className="text-white/60 text-xs">{t('reports.expected')}</p>
             <p className="text-lg font-bold">RM{totalExpected.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-white/60 text-xs">Dikutip</p>
+            <p className="text-white/60 text-xs">{t('reports.collected')}</p>
             <p className="text-lg font-bold">RM{totalCollected.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-white/60 text-xs">Kadar</p>
+            <p className="text-white/60 text-xs">{t('reports.rate')}</p>
             <p className="text-lg font-bold">{collectionRate}%</p>
           </div>
         </div>
@@ -112,7 +114,7 @@ export default function MonthlyReportPage() {
 
       {/* Per-property breakdown */}
       {bills.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-8">Tiada bil untuk bulan ini.</p>
+        <p className="text-sm text-gray-400 text-center py-8">{t('reports.no_bills_month')}</p>
       ) : (
         <div className="space-y-5">
           {Object.values(grouped).map(({ name, bills: propBills }) => (
