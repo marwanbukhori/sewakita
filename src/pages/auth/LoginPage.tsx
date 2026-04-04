@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
 import { Mail } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -115,6 +116,9 @@ export default function LoginPage() {
           {t('auth.privacy')}{' '}
           <a href="#" className="text-primary-600">{t('auth.privacy_policy')}</a>.
         </p>
+        <Link to="/" className="block text-center text-xs text-primary-600 hover:text-primary-700 font-medium mt-3">
+          ← {t('common.back')}
+        </Link>
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from '@/lib/auth-context'
 
 import AppShell from '@/components/layout/AppShell'
+import LandingPage from '@/pages/public/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import OnboardingPage from '@/pages/auth/OnboardingPage'
 import AcceptInvitePage from '@/pages/auth/AcceptInvitePage'
@@ -52,8 +53,10 @@ function AppRoutes() {
   if (!user) {
     return (
       <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/invite/:token" element={<AcceptInvitePage />} />
-        <Route path="*" element={<LoginPage />} />
+        <Route path="*" element={<LandingPage />} />
       </Routes>
     )
   }
