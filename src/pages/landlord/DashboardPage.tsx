@@ -10,7 +10,7 @@ import QuickActions from '@/components/ui/QuickActions'
 import EmptyState from '@/components/ui/EmptyState'
 import ActivityFeed from '@/components/ui/ActivityFeed'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
-import { BatikBackground } from '@/assets/batik/patterns'
+import { BatikBackground, BatikHeroOverlay } from '@/assets/batik/patterns'
 
 interface OverdueBill extends MonthlyBill {
   tenant: Profile
