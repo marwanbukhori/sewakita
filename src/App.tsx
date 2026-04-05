@@ -21,6 +21,8 @@ import BilPage from '@/pages/landlord/BilPage'
 import AgreementFormPage from '@/pages/landlord/AgreementFormPage'
 import AgreementViewPage from '@/pages/landlord/AgreementViewPage'
 import NotificationSettingsPage from '@/pages/landlord/NotificationSettingsPage'
+import PlansPage from '@/pages/landlord/PlansPage'
+import SubscriptionSuccessPage from '@/pages/landlord/SubscriptionSuccessPage'
 
 import TenantDashboard from '@/pages/tenant/TenantDashboard'
 import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
@@ -113,6 +115,8 @@ function AppRoutes() {
         <Route path="/agreements/:id" element={<AgreementViewPage />} />
         <Route path="/properties/:id/notifications" element={<NotificationSettingsPage />} />
         <Route path="/bil" element={<BilPage />} />
+        <Route path="/plans" element={<PlansPage />} />
+        <Route path="/plans/success" element={<SubscriptionSuccessPage />} />
         {/* Legacy route redirects */}
         <Route path="/billing" element={<Navigate to="/bil" replace />} />
         <Route path="/payments" element={<Navigate to="/bil" replace />} />
