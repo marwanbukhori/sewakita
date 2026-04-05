@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Receipt, Plus, Zap, Droplets, Wifi } from 'lucide-react'
-import { BatikHeroOverlay } from '@/assets/batik/patterns'
+import { BatikBackground } from '@/assets/batik/patterns'
 import type { MonthlyBill, Property, Room, Profile, PaymentMethod, Tenancy, UtilityBill, SplitMethod, UtilityType, UtilityTemplate } from '@/types/database'
 import toast from 'react-hot-toast'
 import { generateBillMessage, generateReminderMessage, generateReceiptMessage } from '@/lib/whatsapp'
@@ -48,6 +48,7 @@ export default function BilPage() {
   const [showUtilityForm, setShowUtilityForm] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [templates, setTemplates] = useState<UtilityTemplate[]>([])
+  const [monthlyTrend, setMonthlyTrend] = useState<{ month: string; expected: number; collected: number }[]>([])
   const [utilityForm, setUtilityForm] = useState({
     type: 'electric' as UtilityType,
     total_amount: '',
@@ -66,6 +67,7 @@ export default function BilPage() {
   useEffect(() => {
     if (!profile) return
     loadBills()
+    loadMonthlyTrend()
   }, [profile, month])
 
   // Load property-specific data when property/month changes (generate tab)
@@ -94,6 +96,29 @@ export default function BilPage() {
       .order('status')
     const myBills = (data || []).filter((b: BillWithDetails) => b.room?.property?.landlord_id === profile!.id)
     setBills(myBills)
+  }
+
+  async function loadMonthlyTrend() {
+    // Get last 6 months of bills for trend chart
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(month + '-01')
+      d.setMonth(d.getMonth() - (5 - i))
+      return d.toISOString().slice(0, 7)
+    })
+    const { data } = await supabase
+      .from('monthly_bills')
+      .select('month, total_due, total_paid, rooms!inner(properties!inner(landlord_id))')
+      .in('month', months)
+      .eq('rooms.properties.landlord_id', profile!.id)
+    const grouped = months.map(m => {
+      const monthBills = (data || []).filter((b: MonthlyBill) => b.month === m)
+      return {
+        month: m,
+        expected: monthBills.reduce((s: number, b: MonthlyBill) => s + b.total_due, 0),
+        collected: monthBills.reduce((s: number, b: MonthlyBill) => s + b.total_paid, 0),
+      }
+    })
+    setMonthlyTrend(grouped)
   }
 
   async function loadRooms() {
@@ -347,49 +372,49 @@ export default function BilPage() {
       {/* ===== TAB 1: Bills ===== */}
       {tab === 'bills' && (
         <>
-          {/* Analytics Hero */}
-          <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-2xl shadow-md overflow-hidden">
-            <BatikHeroOverlay />
+          {/* Analytics Card */}
+          <div className="relative bg-white rounded-2xl shadow-md overflow-hidden">
+            <BatikBackground className="!opacity-[0.04]" />
             <div className="relative z-10 p-5">
               {/* Donut + legend row */}
-              <div className="flex items-center gap-5 mb-4">
-                {/* Donut chart */}
+              <div className="flex items-center gap-5 mb-5">
+                {/* Donut chart — large */}
                 <div className="relative shrink-0">
-                  <DonutChart size={90} strokeWidth={9} segments={[
-                    { pct: paidPct, color: '#4ade80' },
-                    { pct: partialPct, color: '#fbbf24' },
-                    { pct: outstandingPct, color: '#f87171' },
-                  ]} />
+                  <DonutChart size={120} strokeWidth={12} segments={[
+                    { pct: paidPct, color: '#22c55e' },
+                    { pct: partialPct, color: '#f59e0b' },
+                    { pct: outstandingPct, color: '#ef4444' },
+                  ]} bgColor="rgba(0,0,0,0.06)" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-[13px] font-bold text-white">RM{totalExpected > 0 ? totalExpected.toLocaleString() : '0'}</span>
-                    <span className="text-[8px] text-white/60">expected</span>
+                    <span className="text-base font-bold text-gray-800">RM{totalExpected > 0 ? totalExpected.toLocaleString() : '0'}</span>
+                    <span className="text-[9px] text-gray-400">expected</span>
                   </div>
                 </div>
                 {/* Legend */}
-                <div className="flex-1 space-y-2.5">
-                  <LegendRow color="#4ade80" label="Collected" value={`RM${totalCollected.toLocaleString()}`} />
-                  <LegendRow color="#fbbf24" label="Partial" value={`RM${partialAmt.toLocaleString()}`} />
-                  <LegendRow color="#f87171" label="Outstanding" value={`RM${(totalExpected - totalCollected).toLocaleString()}`} />
+                <div className="flex-1 space-y-3">
+                  <LegendRow color="#22c55e" label="Collected" value={`RM${totalCollected.toLocaleString()}`} />
+                  <LegendRow color="#f59e0b" label="Partial" value={`RM${partialAmt.toLocaleString()}`} />
+                  <LegendRow color="#ef4444" label="Outstanding" value={`RM${(totalExpected - totalCollected).toLocaleString()}`} />
                   {/* Collection rate */}
-                  <div className="bg-white/10 rounded-lg px-3 py-1.5">
+                  <div className="bg-gray-50 rounded-lg px-3 py-1.5">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] text-white/70">Collection Rate</span>
-                      <span className="text-[10px] font-bold text-green-300">{collectionPercent}%</span>
+                      <span className="text-[10px] text-gray-500">Collection Rate</span>
+                      <span className="text-[10px] font-bold text-green-600">{collectionPercent}%</span>
                     </div>
-                    <div className="h-1 bg-white/15 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-400 rounded-full transition-all duration-500" style={{ width: `${collectionPercent}%` }} />
+                    <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${collectionPercent}%` }} />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Mini bar chart — last 6 months */}
-              <div className="bg-white/8 rounded-xl px-3 py-3">
+              {/* Bar chart — real data */}
+              <div className="bg-gray-50 rounded-xl px-3 py-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-semibold text-white/70">Monthly Trend</span>
-                  <span className="text-[9px] text-white/50">Last 6 months</span>
+                  <span className="text-[10px] font-semibold text-gray-500">Monthly Trend</span>
+                  <span className="text-[9px] text-gray-400">Last 6 months</span>
                 </div>
-                <MonthlyBarChart currentMonth={month} bills={bills} />
+                <MonthlyBarChart currentMonth={month} data={monthlyTrend} />
               </div>
             </div>
           </div>
@@ -653,7 +678,7 @@ export default function BilPage() {
 
 // === Chart Components ===
 
-function DonutChart({ size, strokeWidth, segments }: { size: number; strokeWidth: number; segments: { pct: number; color: string }[] }) {
+function DonutChart({ size, strokeWidth, segments, bgColor = 'rgba(0,0,0,0.06)' }: { size: number; strokeWidth: number; segments: { pct: number; color: string }[]; bgColor?: string }) {
   const r = (size - strokeWidth) / 2
   const circ = 2 * Math.PI * r
   const center = size / 2
@@ -661,9 +686,8 @@ function DonutChart({ size, strokeWidth, segments }: { size: number; strokeWidth
 
   return (
     <svg width={size} height={size} className="-rotate-90">
-      <circle cx={center} cy={center} r={r} fill="none" strokeWidth={strokeWidth} stroke="rgba(255,255,255,0.12)" />
+      <circle cx={center} cy={center} r={r} fill="none" strokeWidth={strokeWidth} stroke={bgColor} />
       {segments.map((seg, i) => {
-        const offset = circ - seg.pct * circ
         const dashOffset = circ * cumulative
         cumulative += seg.pct
         return seg.pct > 0 ? (
@@ -682,42 +706,47 @@ function LegendRow({ color, label, value }: { color: string; label: string; valu
   return (
     <div className="flex items-center gap-2">
       <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-      <span className="text-[12px] text-white/70 flex-1">{label}</span>
-      <span className="text-[13px] font-bold text-white">{value}</span>
+      <span className="text-[12px] text-gray-500 flex-1">{label}</span>
+      <span className="text-[13px] font-bold text-gray-800">{value}</span>
     </div>
   )
 }
 
-function MonthlyBarChart({ currentMonth }: { currentMonth: string; bills: unknown[] }) {
-  // Generate last 6 months labels
+function MonthlyBarChart({ currentMonth, data }: { currentMonth: string; data: { month: string; expected: number; collected: number }[] }) {
+  // Generate last 6 months
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(currentMonth + '-01')
     d.setMonth(d.getMonth() - (5 - i))
     return { key: d.toISOString().slice(0, 7), label: d.toLocaleDateString('en', { month: 'short' }) }
   })
 
-  // Placeholder data (in real app, query historical bills)
-  const data = months.map((m, i) => ({
-    ...m,
-    expected: [1800, 2200, 2800, 3000, 3200, 3200][i] || 0,
-    collected: [1800, 2000, 2500, 2800, 3000, 2400][i] || 0,
-  }))
+  const bars = months.map(m => {
+    const found = data.find(d => d.month === m.key)
+    return { ...m, expected: found?.expected || 0, collected: found?.collected || 0 }
+  })
 
-  const maxVal = Math.max(...data.map(d => d.expected), 1)
+  const maxVal = Math.max(...bars.map(d => d.expected), 1)
 
   return (
     <div className="flex items-end justify-between gap-1" style={{ height: 52 }}>
-      {data.map((bar, i) => {
-        const expH = (bar.expected / maxVal) * 44
-        const colH = (bar.collected / maxVal) * 44
+      {bars.map((bar) => {
+        const expH = maxVal > 0 ? (bar.expected / maxVal) * 44 : 0
+        const colH = maxVal > 0 ? (bar.collected / maxVal) * 44 : 0
         const isCurrent = bar.key === currentMonth
+        const isEmpty = bar.expected === 0 && bar.collected === 0
         return (
           <div key={bar.key} className="flex-1 flex flex-col items-center gap-1">
             <div className="w-full flex gap-0.5 items-end" style={{ height: 44 }}>
-              <div className="flex-1 rounded-sm" style={{ height: expH, backgroundColor: 'rgba(255,255,255,0.12)' }} />
-              <div className="flex-1 rounded-sm" style={{ height: colH, backgroundColor: '#4ade80' }} />
+              {isEmpty ? (
+                <div className="flex-1 rounded-sm bg-gray-100" style={{ height: 4 }} />
+              ) : (
+                <>
+                  <div className="flex-1 rounded-sm bg-gray-200" style={{ height: expH }} />
+                  <div className="flex-1 rounded-sm bg-green-500" style={{ height: colH }} />
+                </>
+              )}
             </div>
-            <span className={`text-[8px] ${isCurrent ? 'text-white font-bold' : 'text-white/40'}`}>{bar.label}</span>
+            <span className={`text-[8px] ${isCurrent ? 'text-gray-800 font-bold' : 'text-gray-400'}`}>{bar.label}</span>
           </div>
         )
       })}
