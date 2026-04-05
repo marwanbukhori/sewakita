@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
@@ -155,47 +155,8 @@ export default function DashboardPage() {
       {/* Activity feed */}
       <ActivityFeed />
 
-      {/* Highlights */}
-      <div>
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Highlights</h2>
-        <div className="space-y-3">
-          <HighlightCard
-            gradient="from-primary-600 via-primary-700 to-primary-800"
-            badge="NEW"
-            icon={CreditCard}
-            title="FPX Payments Now Live"
-            desc="Tenants can pay rent directly via FPX. Instant confirmation & auto-receipts."
-            to="/bil"
-          />
-          <HighlightCard
-            gradient="from-emerald-600 via-emerald-700 to-emerald-800"
-            badge="TIP"
-            icon={MessageCircle}
-            title="Send Bills via WhatsApp"
-            desc="Tap the green button on any bill to remind tenants instantly. Zero cost."
-            to="/bil"
-          />
-          <HighlightCard
-            gradient="from-purple-500 via-purple-700 to-purple-800"
-            badge="FEATURE"
-            icon={FileCheck}
-            title="Auto-generate Rental Agreements"
-            desc="Create professional PDF agreements when inviting tenants. One tap."
-            to="/tenants/new"
-          />
-          <HighlightCard
-            gradient="from-teal-500 via-teal-700 to-teal-800"
-            badge="TIP"
-            icon={LinkIcon}
-            title="Invite Tenants with a Link"
-            desc="Share an invite link via WhatsApp. Tenants sign up and join your property."
-            to="/tenants/new"
-          />
-        </div>
-      </div>
-
-      {/* Carousel — commented out for now */}
-      {/* <AnnouncementCarousel /> */}
+      {/* Highlights Carousel */}
+      <AnnouncementCarousel />
 
       {/* Empty state */}
       {stats.totalProperties === 0 && (
@@ -237,22 +198,59 @@ function ProgressRingHero({ label, value, sub, percent, size = 68 }: { label: st
   )
 }
 
-function HighlightCard({ gradient, badge, icon: Icon, title, desc, to }: {
-  gradient: string; badge: string; icon: typeof CreditCard; title: string; desc: string; to: string
-}) {
+const SLIDES = [
+  { gradient: 'from-primary-600 via-primary-700 to-primary-800', badge: 'NEW', icon: CreditCard, title: 'FPX Payments Now Live', desc: 'Tenants can pay rent directly via FPX. Instant confirmation.', to: '/bil' },
+  { gradient: 'from-emerald-600 via-emerald-700 to-emerald-800', badge: 'TIP', icon: MessageCircle, title: 'Send Bills via WhatsApp', desc: 'Tap the green button on any bill to remind tenants instantly.', to: '/bil' },
+  { gradient: 'from-purple-500 via-purple-700 to-purple-800', badge: 'FEATURE', icon: FileCheck, title: 'Auto-generate Agreements', desc: 'Create professional PDF agreements when inviting tenants.', to: '/tenants/new' },
+  { gradient: 'from-teal-500 via-teal-700 to-teal-800', badge: 'TIP', icon: LinkIcon, title: 'Invite Tenants with a Link', desc: 'Share an invite link via WhatsApp. Tenants sign up and join.', to: '/tenants/new' },
+]
+
+function AnnouncementCarousel() {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState(0)
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el || !el.firstElementChild) return
+    const slideW = el.firstElementChild.clientWidth
+    setActive(Math.round(el.scrollLeft / (slideW + 12)))
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const el = scrollRef.current
+      if (!el || !el.firstElementChild) return
+      const next = (active + 1) % SLIDES.length
+      const slideW = el.firstElementChild.clientWidth
+      el.scrollTo({ left: next * (slideW + 12), behavior: 'smooth' })
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [active])
+
   return (
-    <Link to={to} className={`block relative bg-gradient-to-br ${gradient} rounded-2xl p-4 overflow-hidden active:scale-[0.98] transition-transform`}>
-      <BatikHeroOverlay />
-      <div className="relative z-10 flex items-center gap-4">
-        <div className="flex-1 min-w-0">
-          <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full mb-2">{badge}</span>
-          <p className="text-[15px] font-bold text-white leading-snug">{title}</p>
-          <p className="text-xs text-white/70 mt-1 leading-relaxed">{desc}</p>
-        </div>
-        <div className="shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-          <Icon size={20} className="text-white" />
-        </div>
+    <div>
+      <div ref={scrollRef} onScroll={handleScroll}
+        className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory -mx-4 px-4">
+        {SLIDES.map((slide, i) => (
+          <Link key={i} to={slide.to}
+            className={`snap-center shrink-0 w-[calc(100vw-32px)] sm:w-full relative bg-gradient-to-br ${slide.gradient} rounded-2xl p-4 flex items-center gap-4 active:scale-[0.98] transition-transform overflow-hidden`}>
+            <BatikHeroOverlay className="!opacity-[0.08]" />
+            <div className="relative z-10 flex-1 min-w-0">
+              <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full mb-2">{slide.badge}</span>
+              <p className="text-[15px] font-bold text-white leading-snug">{slide.title}</p>
+              <p className="text-xs text-white/70 mt-1 leading-relaxed">{slide.desc}</p>
+            </div>
+            <div className="relative z-10 shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <slide.icon size={20} className="text-white" />
+            </div>
+          </Link>
+        ))}
       </div>
-    </Link>
+      <div className="flex justify-center gap-1.5 mt-3">
+        {SLIDES.map((_, i) => (
+          <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? 'w-5 bg-primary-600' : 'w-1.5 bg-gray-200'}`} />
+        ))}
+      </div>
+    </div>
   )
 }
