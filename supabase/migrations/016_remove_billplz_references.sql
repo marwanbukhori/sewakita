@@ -1,0 +1,5 @@
+-- Billplz integration removed (migration 012 already renamed the column,
+-- 013 added new ToyyibPay columns). This file is a marker documenting the decision.
+--
+-- Any historical payment rows with gateway='billplz' remain as-is for audit;
+-- no active webhook processes them anymore.
