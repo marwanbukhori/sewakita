@@ -43,7 +43,7 @@ export default function TenantBillsPage() {
     try {
       const amount = bill.total_due - bill.total_paid
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-billplz-bill`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-rent-bill`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -52,7 +52,7 @@ export default function TenantBillsPage() {
             amount,
             tenant_email: profile.email,
             tenant_name: profile.name,
-            description: `SewaKita rent - ${bill.month}`,
+            description: `${bill.month}`,
             redirect_url: `${window.location.origin}/tenant/payment-success`,
           }),
         }
@@ -61,8 +61,10 @@ export default function TenantBillsPage() {
       const data = await response.json()
       if (data.payment_url) {
         window.location.href = data.payment_url
+      } else if (data.error === 'gateway_not_configured') {
+        toast.error('Landlord has not set up online payment yet. Please pay manually.')
       } else {
-        toast.error(data.error || 'Payment failed')
+        toast.error(data.message || data.error || 'Payment failed')
       }
     } catch {
       toast.error('Failed to initiate payment')
