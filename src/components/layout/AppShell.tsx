@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
 import Button from '@/components/ui/Button'
 import LanguageToggle from '@/components/ui/LanguageToggle'
-import { BatikNavOverlay, BatikNavRing } from '@/assets/batik/patterns'
+import { BatikNavOverlay, BatikNavRing, BatikHeroOverlay } from '@/assets/batik/patterns'
 import { useTranslation } from 'react-i18next'
 
 interface NavItem {
@@ -94,13 +94,14 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-[#F7FAFC]">
       {/* Header */}
-      <header className={`bg-white sticky top-0 z-50 safe-top transition-shadow duration-200 ${scrolled ? 'shadow-md' : 'border-b border-gray-100'}`}>
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <span className="text-lg font-bold tracking-tight text-primary-600">SewaKita</span>
+      <header className={`relative bg-gradient-to-r from-primary-600 via-primary-700 to-primary-600 sticky top-0 z-50 safe-top transition-shadow duration-200 overflow-hidden ${scrolled ? 'shadow-md' : ''}`}>
+        <BatikHeroOverlay className="!opacity-[0.08]" />
+        <div className="relative z-10 max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+          <span className="text-lg font-bold tracking-tight text-white">SewaKita</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="sm:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+              className="sm:hidden p-2 rounded-lg text-white/80 hover:bg-white/10"
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -210,6 +211,15 @@ export default function AppShell() {
                 <span>Language</span>
               </div>
               <LanguageToggle />
+            </div>
+
+            {/* Logout */}
+            <div className="mt-auto pt-4 border-t border-gray-100">
+              <button onClick={handleLogout}
+                className="flex items-center gap-3 px-3 h-11 rounded-lg text-sm text-danger-500 font-medium hover:bg-red-50 w-full transition-colors">
+                <LogOut size={20} />
+                <span>{t('menu.logout')}</span>
+              </button>
             </div>
           </div>
         </nav>

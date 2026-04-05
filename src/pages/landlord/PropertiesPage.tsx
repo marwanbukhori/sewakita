@@ -69,15 +69,15 @@ export default function PropertiesPage() {
             return (
               <Link key={property.id} to={`/properties/${property.id}`} className="block">
                 <Card variant="elevated" pressable padding="p-4" className="relative overflow-hidden">
-                  {/* Full-card subtle batik background */}
+                  {/* Full-card subtle batik background — geometric pattern */}
                   <div className="absolute inset-0 pointer-events-none"
                     style={{
-                      backgroundImage: 'url(/batik/floral-traditional.png)',
-                      backgroundSize: '350px',
+                      backgroundImage: 'url(/batik/batak-geometric.png)',
+                      backgroundSize: '300px',
                       backgroundRepeat: 'repeat',
-                      backgroundPosition: 'center',
-                      opacity: 0.03,
+                      opacity: 0.04,
                       filter: 'grayscale(1)',
+                      mixBlendMode: 'multiply',
                     }}
                   />
 

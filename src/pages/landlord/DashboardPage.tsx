@@ -10,7 +10,7 @@ import QuickActions from '@/components/ui/QuickActions'
 import EmptyState from '@/components/ui/EmptyState'
 import ActivityFeed from '@/components/ui/ActivityFeed'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
-import { BatikHeroOverlay } from '@/assets/batik/patterns'
+import { BatikBackground } from '@/assets/batik/patterns'
 
 interface OverdueBill extends MonthlyBill {
   tenant: Profile
@@ -88,9 +88,9 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
       </div>
 
-      {/* Metrics Hero — Batik card with progress rings */}
-      <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-2xl shadow-md overflow-hidden">
-        <BatikHeroOverlay />
+      {/* Metrics Card — White with geometric batik */}
+      <div className="relative bg-white rounded-2xl shadow-md overflow-hidden">
+        <BatikBackground className="!opacity-[0.04]" />
         <div className="relative z-10 p-5">
           {/* Rings row */}
           <div className="flex justify-center gap-8 sm:gap-16 mb-4">
@@ -98,16 +98,16 @@ export default function DashboardPage() {
             <ProgressRingHero label="Occupancy" value={`${stats.occupiedRooms}/${stats.totalRooms}`} sub="rooms filled" percent={occupancyPercent} size={88} />
           </div>
           {/* Stats strip */}
-          <div className="flex bg-white/10 rounded-xl">
+          <div className="flex bg-gray-50 rounded-xl">
             {[
               [String(stats.totalProperties), t('dashboard.properties_label')],
               [`${stats.occupiedRooms}/${stats.totalRooms}`, 'Rooms'],
               [`RM${outstanding.toLocaleString()}`, 'Remaining'],
               [String(stats.overdueCount), t('dashboard.overdue')],
             ].map(([val, label], i, arr) => (
-              <div key={label} className={`flex-1 text-center py-2.5 ${i < arr.length - 1 ? 'border-r border-white/10' : ''}`}>
-                <p className="text-sm font-bold text-white">{val}</p>
-                <p className="text-[9px] text-white/60">{label}</p>
+              <div key={label} className={`flex-1 text-center py-2.5 ${i < arr.length - 1 ? 'border-r border-gray-200' : ''}`}>
+                <p className="text-sm font-bold text-gray-800">{val}</p>
+                <p className="text-[9px] text-gray-500">{label}</p>
               </div>
             ))}
           </div>
@@ -220,18 +220,18 @@ function ProgressRingHero({ label, value, sub, percent, size = 68 }: { label: st
     <div className="flex flex-col items-center gap-2">
       <div className="relative">
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={center} cy={center} r={r} fill="none" strokeWidth={sw} stroke="rgba(255,255,255,0.15)" />
-          <circle cx={center} cy={center} r={r} fill="none" strokeWidth={sw} stroke="#4ade80" strokeLinecap="round"
+          <circle cx={center} cy={center} r={r} fill="none" strokeWidth={sw} stroke="rgba(0,0,0,0.06)" />
+          <circle cx={center} cy={center} r={r} fill="none" strokeWidth={sw} stroke="#22c55e" strokeLinecap="round"
             strokeDasharray={circ} strokeDashoffset={off} className="transition-all duration-700 ease-out" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`${size >= 80 ? 'text-sm' : 'text-xs'} font-bold text-white leading-none`}>{value}</span>
-          <span className="text-[9px] text-white/60 mt-0.5">{percent}%</span>
+          <span className={`${size >= 80 ? 'text-sm' : 'text-xs'} font-bold text-gray-800 leading-none`}>{value}</span>
+          <span className="text-[9px] text-gray-400 mt-0.5">{percent}%</span>
         </div>
       </div>
       <div className="text-center">
-        <p className="text-[11px] font-semibold text-white/90">{label}</p>
-        {sub && <p className="text-[9px] text-white/50">{sub}</p>}
+        <p className="text-[11px] font-semibold text-gray-700">{label}</p>
+        {sub && <p className="text-[9px] text-gray-400">{sub}</p>}
       </div>
     </div>
   )
