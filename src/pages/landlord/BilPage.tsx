@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, Receipt, Plus, Zap, Droplets, Wifi } from 'lucide-react'
+import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Receipt, Plus, Zap, Droplets, Wifi } from 'lucide-react'
+import { BatikHeroOverlay } from '@/assets/batik/patterns'
 import type { MonthlyBill, Property, Room, Profile, PaymentMethod, Tenancy, UtilityBill, SplitMethod, UtilityType, UtilityTemplate } from '@/types/database'
 import toast from 'react-hot-toast'
 import { generateBillMessage, generateReminderMessage, generateReceiptMessage } from '@/lib/whatsapp'
@@ -262,6 +263,14 @@ export default function BilPage() {
     setTab('bills') // Switch to bills tab to show results
   }
 
+  // All hooks must be before early returns
+  const statusCounts = useMemo(() => ({
+    all: bills.length,
+    overdue: bills.filter(b => b.status === 'overdue').length,
+    pending: bills.filter(b => b.status === 'pending' || b.status === 'partial').length,
+    paid: bills.filter(b => b.status === 'paid').length,
+  }), [bills])
+
   if (loading) return <SkeletonList count={3} />
 
   // Bills tab calculations
@@ -293,76 +302,108 @@ export default function BilPage() {
     { value: 'paid', label: 'Selesai' },
   ]
 
+  // Donut segments
+  const paidPct = totalExpected > 0 ? totalCollected / totalExpected : 0
+  const partialAmt = bills.filter(b => b.status === 'partial').reduce((s, b) => s + b.total_paid, 0)
+  const partialPct = totalExpected > 0 ? partialAmt / totalExpected : 0
+  const outstandingPct = totalExpected > 0 ? 1 - paidPct : 0
+
+  function shiftMonth(dir: number) {
+    const d = new Date(month + '-01')
+    d.setMonth(d.getMonth() + dir)
+    setMonth(d.toISOString().slice(0, 7))
+  }
+
+  const monthLabel = new Date(month + '-01').toLocaleDateString('en-MY', { month: 'long', year: 'numeric' })
+
   return (
     <div className="space-y-4 animate-in">
-      {/* Tab switcher — pill style */}
+      {/* Title + Month nav */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-800">Billing</h1>
+        <div className="flex items-center gap-1 bg-white rounded-xl shadow-card px-1 py-1">
+          <button onClick={() => shiftMonth(-1)} className="p-1.5 rounded-lg hover:bg-gray-50 active:scale-90 transition-transform">
+            <ChevronLeft size={16} className="text-primary-600" />
+          </button>
+          <span className="text-[13px] font-semibold text-gray-800 px-2 min-w-[110px] text-center">{monthLabel}</span>
+          <button onClick={() => shiftMonth(1)} className="p-1.5 rounded-lg hover:bg-gray-50 active:scale-90 transition-transform">
+            <ChevronRight size={16} className="text-primary-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* Tab switcher — compact pill */}
       <div className="flex items-center gap-1 bg-gray-100 rounded-2xl p-1.5">
-        <button
-          onClick={() => setTab('bills')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
-            tab === 'bills' ? 'bg-white text-primary-700 shadow-md' : 'text-gray-400 hover:text-gray-600'
-          }`}
-        >
-          Bil Bulanan
+        <button onClick={() => setTab('bills')}
+          className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${tab === 'bills' ? 'bg-white text-primary-700 shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>
+          Bills
         </button>
-        <button
-          onClick={() => setTab('generate')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
-            tab === 'generate' ? 'bg-white text-primary-700 shadow-md' : 'text-gray-400 hover:text-gray-600'
-          }`}
-        >
-          Utiliti & Jana
+        <button onClick={() => setTab('generate')}
+          className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${tab === 'generate' ? 'bg-white text-primary-700 shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>
+          Utilities & Generate
         </button>
       </div>
 
-      {/* ===== TAB 1: Bil Bulanan ===== */}
+      {/* ===== TAB 1: Bills ===== */}
       {tab === 'bills' && (
         <>
-          {/* Summary strip — hero style */}
-          <Card variant="hero" padding="p-4">
-              {/* Progress bar at top */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-white/70 font-medium">Collection Rate</span>
-                <span className="text-sm font-bold text-white">{collectionPercent}%</span>
-              </div>
-              <div className="h-1.5 bg-white/20 rounded-full overflow-hidden mb-3">
-                <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${collectionPercent}%` }} />
+          {/* Analytics Hero */}
+          <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-2xl shadow-md overflow-hidden">
+            <BatikHeroOverlay />
+            <div className="relative z-10 p-5">
+              {/* Donut + legend row */}
+              <div className="flex items-center gap-5 mb-4">
+                {/* Donut chart */}
+                <div className="relative shrink-0">
+                  <DonutChart size={90} strokeWidth={9} segments={[
+                    { pct: paidPct, color: '#4ade80' },
+                    { pct: partialPct, color: '#fbbf24' },
+                    { pct: outstandingPct, color: '#f87171' },
+                  ]} />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[13px] font-bold text-white">RM{totalExpected > 0 ? totalExpected.toLocaleString() : '0'}</span>
+                    <span className="text-[8px] text-white/60">expected</span>
+                  </div>
+                </div>
+                {/* Legend */}
+                <div className="flex-1 space-y-2.5">
+                  <LegendRow color="#4ade80" label="Collected" value={`RM${totalCollected.toLocaleString()}`} />
+                  <LegendRow color="#fbbf24" label="Partial" value={`RM${partialAmt.toLocaleString()}`} />
+                  <LegendRow color="#f87171" label="Outstanding" value={`RM${(totalExpected - totalCollected).toLocaleString()}`} />
+                  {/* Collection rate */}
+                  <div className="bg-white/10 rounded-lg px-3 py-1.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-white/70">Collection Rate</span>
+                      <span className="text-[10px] font-bold text-green-300">{collectionPercent}%</span>
+                    </div>
+                    <div className="h-1 bg-white/15 rounded-full overflow-hidden">
+                      <div className="h-full bg-green-400 rounded-full transition-all duration-500" style={{ width: `${collectionPercent}%` }} />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-white/10 rounded-xl p-2.5 text-center">
-                  <p className="text-[10px] text-white/60 uppercase tracking-wide">Expected</p>
-                  <p className="text-sm font-bold text-white">RM{totalExpected.toLocaleString()}</p>
+              {/* Mini bar chart — last 6 months */}
+              <div className="bg-white/8 rounded-xl px-3 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-semibold text-white/70">Monthly Trend</span>
+                  <span className="text-[9px] text-white/50">Last 6 months</span>
                 </div>
-                <div className="bg-white/10 rounded-xl p-2.5 text-center">
-                  <p className="text-[10px] text-white/60 uppercase tracking-wide">Collected</p>
-                  <p className="text-sm font-bold text-green-300">RM{totalCollected.toLocaleString()}</p>
-                </div>
-                <div className="bg-white/10 rounded-xl p-2.5 text-center">
-                  <p className="text-[10px] text-white/60 uppercase tracking-wide">Outstanding</p>
-                  <p className="text-sm font-bold text-amber-300">RM{(totalExpected - totalCollected).toLocaleString()}</p>
-                </div>
+                <MonthlyBarChart currentMonth={month} bills={bills} />
               </div>
-          </Card>
-
-          {/* Month + Filters */}
-          <div className="space-y-3">
-            <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
-            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
-              {filterOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setStatusFilter(opt.value)}
-                  className={`px-3.5 h-9 rounded-full text-xs font-semibold whitespace-nowrap active:scale-95 ${
-                    statusFilter === opt.value
-                      ? 'bg-primary-600 text-white shadow-sm'
-                      : 'bg-white text-gray-600 shadow-card hover:bg-gray-50'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
             </div>
+          </div>
+
+          {/* Filter pills */}
+          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
+            {filterOptions.map((opt) => (
+              <button key={opt.value} onClick={() => setStatusFilter(opt.value)}
+                className={`px-3.5 h-9 rounded-full text-xs font-semibold whitespace-nowrap active:scale-95 transition-all ${
+                  statusFilter === opt.value ? 'bg-primary-600 text-white shadow-sm' : 'bg-white text-gray-600 shadow-card hover:bg-gray-50'
+                }`}>
+                {opt.label} ({statusCounts[opt.value]})
+              </button>
+            ))}
           </div>
 
           {/* Bills grouped by property */}
@@ -370,54 +411,73 @@ export default function BilPage() {
             <div className="space-y-3">
               <EmptyState icon={CreditCard} title="Tiada bil untuk bulan ini" />
               <div className="text-center">
-                <Button variant="ghost" size="sm" onClick={() => setTab('generate')}>
-                  Jana bil baru →
-                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setTab('generate')}>Jana bil baru →</Button>
               </div>
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {Object.values(grouped).map(({ property, bills: propBills }) => (
-                <div key={property.id}>
-                  <SectionHeader title={property.name} action={{ label: `${propBills.length} bil`, to: `/properties/${property.id}` }} />
-                  <Card variant="elevated" padding="p-0">
-                    <div className="divide-y divide-gray-100">
-                      {propBills.map((bill) => {
-                        const isExpanded = expandedBill === bill.id
-                        return (
-                          <div key={bill.id}>
-                            <button
-                              onClick={() => setExpandedBill(isExpanded ? null : bill.id)}
-                              className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-900 text-sm truncate">{bill.tenant?.name}</p>
-                                <p className="text-xs text-gray-500">{bill.room?.label}</p>
+                <Card key={property.id} variant="elevated" padding="p-0">
+                  {/* Property header inside card */}
+                  <div className="flex items-center justify-between px-4 pt-3 pb-1">
+                    <span className="text-xs font-bold text-gray-800">{property.name}</span>
+                    <span className="text-[11px] text-gray-400">{propBills.length} bills · RM{propBills.reduce((s, b) => s + b.total_due, 0).toLocaleString()}</span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {propBills.map((bill) => {
+                      const isExpanded = expandedBill === bill.id
+                      return (
+                        <div key={bill.id}>
+                          <button onClick={() => setExpandedBill(isExpanded ? null : bill.id)}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors">
+                            <div className="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
+                              <span className="text-xs font-bold text-primary-600">{bill.tenant?.name?.[0]}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-900 text-sm truncate">{bill.tenant?.name}</p>
+                              <p className="text-[11px] text-gray-500">{bill.room?.label}</p>
+                            </div>
+                            <p className="font-bold text-gray-900 text-sm shrink-0">RM{bill.total_due}</p>
+                            <StatusBadge status={bill.status as 'paid' | 'overdue' | 'partial' | 'pending'} />
+                            {isExpanded ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+                          </button>
+                          {isExpanded && (
+                            <div className="px-4 pb-3 space-y-3">
+                              {/* Breakdown */}
+                              <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-sm">
+                                <div className="flex justify-between"><span className="text-gray-500">Rent</span><span>RM{bill.rent_amount}</span></div>
+                                {(bill.utility_breakdown as { type: string; amount: number }[])?.map((u) => (
+                                  <div key={u.type} className="flex justify-between"><span className="text-gray-500 capitalize">{u.type}</span><span>RM{u.amount}</span></div>
+                                ))}
+                                <hr className="border-gray-200" />
+                                <div className="flex justify-between font-bold"><span>Total</span><span>RM{bill.total_due}</span></div>
+                                {bill.total_paid > 0 && (
+                                  <>
+                                    <div className="flex justify-between text-green-600"><span>Paid</span><span>-RM{bill.total_paid}</span></div>
+                                    <div className="flex justify-between font-bold text-red-600"><span>Balance</span><span>RM{bill.total_due - bill.total_paid}</span></div>
+                                  </>
+                                )}
                               </div>
-                              <p className="font-bold text-gray-900 text-sm shrink-0">RM{bill.total_due}</p>
-                              <StatusBadge status={bill.status as 'paid' | 'overdue' | 'partial' | 'pending'} />
-                              {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-                            </button>
-                            {isExpanded && (
-                              <div className="px-4 pb-3 flex gap-2">
+                              {/* Actions */}
+                              <div className="flex gap-2">
                                 {bill.status !== 'paid' && (
-                                  <Button size="sm" icon={Check}
+                                  <Button size="sm" icon={Check} className="flex-1"
                                     onClick={() => setPaymentModal({ bill, amount: String(bill.total_due - bill.total_paid), method: 'bank_transfer' })}>
-                                    Rekod Bayaran
+                                    Record Payment
                                   </Button>
                                 )}
-                                <Button size="sm" variant="ghost" icon={MessageCircle} className="!text-green-600"
+                                <Button size="sm" variant="ghost" icon={MessageCircle} className="flex-1 !text-green-600"
                                   onClick={() => handleWhatsApp(bill, bill.status === 'paid' ? 'receipt' : bill.status === 'overdue' ? 'reminder' : 'bill')}>
-                                  {bill.status === 'paid' ? 'Resit' : bill.status === 'overdue' ? 'Peringatan' : 'Hantar Bil'}
+                                  {bill.status === 'paid' ? 'Receipt' : bill.status === 'overdue' ? 'Remind' : 'Send Bill'}
                                 </Button>
                               </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </Card>
-                </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </Card>
               ))}
             </div>
           )}
@@ -430,7 +490,7 @@ export default function BilPage() {
               style={{ animationDelay: '300ms' }}
             >
               <MessageCircle size={18} />
-              Hantar Semua Bil
+              Send All Bills
             </button>
           )}
         </>
@@ -587,6 +647,80 @@ export default function BilPage() {
           </div>
         )}
       </BottomSheet>
+    </div>
+  )
+}
+
+// === Chart Components ===
+
+function DonutChart({ size, strokeWidth, segments }: { size: number; strokeWidth: number; segments: { pct: number; color: string }[] }) {
+  const r = (size - strokeWidth) / 2
+  const circ = 2 * Math.PI * r
+  const center = size / 2
+  let cumulative = 0
+
+  return (
+    <svg width={size} height={size} className="-rotate-90">
+      <circle cx={center} cy={center} r={r} fill="none" strokeWidth={strokeWidth} stroke="rgba(255,255,255,0.12)" />
+      {segments.map((seg, i) => {
+        const offset = circ - seg.pct * circ
+        const dashOffset = circ * cumulative
+        cumulative += seg.pct
+        return seg.pct > 0 ? (
+          <circle key={i} cx={center} cy={center} r={r} fill="none"
+            strokeWidth={strokeWidth} stroke={seg.color} strokeLinecap="round"
+            strokeDasharray={`${seg.pct * circ} ${circ}`}
+            strokeDashoffset={-dashOffset}
+            className="transition-all duration-700 ease-out" />
+        ) : null
+      })}
+    </svg>
+  )
+}
+
+function LegendRow({ color, label, value }: { color: string; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+      <span className="text-[12px] text-white/70 flex-1">{label}</span>
+      <span className="text-[13px] font-bold text-white">{value}</span>
+    </div>
+  )
+}
+
+function MonthlyBarChart({ currentMonth }: { currentMonth: string; bills: unknown[] }) {
+  // Generate last 6 months labels
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(currentMonth + '-01')
+    d.setMonth(d.getMonth() - (5 - i))
+    return { key: d.toISOString().slice(0, 7), label: d.toLocaleDateString('en', { month: 'short' }) }
+  })
+
+  // Placeholder data (in real app, query historical bills)
+  const data = months.map((m, i) => ({
+    ...m,
+    expected: [1800, 2200, 2800, 3000, 3200, 3200][i] || 0,
+    collected: [1800, 2000, 2500, 2800, 3000, 2400][i] || 0,
+  }))
+
+  const maxVal = Math.max(...data.map(d => d.expected), 1)
+
+  return (
+    <div className="flex items-end justify-between gap-1" style={{ height: 52 }}>
+      {data.map((bar, i) => {
+        const expH = (bar.expected / maxVal) * 44
+        const colH = (bar.collected / maxVal) * 44
+        const isCurrent = bar.key === currentMonth
+        return (
+          <div key={bar.key} className="flex-1 flex flex-col items-center gap-1">
+            <div className="w-full flex gap-0.5 items-end" style={{ height: 44 }}>
+              <div className="flex-1 rounded-sm" style={{ height: expH, backgroundColor: 'rgba(255,255,255,0.12)' }} />
+              <div className="flex-1 rounded-sm" style={{ height: colH, backgroundColor: '#4ade80' }} />
+            </div>
+            <span className={`text-[8px] ${isCurrent ? 'text-white font-bold' : 'text-white/40'}`}>{bar.label}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }

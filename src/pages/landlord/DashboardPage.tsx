@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Users, AlertTriangle, Plus, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle, Clock, Home } from 'lucide-react'
+import { Building2, Users, AlertTriangle, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle, CreditCard, Bell, LinkIcon, FileCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Room, MonthlyBill, Profile, Property } from '@/types/database'
 import Card from '@/components/ui/Card'
@@ -10,6 +10,7 @@ import QuickActions from '@/components/ui/QuickActions'
 import EmptyState from '@/components/ui/EmptyState'
 import ActivityFeed from '@/components/ui/ActivityFeed'
 import { SkeletonDashboard } from '@/components/ui/Skeleton'
+import { BatikHeroOverlay } from '@/assets/batik/patterns'
 
 interface OverdueBill extends MonthlyBill {
   tenant: Profile
@@ -79,13 +80,6 @@ export default function DashboardPage() {
   const outstanding = stats.expectedIncome - stats.collectedIncome
   const occupancyPercent = stats.totalRooms > 0 ? Math.round((stats.occupiedRooms / stats.totalRooms) * 100) : 0
 
-  const quickActions = [
-    { icon: Building2, label: t('quick_actions.add_property'), to: '/properties/new', color: 'bg-primary-50 text-primary-600' },
-    { icon: FileText, label: t('quick_actions.generate_bills'), to: '/bil?tab=generate', color: 'bg-amber-50 text-amber-600' },
-    { icon: Receipt, label: t('quick_actions.view_bills'), to: '/bil', color: 'bg-green-50 text-green-600' },
-    { icon: BarChart3, label: t('quick_actions.reports'), to: '/account/reports/monthly', color: 'bg-purple-50 text-purple-600' },
-  ]
-
   return (
     <div className="space-y-5 animate-in">
       {/* Greeting */}
@@ -94,53 +88,39 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold text-gray-800">{profile?.name}</h1>
       </div>
 
-      {/* Revenue overview */}
-      <Card variant="hero" padding="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-white/70 text-sm font-medium">{t('dashboard.collection_this_month')}</p>
-          <Link to="/payments" className="text-white/60 hover:text-white text-xs flex items-center gap-1">
-            {t('dashboard.view_all')} <ArrowUpRight size={12} />
-          </Link>
-        </div>
-
-        <div className="flex items-end justify-between mb-4">
-          <div>
-            <p className="text-3xl font-bold tracking-tight">RM{stats.collectedIncome.toLocaleString()}</p>
-            <p className="text-white/60 text-sm mt-0.5">{t('dashboard.of')} RM{stats.expectedIncome.toLocaleString()}</p>
+      {/* Metrics Hero — Batik card with progress rings */}
+      <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-2xl shadow-md overflow-hidden">
+        <BatikHeroOverlay />
+        <div className="relative z-10 p-5">
+          {/* Rings row */}
+          <div className="flex justify-center gap-8 sm:gap-16 mb-4">
+            <ProgressRingHero label="Collection" value={`RM${stats.collectedIncome.toLocaleString()}`} sub={`of RM${stats.expectedIncome.toLocaleString()}`} percent={collectionPercent} size={88} />
+            <ProgressRingHero label="Occupancy" value={`${stats.occupiedRooms}/${stats.totalRooms}`} sub="rooms filled" percent={occupancyPercent} size={88} />
           </div>
-          <div className="text-right">
-            <div className="flex items-center gap-1 text-white/90">
-              <TrendingUp size={14} />
-              <span className="text-lg font-bold">{collectionPercent}%</span>
-            </div>
+          {/* Stats strip */}
+          <div className="flex bg-white/10 rounded-xl">
+            {[
+              [String(stats.totalProperties), t('dashboard.properties_label')],
+              [`${stats.occupiedRooms}/${stats.totalRooms}`, 'Rooms'],
+              [`RM${outstanding.toLocaleString()}`, 'Remaining'],
+              [String(stats.overdueCount), t('dashboard.overdue')],
+            ].map(([val, label], i, arr) => (
+              <div key={label} className={`flex-1 text-center py-2.5 ${i < arr.length - 1 ? 'border-r border-white/10' : ''}`}>
+                <p className="text-sm font-bold text-white">{val}</p>
+                <p className="text-[9px] text-white/60">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Progress bar */}
-        <div className="relative h-2 bg-white/20 rounded-full overflow-hidden">
-          <div
-            className="absolute inset-y-0 left-0 bg-white rounded-full transition-all duration-500"
-            style={{ width: `${collectionPercent}%` }}
-          />
-        </div>
-
-        {/* Bottom stats row */}
-        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/10">
-          {outstanding > 0 && (
-            <span className="text-xs text-white/70">
-              {t('dashboard.remaining')}: <strong className="text-white">RM{outstanding.toLocaleString()}</strong>
-            </span>
-          )}
-          {stats.overdueCount > 0 && (
-            <span className="bg-red-500/30 text-white text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-              <AlertTriangle size={10} /> {t('dashboard.overdue_count', { count: stats.overdueCount })}
-            </span>
-          )}
-        </div>
-      </Card>
-
-      {/* Quick actions */}
-      <QuickActions actions={quickActions} />
+      {/* Quick Actions */}
+      <QuickActions actions={[
+        { icon: Building2, label: t('quick_actions.add_property'), to: '/properties/new', color: 'bg-primary-50 text-primary-600' },
+        { icon: FileText, label: t('quick_actions.generate_bills'), to: '/bil?tab=generate', color: 'bg-amber-50 text-amber-600' },
+        { icon: Receipt, label: t('quick_actions.view_bills'), to: '/bil', color: 'bg-green-50 text-green-600' },
+        { icon: BarChart3, label: t('quick_actions.reports'), to: '/account/reports/monthly', color: 'bg-purple-50 text-purple-600' },
+      ]} />
 
       {/* Overdue action section */}
       {overdueBills.length > 0 && (
@@ -172,44 +152,50 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Key metrics — Progress Rings + Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <ProgressRingCard
-          to="/properties"
-          percent={occupancyPercent}
-          ringColor="stroke-blue-500"
-          ringBg="stroke-blue-100"
-          value={`${stats.occupiedRooms} / ${stats.totalRooms}`}
-          label={t('dashboard.rooms_filled')}
-          subtitle={`${occupancyPercent}% occupancy`}
-        />
-        <ProgressRingCard
-          to="/bil"
-          percent={collectionPercent}
-          ringColor="stroke-green-500"
-          ringBg="stroke-green-100"
-          value={`RM${stats.collectedIncome.toLocaleString()}`}
-          label={t('dashboard.collection_this_month')}
-          subtitle={`of RM${stats.expectedIncome.toLocaleString()}`}
-        />
-        <Link to="/properties" className="flex flex-col items-center justify-center bg-white rounded-2xl shadow-card p-4 active:scale-[0.97] transition-transform">
-          <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center mb-2">
-            <Building2 size={18} className="text-primary-600" />
-          </div>
-          <p className="text-xl font-bold text-gray-800">{stats.totalProperties}</p>
-          <p className="text-[11px] text-gray-500 font-medium">{t('dashboard.properties_label')}</p>
-        </Link>
-        <Link to="/bil" className="flex flex-col items-center justify-center bg-white rounded-2xl shadow-card p-4 active:scale-[0.97] transition-transform">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${stats.overdueCount > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
-            <AlertTriangle size={18} className={stats.overdueCount > 0 ? 'text-red-500' : 'text-green-500'} />
-          </div>
-          <p className={`text-xl font-bold ${stats.overdueCount > 0 ? 'text-red-600' : 'text-gray-800'}`}>{stats.overdueCount}</p>
-          <p className="text-[11px] text-gray-500 font-medium">{t('dashboard.overdue')}</p>
-        </Link>
-      </div>
-
       {/* Activity feed */}
       <ActivityFeed />
+
+      {/* Highlights */}
+      <div>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Highlights</h2>
+        <div className="space-y-3">
+          <HighlightCard
+            gradient="from-primary-600 via-primary-700 to-primary-800"
+            badge="NEW"
+            icon={CreditCard}
+            title="FPX Payments Now Live"
+            desc="Tenants can pay rent directly via FPX. Instant confirmation & auto-receipts."
+            to="/bil"
+          />
+          <HighlightCard
+            gradient="from-emerald-600 via-emerald-700 to-emerald-800"
+            badge="TIP"
+            icon={MessageCircle}
+            title="Send Bills via WhatsApp"
+            desc="Tap the green button on any bill to remind tenants instantly. Zero cost."
+            to="/bil"
+          />
+          <HighlightCard
+            gradient="from-purple-500 via-purple-700 to-purple-800"
+            badge="FEATURE"
+            icon={FileCheck}
+            title="Auto-generate Rental Agreements"
+            desc="Create professional PDF agreements when inviting tenants. One tap."
+            to="/tenants/new"
+          />
+          <HighlightCard
+            gradient="from-teal-500 via-teal-700 to-teal-800"
+            badge="TIP"
+            icon={LinkIcon}
+            title="Invite Tenants with a Link"
+            desc="Share an invite link via WhatsApp. Tenants sign up and join your property."
+            to="/tenants/new"
+          />
+        </div>
+      </div>
+
+      {/* Carousel — commented out for now */}
+      {/* <AnnouncementCarousel /> */}
 
       {/* Empty state */}
       {stats.totalProperties === 0 && (
@@ -224,42 +210,48 @@ export default function DashboardPage() {
   )
 }
 
-function ProgressRingCard({ to, percent, ringColor, ringBg, value, label, subtitle }: {
-  to: string
-  percent: number
-  ringColor: string
-  ringBg: string
-  value: string
-  label: string
-  subtitle: string
-}) {
-  const radius = 28
-  const stroke = 5
-  const circumference = 2 * Math.PI * radius
-  const offset = circumference - (Math.min(percent, 100) / 100) * circumference
+function ProgressRingHero({ label, value, sub, percent, size = 68 }: { label: string; value: string; sub?: string; percent: number; size?: number }) {
+  const r = (size - 12) / 2, sw = 6
+  const circ = 2 * Math.PI * r
+  const off = circ - (Math.min(percent, 100) / 100) * circ
+  const center = size / 2
 
   return (
-    <Link
-      to={to}
-      className="relative bg-white rounded-2xl shadow-md p-5 flex flex-col items-center gap-3 active:scale-[0.97] transition-transform"
-    >
+    <div className="flex flex-col items-center gap-2">
       <div className="relative">
-        <svg width="64" height="64" className="-rotate-90">
-          <circle cx="32" cy="32" r={radius} fill="none" strokeWidth={stroke} className={ringBg} />
-          <circle
-            cx="32" cy="32" r={radius} fill="none"
-            strokeWidth={stroke} strokeLinecap="round"
-            className={`${ringColor} transition-all duration-700 ease-out`}
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-          />
+        <svg width={size} height={size} className="-rotate-90">
+          <circle cx={center} cy={center} r={r} fill="none" strokeWidth={sw} stroke="rgba(255,255,255,0.15)" />
+          <circle cx={center} cy={center} r={r} fill="none" strokeWidth={sw} stroke="#4ade80" strokeLinecap="round"
+            strokeDasharray={circ} strokeDashoffset={off} className="transition-all duration-700 ease-out" />
         </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-700">{percent}%</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className={`${size >= 80 ? 'text-sm' : 'text-xs'} font-bold text-white leading-none`}>{value}</span>
+          <span className="text-[9px] text-white/60 mt-0.5">{percent}%</span>
+        </div>
       </div>
       <div className="text-center">
-        <p className="text-lg font-bold text-gray-800 leading-tight">{value}</p>
-        <p className="text-[11px] text-gray-500 font-medium mt-0.5">{label}</p>
-        {subtitle && <p className="text-[10px] text-gray-400 mt-0.5">{subtitle}</p>}
+        <p className="text-[11px] font-semibold text-white/90">{label}</p>
+        {sub && <p className="text-[9px] text-white/50">{sub}</p>}
+      </div>
+    </div>
+  )
+}
+
+function HighlightCard({ gradient, badge, icon: Icon, title, desc, to }: {
+  gradient: string; badge: string; icon: typeof CreditCard; title: string; desc: string; to: string
+}) {
+  return (
+    <Link to={to} className={`block relative bg-gradient-to-br ${gradient} rounded-2xl p-4 overflow-hidden active:scale-[0.98] transition-transform`}>
+      <BatikHeroOverlay />
+      <div className="relative z-10 flex items-center gap-4">
+        <div className="flex-1 min-w-0">
+          <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full mb-2">{badge}</span>
+          <p className="text-[15px] font-bold text-white leading-snug">{title}</p>
+          <p className="text-xs text-white/70 mt-1 leading-relaxed">{desc}</p>
+        </div>
+        <div className="shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+          <Icon size={20} className="text-white" />
+        </div>
       </div>
     </Link>
   )
