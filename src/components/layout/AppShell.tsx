@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
-import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, FileText, Globe, Flag } from 'lucide-react'
+import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, FileText, Globe, Flag, Crown } from 'lucide-react'
+import { getActiveSubscription, isOnTrial, trialDaysRemaining, type SubscriptionWithPlan } from '@/lib/subscription'
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
@@ -25,6 +26,7 @@ export default function AppShell() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [subscription, setSubscription] = useState<SubscriptionWithPlan | null>(null)
 
   const handleScroll = useCallback(() => {
     setScrolled(window.scrollY > 0)
@@ -38,6 +40,7 @@ export default function AppShell() {
   useEffect(() => {
     if (!profile || role !== 'landlord') return
     loadOverdueCount()
+    getActiveSubscription(profile.id).then(setSubscription)
   }, [profile, role])
 
   useEffect(() => {
@@ -225,6 +228,15 @@ export default function AppShell() {
         </nav>
 
         <main className="flex-1 p-4 sm:p-6 min-h-[calc(100vh-3.5rem)] pb-24 sm:pb-6 overflow-x-hidden">
+          {isOnTrial(subscription) && (
+            <Link to="/plans" className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 hover:border-amber-300 transition-colors">
+              <Crown size={16} className="text-amber-600 shrink-0" />
+              <span className="text-xs text-amber-900 flex-1">
+                <strong>Pro trial</strong> — {trialDaysRemaining(subscription)} days remaining
+              </span>
+              <span className="text-xs text-amber-700 font-semibold">Pick a plan →</span>
+            </Link>
+          )}
           <Outlet />
         </main>
       </div>
