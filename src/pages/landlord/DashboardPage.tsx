@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Users, AlertTriangle, Plus, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle } from 'lucide-react'
+import { Building2, Users, AlertTriangle, Plus, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle, Clock, Home } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Room, MonthlyBill, Profile, Property } from '@/types/database'
 import Card from '@/components/ui/Card'
@@ -142,9 +142,6 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <QuickActions actions={quickActions} />
 
-      {/* Activity feed */}
-      <ActivityFeed />
-
       {/* Overdue action section */}
       {overdueBills.length > 0 && (
         <div>
@@ -175,57 +172,44 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Key metrics — 2x2 grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card variant="default" padding="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
-              <Building2 size={16} className="text-primary-600" />
-            </div>
-            <Link to="/properties" className="text-gray-400 hover:text-primary-500">
-              <ArrowUpRight size={14} />
-            </Link>
+      {/* Key metrics — Progress Rings + Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <ProgressRingCard
+          to="/properties"
+          percent={occupancyPercent}
+          ringColor="stroke-blue-500"
+          ringBg="stroke-blue-100"
+          value={`${stats.occupiedRooms} / ${stats.totalRooms}`}
+          label={t('dashboard.rooms_filled')}
+          subtitle={`${occupancyPercent}% occupancy`}
+        />
+        <ProgressRingCard
+          to="/bil"
+          percent={collectionPercent}
+          ringColor="stroke-green-500"
+          ringBg="stroke-green-100"
+          value={`RM${stats.collectedIncome.toLocaleString()}`}
+          label={t('dashboard.collection_this_month')}
+          subtitle={`of RM${stats.expectedIncome.toLocaleString()}`}
+        />
+        <Link to="/properties" className="flex flex-col items-center justify-center bg-white rounded-2xl shadow-card p-4 active:scale-[0.97] transition-transform">
+          <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center mb-2">
+            <Building2 size={18} className="text-primary-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{stats.totalProperties}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.properties_label')}</p>
-        </Card>
-
-        <Card variant="default" padding="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-              <Users size={16} className="text-blue-600" />
-            </div>
-            <span className="text-xs text-gray-400">{occupancyPercent}%</span>
+          <p className="text-xl font-bold text-gray-800">{stats.totalProperties}</p>
+          <p className="text-[11px] text-gray-500 font-medium">{t('dashboard.properties_label')}</p>
+        </Link>
+        <Link to="/bil" className="flex flex-col items-center justify-center bg-white rounded-2xl shadow-card p-4 active:scale-[0.97] transition-transform">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${stats.overdueCount > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
+            <AlertTriangle size={18} className={stats.overdueCount > 0 ? 'text-red-500' : 'text-green-500'} />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{stats.occupiedRooms}<span className="text-base text-gray-400 font-normal">/{stats.totalRooms}</span></p>
-          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.rooms_filled')}</p>
-        </Card>
-
-        <Card variant="default" padding="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-              <TrendingUp size={16} className="text-green-600" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-gray-800">RM{stats.expectedIncome.toLocaleString()}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.expected')}</p>
-        </Card>
-
-        <Card variant="default" padding="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stats.overdueCount > 0 ? 'bg-red-50' : 'bg-gray-50'}`}>
-              <AlertTriangle size={16} className={stats.overdueCount > 0 ? 'text-red-500' : 'text-gray-400'} />
-            </div>
-            {stats.overdueCount > 0 && (
-              <Link to="/payments" className="text-red-400 hover:text-red-500">
-                <ArrowUpRight size={14} />
-              </Link>
-            )}
-          </div>
-          <p className={`text-2xl font-bold ${stats.overdueCount > 0 ? 'text-red-600' : 'text-gray-800'}`}>{stats.overdueCount}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{t('dashboard.overdue')}</p>
-        </Card>
+          <p className={`text-xl font-bold ${stats.overdueCount > 0 ? 'text-red-600' : 'text-gray-800'}`}>{stats.overdueCount}</p>
+          <p className="text-[11px] text-gray-500 font-medium">{t('dashboard.overdue')}</p>
+        </Link>
       </div>
+
+      {/* Activity feed */}
+      <ActivityFeed />
 
       {/* Empty state */}
       {stats.totalProperties === 0 && (
@@ -237,5 +221,46 @@ export default function DashboardPage() {
         />
       )}
     </div>
+  )
+}
+
+function ProgressRingCard({ to, percent, ringColor, ringBg, value, label, subtitle }: {
+  to: string
+  percent: number
+  ringColor: string
+  ringBg: string
+  value: string
+  label: string
+  subtitle: string
+}) {
+  const radius = 28
+  const stroke = 5
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (Math.min(percent, 100) / 100) * circumference
+
+  return (
+    <Link
+      to={to}
+      className="relative bg-white rounded-2xl shadow-md p-5 flex flex-col items-center gap-3 active:scale-[0.97] transition-transform"
+    >
+      <div className="relative">
+        <svg width="64" height="64" className="-rotate-90">
+          <circle cx="32" cy="32" r={radius} fill="none" strokeWidth={stroke} className={ringBg} />
+          <circle
+            cx="32" cy="32" r={radius} fill="none"
+            strokeWidth={stroke} strokeLinecap="round"
+            className={`${ringColor} transition-all duration-700 ease-out`}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+          />
+        </svg>
+        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-700">{percent}%</span>
+      </div>
+      <div className="text-center">
+        <p className="text-lg font-bold text-gray-800 leading-tight">{value}</p>
+        <p className="text-[11px] text-gray-500 font-medium mt-0.5">{label}</p>
+        {subtitle && <p className="text-[10px] text-gray-400 mt-0.5">{subtitle}</p>}
+      </div>
+    </Link>
   )
 }
