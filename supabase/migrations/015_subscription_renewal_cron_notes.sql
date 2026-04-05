@@ -1,0 +1,18 @@
+-- pg_cron job for daily subscription renewal processing.
+-- Schedule via Supabase Dashboard > Database > Cron Jobs (requires superuser, can't be in migration).
+--
+-- Add this cron job:
+--
+--   Name: subscription-renewal
+--   Schedule: 0 1 * * *        (9am MYT = 1am UTC, daily)
+--   Command: SELECT net.http_post(
+--     url := 'https://ijvzuuwihymlkbapauiy.supabase.co/functions/v1/subscription-renewal',
+--     headers := '{"Authorization": "Bearer <service_role_key>"}'::jsonb,
+--     body := '{}'::jsonb
+--   );
+--
+-- The edge function handles:
+--   1. Monthly renewals (create fresh bill, set past_due, email payment link)
+--   2. Dunning at day 7 past due
+--   3. Expire + move to Free plan at day 14 past due
+--   4. Annual reminder emails at T-14, T-3, T-0

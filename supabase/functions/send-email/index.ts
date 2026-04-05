@@ -15,10 +15,12 @@ const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'SewaKita <noreply@sewakita.app
 interface EmailRequest {
   to: string
   template: 'bill' | 'receipt' | 'overdue' | 'agreement' | 'welcome' | 'report'
+    | 'subscription-renewal' | 'subscription-dunning' | 'subscription-expired' | 'subscription-annual-reminder'
   data: Record<string, any>
   language: 'en' | 'ms'
-  tenant_id: string
-  property_id: string
+  tenant_id?: string
+  property_id?: string
+  landlord_id?: string
 }
 
 const TEMPLATES: Record<string, Record<string, { subject: string; body: (data: any) => string }>> = {
@@ -176,6 +178,92 @@ const TEMPLATES: Record<string, Record<string, { subject: string; body: (data: a
       `,
     },
   },
+  'subscription-renewal': {
+    en: {
+      subject: 'SewaKita — Time to renew your subscription',
+      body: (d) => `
+        <h2>Your subscription is up for renewal</h2>
+        <p>Hi ${d.landlord_name},</p>
+        <p>Your monthly SewaKita subscription (<strong>RM ${d.amount}</strong>) is ready to renew.</p>
+        <p><a href="${d.payment_url}" style="display:inline-block;padding:10px 20px;background:#1e5ab8;color:#fff;border-radius:8px;text-decoration:none;margin:12px 0">Pay Now</a></p>
+        <p>If you don't renew within 14 days, your account will be switched to the Free plan.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+    ms: {
+      subject: 'SewaKita — Masa untuk perbaharui langganan anda',
+      body: (d) => `
+        <h2>Langganan anda perlu diperbaharui</h2>
+        <p>Assalamualaikum ${d.landlord_name},</p>
+        <p>Langganan SewaKita bulanan anda (<strong>RM ${d.amount}</strong>) sedia untuk diperbaharui.</p>
+        <p><a href="${d.payment_url}" style="display:inline-block;padding:10px 20px;background:#1e5ab8;color:#fff;border-radius:8px;text-decoration:none;margin:12px 0">Bayar Sekarang</a></p>
+        <p>Jika tidak dibayar dalam 14 hari, akaun anda akan bertukar ke pelan Percuma.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+  },
+  'subscription-dunning': {
+    en: {
+      subject: 'SewaKita — Payment overdue ({{days_past}} days)',
+      body: (d) => `
+        <h2>Your payment is ${d.days_past} days overdue</h2>
+        <p>Hi ${d.landlord_name},</p>
+        <p>We haven't received your subscription payment yet. Please complete payment to keep your account active.</p>
+        <p>Log in to SewaKita and visit Plans to pay.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+    ms: {
+      subject: 'SewaKita — Bayaran tertunggak ({{days_past}} hari)',
+      body: (d) => `
+        <h2>Bayaran anda tertunggak ${d.days_past} hari</h2>
+        <p>Assalamualaikum ${d.landlord_name},</p>
+        <p>Kami masih belum menerima bayaran langganan anda. Sila selesaikan bayaran untuk kekalkan akaun anda aktif.</p>
+        <p>Log masuk ke SewaKita dan lawati Pelan untuk membayar.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+  },
+  'subscription-expired': {
+    en: {
+      subject: 'SewaKita — Switched to Free plan',
+      body: (d) => `
+        <h2>Account moved to Free plan</h2>
+        <p>Hi ${d.landlord_name},</p>
+        <p>Your subscription has expired and your account has been moved to the Free plan. You can still use SewaKita and upgrade anytime from the Plans page.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+    ms: {
+      subject: 'SewaKita — Ditukar ke pelan Percuma',
+      body: (d) => `
+        <h2>Akaun dipindahkan ke pelan Percuma</h2>
+        <p>Assalamualaikum ${d.landlord_name},</p>
+        <p>Langganan anda telah tamat dan akaun anda ditukar ke pelan Percuma. Anda masih boleh menggunakan SewaKita dan naik taraf bila-bila masa dari halaman Pelan.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+  },
+  'subscription-annual-reminder': {
+    en: {
+      subject: 'SewaKita — Annual renewal in {{days_out}} days',
+      body: (d) => `
+        <h2>Your annual subscription renews on ${String(d.period_end).slice(0, 10)}</h2>
+        <p>Hi ${d.landlord_name},</p>
+        <p>Just a heads-up that your annual subscription will renew in ${d.days_out} days. No action needed — we'll send a payment link on renewal day.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+    ms: {
+      subject: 'SewaKita — Pembaharuan tahunan dalam {{days_out}} hari',
+      body: (d) => `
+        <h2>Langganan tahunan anda akan diperbaharui pada ${String(d.period_end).slice(0, 10)}</h2>
+        <p>Assalamualaikum ${d.landlord_name},</p>
+        <p>Sekadar peringatan, langganan tahunan anda akan diperbaharui dalam ${d.days_out} hari. Tiada tindakan diperlukan — kami akan hantar pautan bayaran pada hari pembaharuan.</p>
+        <p>— SewaKita</p>
+      `,
+    },
+  },
 }
 
 Deno.serve(async (req) => {
@@ -218,15 +306,17 @@ Deno.serve(async (req) => {
     const result = await response.json()
     const status = response.ok ? 'sent' : 'failed'
 
-    // Log notification
-    await supabase.from('notification_log').insert({
-      tenant_id,
-      property_id,
-      channel: 'email',
-      type: template,
-      status,
-      detail: { subject, to, resend_id: result.id || null, error: result.message || null },
-    })
+    // Log notification (skipped for subscription emails — no tenant/property context)
+    if (tenant_id && property_id) {
+      await supabase.from('notification_log').insert({
+        tenant_id,
+        property_id,
+        channel: 'email',
+        type: template,
+        status,
+        detail: { subject, to, resend_id: result.id || null, error: result.message || null },
+      })
+    }
 
     return new Response(JSON.stringify({ success: response.ok, id: result.id }))
   } catch (error) {
