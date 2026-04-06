@@ -10,6 +10,9 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import StatusBadge from '@/components/ui/StatusBadge'
 import SplitMethodPicker from '@/components/billing/SplitMethodPicker'
+import ScanBillCTA from '@/components/billing/ScanBillCTA'
+import UtilityHistoryStrip from '@/components/billing/UtilityHistoryStrip'
+import { getSuggestedAmount, getLastNMonthsUtilities } from '@/lib/utilities'
 
 const UTILITY_ICONS: Record<string, typeof Zap> = { electric: Zap, water: Droplets, internet: Wifi }
 const UTILITY_LABELS: Record<string, string> = { electric: 'Elektrik (TNB)', water: 'Air (SYABAS)', internet: 'Internet' }
@@ -41,6 +44,8 @@ export default function UtilityEntrySheet({
   const [templates, setTemplates] = useState<UtilityTemplate[]>([])
   const [showUtilityForm, setShowUtilityForm] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [scanning, setScanning] = useState(false)
+  const [preFilled, setPreFilled] = useState(false)
   const [utilityForm, setUtilityForm] = useState({
     type: 'electric' as UtilityType,
     total_amount: '',
@@ -188,6 +193,31 @@ export default function UtilityEntrySheet({
 
   const occupiedRooms = rooms.filter((r) => r.status === 'occupied')
 
+  async function prefillAmount(type: UtilityType) {
+    const history = await getLastNMonthsUtilities(selectedProperty, type, 3, month)
+    const suggested = getSuggestedAmount(history)
+    if (suggested !== null) {
+      setUtilityForm(prev => ({ ...prev, total_amount: String(suggested) }))
+      setPreFilled(true)
+    }
+  }
+
+  async function openUtilityForm() {
+    if (showUtilityForm) {
+      setShowUtilityForm(false)
+      return
+    }
+    setShowUtilityForm(true)
+    prefillAmount(utilityForm.type)
+  }
+
+  async function handleScanFile(_file: File) {
+    // Phase 6 will implement: upload to storage, call parse-utility-bill, show ScanResultSheet
+    setScanning(true)
+    toast('Scan akan datang dalam fasa seterusnya')
+    setScanning(false)
+  }
+
   return (
     <BottomSheet open={open} onClose={onClose} title="Utiliti & Jana Bil">
       <div className="space-y-4">
@@ -196,11 +226,24 @@ export default function UtilityEntrySheet({
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </Select>
 
+        {/* Scan CTA */}
+        <ScanBillCTA
+          loading={scanning}
+          onFileSelected={handleScanFile}
+        />
+
+        {/* or divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="text-xs text-gray-400">atau key-in manual</span>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+
         {/* Utility bills */}
         <Card variant="elevated" padding="p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-gray-800">Bil Utiliti</h2>
-            <Button variant="ghost" size="sm" onClick={() => setShowUtilityForm(!showUtilityForm)}
+            <Button variant="ghost" size="sm" onClick={() => openUtilityForm()}
               icon={showUtilityForm ? ChevronUp : Plus}>
               {showUtilityForm ? 'Tutup' : 'Tambah'}
             </Button>
@@ -242,14 +285,32 @@ export default function UtilityEntrySheet({
           {showUtilityForm && (
             <form onSubmit={handleSaveUtility} className="space-y-3 bg-primary-50 rounded-xl p-4">
               <div className="grid grid-cols-2 gap-3">
-                <Select value={utilityForm.type} onChange={(e) => setUtilityForm({ ...utilityForm, type: e.target.value as UtilityType })}>
+                <Select value={utilityForm.type} onChange={(e) => {
+                  const type = e.target.value as UtilityType
+                  setUtilityForm({ ...utilityForm, type })
+                  prefillAmount(type)
+                }}>
                   <option value="electric">Elektrik (TNB)</option>
                   <option value="water">Air (SYABAS)</option>
                   <option value="internet">Internet</option>
                 </Select>
-                <Input type="number" required placeholder="Jumlah (RM)" value={utilityForm.total_amount}
-                  onChange={(e) => setUtilityForm({ ...utilityForm, total_amount: e.target.value })} />
+                <div className="relative">
+                  <Input type="number" required placeholder="Jumlah (RM)" value={utilityForm.total_amount}
+                    onChange={(e) => { setUtilityForm({ ...utilityForm, total_amount: e.target.value }); setPreFilled(false) }} />
+                  {preFilled && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-primary-100 text-primary-700 px-1.5 py-0.5 rounded-full font-semibold">
+                      Pre-filled
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {/* History strip */}
+              <UtilityHistoryStrip
+                propertyId={selectedProperty}
+                utilityType={utilityForm.type}
+                currentMonth={month}
+              />
               <SplitMethodPicker
                 value={utilityForm.split_method}
                 onChange={(method) => setUtilityForm({ ...utilityForm, split_method: method })}
@@ -275,7 +336,9 @@ export default function UtilityEntrySheet({
                   onChange={(e) => setUtilityForm({ ...utilityForm, fixed_amount: e.target.value })} />
               )}
 
-              <Button type="submit" fullWidth>Simpan Bil Utiliti</Button>
+              <Button type="submit" fullWidth>
+                {preFilled ? '✓ Looks right — save' : 'Simpan Bil Utiliti'}
+              </Button>
             </form>
           )}
         </Card>
