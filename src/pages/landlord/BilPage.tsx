@@ -110,12 +110,13 @@ export default function BilPage() {
       .select('month, total_due, total_paid, rooms!inner(properties!inner(landlord_id))')
       .in('month', months)
       .eq('rooms.properties.landlord_id', profile!.id)
+    const bills = (data || []) as { month: string; total_due: number; total_paid: number }[]
     const grouped = months.map(m => {
-      const monthBills = (data || []).filter((b: MonthlyBill) => b.month === m)
+      const monthBills = bills.filter(b => b.month === m)
       return {
         month: m,
-        expected: monthBills.reduce((s: number, b: MonthlyBill) => s + b.total_due, 0),
-        collected: monthBills.reduce((s: number, b: MonthlyBill) => s + b.total_paid, 0),
+        expected: monthBills.reduce((s, b) => s + b.total_due, 0),
+        collected: monthBills.reduce((s, b) => s + b.total_paid, 0),
       }
     })
     setMonthlyTrend(grouped)

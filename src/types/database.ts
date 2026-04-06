@@ -86,6 +86,8 @@ export interface UtilityTemplate {
   created_at: string
 }
 
+export type UtilityBillSource = 'manual' | 'scanned' | 'template'
+
 export interface UtilityBill {
   id: string
   property_id: string
@@ -95,6 +97,9 @@ export interface UtilityBill {
   split_method: SplitMethod
   per_room_readings?: SubMeterReading[]
   fixed_amount_per_room?: number
+  source: UtilityBillSource
+  scan_confidence?: Record<string, number>
+  scan_image_url?: string | null
   created_at: string
 }
 
