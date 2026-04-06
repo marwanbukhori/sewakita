@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt, ChevronDown, ChevronUp, CreditCard, Upload } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Receipt, ChevronDown, ChevronUp, CreditCard, Upload, FileCheck } from 'lucide-react'
 import type { MonthlyBill } from '@/types/database'
 import PaymentClaimSheet from '@/components/tenant/PaymentClaimSheet'
 import toast from 'react-hot-toast'
@@ -105,7 +106,15 @@ export default function TenantBillsPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      <h1 className="text-xl font-bold text-gray-800">{t('billing.title')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-800">{t('billing.title')}</h1>
+        {pendingClaimBillIds.size > 0 && (
+          <Link to="/tenant/claims" className="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-700">
+            <FileCheck size={14} />
+            My claims ({pendingClaimBillIds.size})
+          </Link>
+        )}
+      </div>
 
       {bills.length === 0 ? (
         <EmptyState icon={Receipt} title={t('billing.no_history')} />
