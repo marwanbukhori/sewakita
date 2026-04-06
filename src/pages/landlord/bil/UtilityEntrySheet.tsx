@@ -11,8 +11,10 @@ import Select from '@/components/ui/Select'
 import StatusBadge from '@/components/ui/StatusBadge'
 import SplitMethodPicker from '@/components/billing/SplitMethodPicker'
 import ScanBillCTA from '@/components/billing/ScanBillCTA'
+import ScanResultSheet from '@/components/billing/ScanResultSheet'
 import UtilityHistoryStrip from '@/components/billing/UtilityHistoryStrip'
 import { getSuggestedAmount, getLastNMonthsUtilities } from '@/lib/utilities'
+import type { ExtractionResult } from '../../../../supabase/functions/_shared/ocr-prompts'
 
 const UTILITY_ICONS: Record<string, typeof Zap> = { electric: Zap, water: Droplets, internet: Wifi }
 const UTILITY_LABELS: Record<string, string> = { electric: 'Elektrik (TNB)', water: 'Air (SYABAS)', internet: 'Internet' }
@@ -46,6 +48,9 @@ export default function UtilityEntrySheet({
   const [generating, setGenerating] = useState(false)
   const [scanning, setScanning] = useState(false)
   const [preFilled, setPreFilled] = useState(false)
+  const [scanResult, setScanResult] = useState<ExtractionResult | null>(null)
+  const [showScanResult, setShowScanResult] = useState(false)
+  const [scanHistoryAmounts, setScanHistoryAmounts] = useState<number[]>([])
   const [utilityForm, setUtilityForm] = useState({
     type: 'electric' as UtilityType,
     total_amount: '',
@@ -211,11 +216,74 @@ export default function UtilityEntrySheet({
     prefillAmount(utilityForm.type)
   }
 
-  async function handleScanFile(_file: File) {
-    // Phase 6 will implement: upload to storage, call parse-utility-bill, show ScanResultSheet
+  async function handleScanFile(file: File) {
     setScanning(true)
-    toast('Scan akan datang dalam fasa seterusnya')
+    try {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${selectedProperty}/${Date.now()}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('utility-scans')
+        .upload(path, file, { contentType: file.type })
+      if (uploadErr) throw new Error(uploadErr.message)
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-utility-bill`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_url: path, utility_type_hint: utilityForm.type }),
+        }
+      )
+      const data = await response.json()
+
+      if (data.success && data.extraction) {
+        setScanResult(data.extraction)
+        const history = await getLastNMonthsUtilities(selectedProperty, data.extraction.utility_type, 3, month)
+        setScanHistoryAmounts(history.map(h => h.total_amount))
+        setShowScanResult(true)
+      } else {
+        toast.error(data.error || 'Gagal membaca bil')
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload gagal')
+    }
     setScanning(false)
+  }
+
+  function handleScanAccept(extraction: ExtractionResult) {
+    setShowScanResult(false)
+    setUtilityForm(prev => ({
+      ...prev,
+      type: extraction.utility_type,
+      total_amount: String(extraction.total_amount),
+    }))
+    setPreFilled(true)
+    setShowUtilityForm(true)
+
+    supabase.from('utility_bills').insert({
+      property_id: selectedProperty, month,
+      type: extraction.utility_type,
+      total_amount: extraction.total_amount,
+      split_method: utilityForm.split_method,
+      source: 'scanned',
+      scan_confidence: extraction.confidence,
+    }).then(({ error }) => {
+      if (error) { toast.error('Gagal menyimpan.'); return }
+      toast.success('Bil utiliti disimpan!')
+      loadUtilities()
+      setShowUtilityForm(false)
+    })
+  }
+
+  function handleScanEdit(extraction: ExtractionResult) {
+    setShowScanResult(false)
+    setUtilityForm(prev => ({
+      ...prev,
+      type: extraction.utility_type,
+      total_amount: String(extraction.total_amount),
+    }))
+    setPreFilled(false)
+    setShowUtilityForm(true)
   }
 
   return (
@@ -376,6 +444,17 @@ export default function UtilityEntrySheet({
           )}
         </Card>
       </div>
+
+      {/* Scan result sheet */}
+      <ScanResultSheet
+        open={showScanResult}
+        onClose={() => setShowScanResult(false)}
+        extraction={scanResult}
+        historyAmounts={scanHistoryAmounts}
+        onAccept={handleScanAccept}
+        onRescan={() => { setShowScanResult(false); setScanResult(null) }}
+        onEdit={handleScanEdit}
+      />
     </BottomSheet>
   )
 }
