@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { BatikBackground } from '@/assets/batik/patterns'
 import type { MonthlyBill, Property, Room, Profile, PaymentMethod } from '@/types/database'
 import toast from 'react-hot-toast'
@@ -17,6 +17,7 @@ import { SkeletonList } from '@/components/ui/Skeleton'
 import MonthlyWorkflowCard from '@/components/billing/MonthlyWorkflowCard'
 import UtilityEntrySheet from './bil/UtilityEntrySheet'
 import GenerationReviewSheet from './bil/GenerationReviewSheet'
+import BillViewModal from '@/components/billing/BillViewModal'
 
 interface BillWithDetails extends MonthlyBill {
   room: Room & { property: Property }
@@ -35,6 +36,7 @@ export default function BilPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [expandedBill, setExpandedBill] = useState<string | null>(null)
   const [paymentModal, setPaymentModal] = useState<{ bill: BillWithDetails; amount: string; method: PaymentMethod } | null>(null)
+  const [viewBill, setViewBill] = useState<BillWithDetails | null>(null)
 
   // Properties + workflow
   const [properties, setProperties] = useState<Property[]>([])
@@ -337,6 +339,10 @@ export default function BilPage() {
                             )}
                           </div>
                           <div className="flex gap-2">
+                            <Button size="sm" variant="ghost" icon={Eye} className="flex-1"
+                              onClick={() => setViewBill(bill)}>
+                              Lihat Bil
+                            </Button>
                             {bill.status !== 'paid' && (
                               <Button size="sm" icon={Check} className="flex-1"
                                 onClick={() => setPaymentModal({ bill, amount: String(bill.total_due - bill.total_paid), method: 'bank_transfer' })}>
@@ -390,6 +396,9 @@ export default function BilPage() {
         month={month}
         onGenerated={handleBillsGenerated}
       />
+
+      {/* Bill view modal */}
+      <BillViewModal bill={viewBill} onClose={() => setViewBill(null)} />
 
       {/* Payment bottom sheet */}
       <BottomSheet open={!!paymentModal} onClose={() => setPaymentModal(null)} title="Rekod Bayaran">
