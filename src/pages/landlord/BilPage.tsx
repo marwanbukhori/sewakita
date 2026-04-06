@@ -16,6 +16,7 @@ import Select from '@/components/ui/Select'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import MonthlyWorkflowCard from '@/components/billing/MonthlyWorkflowCard'
 import UtilityEntrySheet from './bil/UtilityEntrySheet'
+import GenerationReviewSheet from './bil/GenerationReviewSheet'
 
 interface BillWithDetails extends MonthlyBill {
   room: Room & { property: Property }
@@ -40,6 +41,7 @@ export default function BilPage() {
   const [selectedProperty, setSelectedProperty] = useState<string>('')
   const [utilitiesCount, setUtilitiesCount] = useState(0)
   const [showUtilitySheet, setShowUtilitySheet] = useState(false)
+  const [showReviewSheet, setShowReviewSheet] = useState(false)
   const [monthlyTrend, setMonthlyTrend] = useState<{ month: string; expected: number; collected: number }[]>([])
 
   useEffect(() => {
@@ -191,6 +193,7 @@ export default function BilPage() {
     loadBills()
     loadUtilitiesCount()
     setShowUtilitySheet(false)
+    setShowReviewSheet(false)
   }
 
   return (
@@ -219,7 +222,7 @@ export default function BilPage() {
           totalBills: bills.length,
         }}
         onEnterUtilities={() => setShowUtilitySheet(true)}
-        onPreviewGenerate={() => setShowUtilitySheet(true)}
+        onPreviewGenerate={() => setShowReviewSheet(true)}
         onViewBills={() => setStatusFilter('all')}
         onSendReminders={() => unpaidBills.forEach(bill => handleWhatsApp(bill, bill.status === 'overdue' ? 'reminder' : 'bill'))}
       />
@@ -373,6 +376,15 @@ export default function BilPage() {
         onPropertyChange={setSelectedProperty}
         month={month}
         onBillsGenerated={handleBillsGenerated}
+      />
+
+      {/* Generation Review Sheet */}
+      <GenerationReviewSheet
+        open={showReviewSheet}
+        onClose={() => setShowReviewSheet(false)}
+        propertyId={selectedProperty}
+        month={month}
+        onGenerated={handleBillsGenerated}
       />
 
       {/* Payment bottom sheet */}
