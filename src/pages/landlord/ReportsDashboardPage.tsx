@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { Download, FileText, Calendar, AlertTriangle, Users, Home } from 'lucide-react'
+import { Download, FileText, Calendar, AlertTriangle, Users, Home, ChevronRight } from 'lucide-react'
 import { CHART_COLORS, CHART_FONT, formatRM, formatMonthShort, getLast12Months } from '@/lib/chart-theme'
 import { createReportPDF, addChartToPage, addStatCard, saveReport, captureChart } from '@/lib/report-pdf'
 import Card from '@/components/ui/Card'
@@ -136,20 +136,20 @@ export default function ReportsDashboardPage() {
   const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0
 
   const reportLinks = [
-    { to: '/reports/monthly', icon: Calendar, label: 'Kutipan Bulanan', desc: 'Expected vs collected per bulan' },
-    { to: '/reports/annual', icon: FileText, label: 'Laporan Cukai Tahunan', desc: 'Pendapatan sewa untuk LHDN' },
-    { to: '/reports/aging', icon: AlertTriangle, label: 'Tunggakan Penyewa', desc: 'Bil tertunggak & hari lewat' },
-    { to: '/reports/occupancy', icon: Home, label: 'Kadar Penghunian', desc: 'Bilik kosong & trend penghunian' },
-    { to: '/reports/agreements', icon: Users, label: 'Ringkasan Perjanjian', desc: 'Status perjanjian sewa' },
+    { to: '/reports/monthly', icon: Calendar, label: t('reports.monthly_collection'), desc: t('reports.monthly_collection_desc'), color: 'bg-blue-50 text-blue-600' },
+    { to: '/reports/annual', icon: FileText, label: t('reports.annual_tax'), desc: t('reports.annual_tax_desc'), color: 'bg-purple-50 text-purple-600' },
+    { to: '/reports/aging', icon: AlertTriangle, label: t('reports.tenant_aging'), desc: t('reports.tenant_aging_desc'), color: 'bg-red-50 text-red-600' },
+    { to: '/reports/occupancy', icon: Home, label: t('reports.occupancy_report'), desc: t('reports.occupancy_report_desc'), color: 'bg-green-50 text-green-600' },
+    { to: '/reports/agreements', icon: Users, label: t('reports.agreement_summary'), desc: t('reports.agreement_summary_desc'), color: 'bg-amber-50 text-amber-600' },
   ]
 
   return (
     <div className="space-y-4 animate-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Laporan</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('reports.dashboard_title')}</h1>
         <div className="flex items-center gap-2">
           <Select value={selectedProperty} onChange={e => setSelectedProperty(e.target.value)} className="!w-auto text-sm">
-            <option value="all">Semua hartanah</option>
+            <option value="all">{t('reports.all_properties')}</option>
             {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </Select>
           <Button size="sm" variant="secondary" icon={Download} onClick={handleExportPDF}>PDF</Button>
@@ -159,26 +159,26 @@ export default function ReportsDashboardPage() {
       {/* Quick stat cards */}
       <div className="grid grid-cols-2 gap-3">
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Pendapatan (12 bulan)</p>
+          <p className="text-[11px] text-gray-500">{t('reports.income_12m')}</p>
           <p className="text-lg font-bold text-gray-900">{formatRM(yearIncome)}</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Purata kutipan</p>
+          <p className="text-[11px] text-gray-500">{t('reports.avg_collection')}</p>
           <p className="text-lg font-bold text-primary-600">{avgCollection}%</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Penghunian</p>
+          <p className="text-[11px] text-gray-500">{t('reports.occupancy')}</p>
           <p className="text-lg font-bold text-gray-900">{occupancyRate}% <span className="text-sm font-normal text-gray-400">({occupiedRooms}/{totalRooms})</span></p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Jumlah tunggakan</p>
+          <p className="text-[11px] text-gray-500">{t('reports.total_arrears')}</p>
           <p className="text-lg font-bold text-red-600">{formatRM(totalArrears)}</p>
         </Card>
       </div>
 
       {/* Monthly Income Chart */}
       <Card variant="elevated" padding="p-4">
-        <p className="text-sm font-bold text-gray-800 mb-3">Pendapatan Bulanan</p>
+        <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.monthly_income')}</p>
         <div id="chart-monthly-income">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={monthlyData} barGap={2}>
@@ -195,7 +195,7 @@ export default function ReportsDashboardPage() {
 
       {/* Collection Trend Line */}
       <Card variant="elevated" padding="p-4">
-        <p className="text-sm font-bold text-gray-800 mb-3">Trend Kutipan (%)</p>
+        <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.collection_trend')}</p>
         <div id="chart-collection-trend">
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={monthlyData}>
@@ -211,14 +211,14 @@ export default function ReportsDashboardPage() {
 
       {/* Occupancy Donut */}
       <Card variant="elevated" padding="p-4">
-        <p className="text-sm font-bold text-gray-800 mb-3">Penghunian Semasa</p>
+        <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.current_occupancy')}</p>
         <div id="chart-occupancy" className="flex items-center justify-center">
           <ResponsiveContainer width={180} height={180}>
             <PieChart>
               <Pie
                 data={[
-                  { name: 'Dihuni', value: occupiedRooms },
-                  { name: 'Kosong', value: totalRooms - occupiedRooms },
+                  { name: t('reports.occupied'), value: occupiedRooms },
+                  { name: t('reports.vacant'), value: totalRooms - occupiedRooms },
                 ]}
                 cx="50%" cy="50%" innerRadius={50} outerRadius={75}
                 dataKey="value" strokeWidth={0}
@@ -232,34 +232,35 @@ export default function ReportsDashboardPage() {
           <div className="space-y-2 ml-4">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.primary }} />
-              <span className="text-sm text-gray-600">Dihuni ({occupiedRooms})</span>
+              <span className="text-sm text-gray-600">{t('reports.occupied')} ({occupiedRooms})</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.neutral }} />
-              <span className="text-sm text-gray-600">Kosong ({totalRooms - occupiedRooms})</span>
+              <span className="text-sm text-gray-600">{t('reports.vacant')} ({totalRooms - occupiedRooms})</span>
             </div>
           </div>
         </div>
       </Card>
 
       {/* Report links */}
-      <div className="space-y-2">
-        <p className="text-sm font-bold text-gray-800">Laporan Terperinci</p>
-        {reportLinks.map(r => (
-          <Link key={r.to} to={r.to}>
-            <Card variant="elevated" padding="p-3" className="hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                  <r.icon size={18} className="text-primary-600" />
+      <div>
+        <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.detailed_reports')}</p>
+        <div className="grid grid-cols-1 gap-3">
+          {reportLinks.map(r => (
+            <Link key={r.to} to={r.to} className="block">
+              <div className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-primary-100 active:scale-[0.98] transition-all">
+                <div className={`w-11 h-11 rounded-xl ${r.color} flex items-center justify-center shrink-0`}>
+                  <r.icon size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-800">{r.label}</p>
-                  <p className="text-[11px] text-gray-500">{r.desc}</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">{r.desc}</p>
                 </div>
+                <ChevronRight size={16} className="text-gray-300 shrink-0" />
               </div>
-            </Card>
-          </Link>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )

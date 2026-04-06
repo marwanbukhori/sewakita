@@ -70,13 +70,14 @@ export default function AppShell() {
 
   const landlordNav: NavItem[] = [
     { to: '/dashboard', label: t('nav.home'), icon: Home },
-    { to: '/bil', label: t('nav.billing'), icon: Receipt, badge: overdueCount, isCenter: true },
+    { to: '/bil', label: t('nav.billing'), icon: Receipt, badge: overdueCount },
+    { to: '/reports', label: t('nav.reports'), icon: BarChart3 },
     { to: '/properties', label: t('nav.properties'), icon: Building2 },
   ]
 
   const tenantNav: NavItem[] = [
     { to: '/tenant/dashboard', label: t('nav.home'), icon: Home },
-    { to: '/tenant/bills', label: t('nav.billing'), icon: Receipt, isCenter: true },
+    { to: '/tenant/bills', label: t('nav.billing'), icon: Receipt },
     { to: '/tenant/payments', label: t('nav.payments'), icon: CreditCard },
   ]
 
@@ -87,8 +88,7 @@ export default function AppShell() {
     { icon: User, label: t('account.personal_info'), to: '/account' },
     ...(role === 'landlord' ? [
       { icon: Building2, label: t('account.my_properties'), to: '/properties' },
-      { icon: CreditCard, label: 'Payment Settings', to: '/account/payment-settings' },
-      { icon: BarChart3, label: 'Laporan', to: '/reports' },
+      { icon: CreditCard, label: t('account.payment_settings', 'Payment Settings'), to: '/account/payment-settings' },
     ] : []),
     { icon: HelpCircle, label: t('menu.faq'), to: '/faq' },
     { icon: Flag, label: t('report.title'), to: '/report' },
@@ -249,44 +249,28 @@ export default function AppShell() {
             <BatikNavOverlay />
           </div>
 
-          <div className="relative grid grid-cols-3 items-end h-[68px]">
+          <div className={`relative grid ${nav.length === 4 ? 'grid-cols-4' : 'grid-cols-3'} items-end h-[60px]`}>
             {nav.map((item) => {
               const isActive = location.pathname === item.to ||
                 (item.to !== '/dashboard' && item.to !== '/tenant/dashboard' && location.pathname.startsWith(item.to))
-
-              if (item.isCenter) {
-                return (
-                  <NavLink key={item.to} to={item.to} className="relative flex flex-col items-center -mt-3">
-                    <div className={`relative flex items-center justify-center w-[54px] h-[54px] rounded-full transition-all active:scale-95 ${
-                      isActive
-                        ? 'bg-white text-primary-600 shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
-                        : 'bg-white/20 text-white shadow-lg backdrop-blur-sm'
-                    }`}>
-                      <BatikNavRing active={!isActive} />
-                      <item.icon size={24} strokeWidth={2} />
-                      {item.badge !== undefined && item.badge > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 bg-danger-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm">
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                    <span className={`text-[10px] mt-1 mb-1 font-semibold ${isActive ? 'text-white' : 'text-white/60'}`}>
-                      {item.label}
-                    </span>
-                  </NavLink>
-                )
-              }
 
               return (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={`relative flex flex-col items-center justify-center pb-2.5 pt-3 active:scale-95 ${
+                  className={`relative flex flex-col items-center justify-center pb-2 pt-2.5 active:scale-95 transition-all ${
                     isActive ? 'text-white' : 'text-white/50'
                   }`}
                 >
                   {isActive && <div className="absolute top-0 w-8 h-1 rounded-full bg-white" />}
-                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <div className="relative">
+                    <item.icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="absolute -top-1.5 -right-2 bg-danger-500 text-white text-[8px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
                   <span className={`text-[10px] mt-1 ${isActive ? 'font-bold' : 'font-medium'}`}>
                     {item.label}
                   </span>

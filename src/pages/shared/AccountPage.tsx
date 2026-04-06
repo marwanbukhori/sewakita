@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, ChevronRight, LogOut, Shield, User, BarChart3, FileText } from 'lucide-react'
+import { Building2, ChevronRight, LogOut, Shield, User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Card from '@/components/ui/Card'
@@ -25,13 +25,6 @@ export default function AccountPage() {
         ...(role === 'landlord' ? [{ icon: Building2, label: t('account.my_properties'), to: '/properties' }] : []),
       ],
     },
-    ...(role === 'landlord' ? [{
-      title: t('account.reports'),
-      items: [
-        { icon: BarChart3, label: t('account.monthly_report'), to: '/account/reports/monthly' },
-        { icon: FileText, label: t('account.annual_report'), to: '/account/reports/annual' },
-      ],
-    }] : []),
     {
       title: t('account.security'),
       items: [
