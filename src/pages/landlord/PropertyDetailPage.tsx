@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, ArrowLeft, Home, UserPlus, Pencil, Trash2, Phone, Mail, Calendar, LogOut as LogOutIcon, History, Link as LinkIcon, Clock, XCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Pencil, Clock, XCircle, Home } from 'lucide-react'
 import { format } from 'date-fns'
-import type { Property, Room, Tenancy, Profile, Invite } from '@/types/database'
+import type { Property, Room, Tenancy, Profile, Invite, MonthlyBill } from '@/types/database'
 import toast from 'react-hot-toast'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
-import Card from '@/components/ui/Card'
-import StatusBadge from '@/components/ui/StatusBadge'
 import EmptyState from '@/components/ui/EmptyState'
 import BottomSheet from '@/components/ui/BottomSheet'
 import { SkeletonList } from '@/components/ui/Skeleton'
+import { BatikHeroOverlay } from '@/assets/batik/patterns'
+import RoomDetailSheet from '@/components/property/RoomDetailSheet'
 
 interface RoomWithTenancy extends Room {
   tenancies: (Tenancy & { tenant: Profile })[]
@@ -26,11 +26,14 @@ export default function PropertyDetailPage() {
   const [property, setProperty] = useState<Property | null>(null)
   const [rooms, setRooms] = useState<RoomWithTenancy[]>([])
   const [loading, setLoading] = useState(true)
+  const [pendingInvites, setPendingInvites] = useState<Invite[]>([])
+  const [collectionRate, setCollectionRate] = useState(0)
+  const [selectedRoom, setSelectedRoom] = useState<RoomWithTenancy | null>(null)
+
+  // Add room state
   const [showAddRoom, setShowAddRoom] = useState(false)
   const [newRoom, setNewRoom] = useState({ label: '', rent_amount: '' })
   const [saving, setSaving] = useState(false)
-  const [pendingInvites, setPendingInvites] = useState<Invite[]>([])
-  const [expandedPastTenants, setExpandedPastTenants] = useState<string | null>(null)
 
   // Edit property state
   const [editingProperty, setEditingProperty] = useState(false)
@@ -47,51 +50,30 @@ export default function PropertyDetailPage() {
   async function loadProperty() {
     const [{ data: prop }, { data: roomsData }] = await Promise.all([
       supabase.from('properties').select('*').eq('id', id!).single(),
-      supabase
-        .from('rooms')
-        .select('*, tenancies(*, tenant:profiles!tenancies_tenant_id_fkey(*))')
-        .eq('property_id', id!)
-        .eq('is_active', true)
-        .order('label'),
+      supabase.from('rooms').select('*, tenancies(*, tenant:profiles!tenancies_tenant_id_fkey(*))')
+        .eq('property_id', id!).eq('is_active', true).order('label'),
     ])
 
     setProperty(prop)
     setRooms((roomsData as RoomWithTenancy[]) || [])
 
-    // Load pending invites for this property
     const { data: invitesData } = await supabase
-      .from('invites')
-      .select('*')
-      .eq('property_id', id!)
-      .eq('status', 'pending')
+      .from('invites').select('*').eq('property_id', id!).eq('status', 'pending')
     setPendingInvites(invitesData || [])
+
+    // Collection rate for current month
+    const currentMonth = new Date().toISOString().slice(0, 7)
+    const { data: bills } = await supabase
+      .from('monthly_bills').select('total_due, total_paid').eq('property_id', id!).eq('month', currentMonth)
+    const billRows = (bills || []) as { total_due: number; total_paid: number }[]
+    const totalDue = billRows.reduce((s, b) => s + b.total_due, 0)
+    const totalPaid = billRows.reduce((s, b) => s + b.total_paid, 0)
+    setCollectionRate(totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0)
 
     setLoading(false)
   }
 
-  async function handleRevokeInvite(inviteId: string) {
-    const { error } = await supabase.from('invites').update({ status: 'revoked' }).eq('id', inviteId)
-    if (error) { toast.error(t('properties.failed_revoke_invite')); return }
-    toast.success(t('properties.invite_revoked'))
-    loadProperty()
-  }
-
-  async function handleAddRoom(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    const { error } = await supabase.from('rooms').insert({
-      property_id: id!, label: newRoom.label, rent_amount: Number(newRoom.rent_amount),
-      status: 'vacant', is_active: true,
-    })
-    setSaving(false)
-    if (error) { toast.error(t('properties.failed_add_room')); return }
-    toast.success(t('properties.room_added'))
-    setNewRoom({ label: '', rent_amount: '' })
-    setShowAddRoom(false)
-    loadProperty()
-  }
-
-  // Edit property
+  // Property edit handlers
   function openEditProperty() {
     if (!property) return
     setEditPropertyForm({ name: property.name, address: property.address, billing_date: property.billing_date })
@@ -110,7 +92,22 @@ export default function PropertyDetailPage() {
     loadProperty()
   }
 
-  // Edit room
+  // Room handlers
+  async function handleAddRoom(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    const { error } = await supabase.from('rooms').insert({
+      property_id: id!, label: newRoom.label, rent_amount: Number(newRoom.rent_amount),
+      status: 'vacant', is_active: true,
+    })
+    setSaving(false)
+    if (error) { toast.error(t('properties.failed_add_room')); return }
+    toast.success(t('properties.room_added'))
+    setNewRoom({ label: '', rent_amount: '' })
+    setShowAddRoom(false)
+    loadProperty()
+  }
+
   function openEditRoom(room: RoomWithTenancy) {
     setEditRoomForm({ label: room.label, rent_amount: String(room.rent_amount) })
     setEditingRoom(room)
@@ -145,169 +142,193 @@ export default function PropertyDetailPage() {
   }
 
   if (loading) return <SkeletonList count={3} />
+  if (!property) return <div className="text-center py-12 text-gray-500">{t('properties.not_found')}</div>
 
-  if (!property) {
-    return <div className="text-center py-12 text-gray-500">{t('properties.not_found')}</div>
-  }
+  const occupied = rooms.filter(r => r.status === 'occupied').length
+  const monthlyIncome = rooms.filter(r => r.status === 'occupied').reduce((s, r) => s + r.rent_amount, 0)
+  const occupancyPct = rooms.length > 0 ? Math.round((occupied / rooms.length) * 100) : 0
 
   return (
-    <div className="space-y-4 animate-in">
-      <Button variant="ghost" size="sm" onClick={() => navigate('/properties')} icon={ArrowLeft}>
-        {t('properties.all_properties')}
-      </Button>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">{property.name}</h1>
-          <p className="text-sm text-gray-500">{property.address}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{t('properties.billing_day', { day: property.billing_date })}</p>
+    <div className="space-y-4 animate-in -mx-4 sm:mx-0">
+      {/* Hero header */}
+      <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 px-5 pt-4 pb-5 sm:rounded-2xl overflow-hidden">
+        <BatikHeroOverlay className="!opacity-[0.08]" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={() => navigate('/properties')} className="text-white/80 text-sm hover:text-white">
+              ← {t('properties.all_properties', 'Hartanah')}
+            </button>
+            <button onClick={openEditProperty} className="text-white/80 text-sm hover:text-white flex items-center gap-1">
+              <Pencil size={14} /> Edit
+            </button>
+          </div>
+          <h1 className="text-xl font-bold text-white">{property.name}</h1>
+          <p className="text-sm text-white/70 mt-1">📍 {property.address}</p>
+          <p className="text-xs text-white/50 mt-1">📅 {t('properties.billing_day', { day: property.billing_date })}</p>
         </div>
-        <Button variant="ghost" size="sm" icon={Pencil} onClick={openEditProperty}>
-          Edit
-        </Button>
       </div>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">{t('properties.rooms')} ({rooms.length})</h2>
+      {/* Stat cards */}
+      <div className="flex gap-2 px-4 sm:px-0">
+        <div className="flex-1 bg-white rounded-xl p-3 shadow-sm">
+          <p className="text-[10px] text-gray-500 font-medium">{t('reports.occupancy', 'Penghunian')}</p>
+          <p className="text-lg font-bold text-primary-700">{occupied}/{rooms.length}</p>
+          <p className="text-[10px] text-gray-400">{occupancyPct}%</p>
+        </div>
+        <div className="flex-1 bg-white rounded-xl p-3 shadow-sm">
+          <p className="text-[10px] text-gray-500 font-medium">{t('reports.monthly_income', 'Pendapatan')}</p>
+          <p className="text-lg font-bold text-gray-800">RM{monthlyIncome.toLocaleString()}</p>
+          <p className="text-[10px] text-gray-400">/bulan</p>
+        </div>
+        <div className="flex-1 bg-white rounded-xl p-3 shadow-sm">
+          <p className="text-[10px] text-gray-500 font-medium">{t('reports.collection_rate', 'Kutipan')}</p>
+          <p className={`text-lg font-bold ${collectionRate >= 80 ? 'text-green-600' : collectionRate >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+            {collectionRate}%
+          </p>
+          <p className="text-[10px] text-gray-400">{t('billing.this_month', 'Bulan ini')}</p>
+        </div>
+      </div>
+
+      {/* Section header */}
+      <div className="flex items-center justify-between px-4 sm:px-0">
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">
+          {t('properties.rooms')} ({rooms.length})
+        </h2>
         <Button variant="ghost" size="sm" icon={Plus} onClick={() => setShowAddRoom(true)}>
           {t('common.add')}
         </Button>
       </div>
 
+      {/* Add room form */}
       {showAddRoom && (
-        <Card variant="outlined" padding="p-4" className="bg-primary-50 !border-primary-200">
-          <form onSubmit={handleAddRoom} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <Input type="text" required value={newRoom.label}
-                onChange={(e) => setNewRoom({ ...newRoom, label: e.target.value })}
-                placeholder={t('properties.room_label')} />
-              <Input type="number" required value={newRoom.rent_amount}
-                onChange={(e) => setNewRoom({ ...newRoom, rent_amount: e.target.value })}
-                placeholder={t('properties.room_rent')} />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddRoom(false)}>{t('common.cancel')}</Button>
-              <Button type="submit" size="sm" loading={saving}>{t('common.save')}</Button>
-            </div>
-          </form>
-        </Card>
-      )}
-
-      {rooms.length === 0 ? (
-        <EmptyState icon={Home} title={t('properties.no_rooms')} description={t('properties.add_first_room')} />
-      ) : (
-        <div className="grid gap-3">
-          {rooms.map((room) => {
-            const activeTenancy = room.tenancies?.find((t) => t.status === 'active')
-            const pastTenancies = room.tenancies?.filter((t) => t.status === 'ended') || []
-            const tenant = activeTenancy?.tenant
-            return (
-              <Card key={room.id} variant="default" padding="p-4">
-                {/* Room header */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{room.label}</h3>
-                    <p className="text-sm text-gray-500">RM{room.rent_amount}{t('common.per_month')}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={() => openEditRoom(room)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100">
-                      <Pencil size={14} />
-                    </button>
-                    <StatusBadge status={room.status === 'occupied' ? 'occupied' : 'vacant'} />
-                  </div>
-                </div>
-
-                {/* Tenant details (if occupied) */}
-                {tenant && activeTenancy && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold shrink-0">
-                        {tenant.name?.charAt(0)?.toUpperCase() || '?'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-800 text-sm">{tenant.name}</p>
-                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
-                          {tenant.phone && <span className="flex items-center gap-1"><Phone size={10} /> {tenant.phone}</span>}
-                          {tenant.email && <span className="flex items-center gap-1 truncate"><Mail size={10} /> {tenant.email}</span>}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1"><Calendar size={10} /> {t('move_out.move_in_label')}: {format(new Date(activeTenancy.move_in), 'dd MMM yyyy')}</span>
-                      <span>{t('move_out.deposit_label')}: RM{activeTenancy.deposit}</span>
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      <Link to={`/bil`}>
-                        <Button variant="ghost" size="sm">{t('properties.view_bills')}</Button>
-                      </Link>
-                      <Link to={`/properties/${property.id}/rooms/${room.id}/move-out`}>
-                        <Button variant="ghost" size="sm" icon={LogOutIcon} className="!text-danger-500">{t('properties.move_out')}</Button>
-                      </Link>
-                    </div>
-                  </div>
-                )}
-
-                {/* Vacant: invite tenant CTA + pending invites */}
-                {room.status !== 'occupied' && (
-                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                    {pendingInvites.filter(inv => inv.room_id === room.id).map(inv => (
-                      <div key={inv.id} className="flex items-center gap-2 bg-amber-50 rounded-lg p-2.5">
-                        <Clock size={14} className="text-amber-600 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-amber-800">{t('properties.invite_pending')}</p>
-                          <p className="text-xs text-amber-600 truncate">{inv.email || t('properties.no_email')} — {t('properties.expires', { date: format(new Date(inv.expires_at), 'dd MMM') })}</p>
-                        </div>
-                        <button onClick={() => handleRevokeInvite(inv.id)} className="p-1 rounded-lg text-amber-500 hover:text-red-500 hover:bg-red-50">
-                          <XCircle size={14} />
-                        </button>
-                      </div>
-                    ))}
-                    <Link to={`/tenants/new?room_id=${room.id}&property_id=${property.id}`}>
-                      <Button variant="ghost" size="sm" icon={UserPlus} fullWidth>
-                        {t('properties.invite_tenant')}
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-
-                {/* Past tenants */}
-                {pastTenancies.length > 0 && (
-                  <div className="mt-2">
-                    <button
-                      onClick={() => setExpandedPastTenants(expandedPastTenants === room.id ? null : room.id)}
-                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
-                    >
-                      <History size={10} /> {t('properties.past_tenants', { count: pastTenancies.length })}
-                      {expandedPastTenants === room.id ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                    </button>
-                    {expandedPastTenants === room.id && (
-                      <div className="mt-2 space-y-1.5 animate-in">
-                        {pastTenancies.map(pt => (
-                          <div key={pt.id} className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2 flex items-center justify-between">
-                            <span>{pt.tenant?.name || 'Unknown'}</span>
-                            <span>{pt.move_in} → {pt.move_out || '—'}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Card>
-            )
-          })}
+        <div className="px-4 sm:px-0">
+          <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
+            <form onSubmit={handleAddRoom} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Input type="text" required value={newRoom.label}
+                  onChange={e => setNewRoom({ ...newRoom, label: e.target.value })}
+                  placeholder={t('properties.room_label')} />
+                <Input type="number" required value={newRoom.rent_amount}
+                  onChange={e => setNewRoom({ ...newRoom, rent_amount: e.target.value })}
+                  placeholder={t('properties.room_rent')} />
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddRoom(false)}>{t('common.cancel')}</Button>
+                <Button type="submit" size="sm" loading={saving}>{t('common.save')}</Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
+
+      {/* Room grid */}
+      <div className="px-4 sm:px-0">
+        {rooms.length === 0 ? (
+          <EmptyState icon={Home} title={t('properties.no_rooms')} description={t('properties.add_first_room')} />
+        ) : (
+          <div className="space-y-3">
+            {rooms.map(room => {
+              const activeTenancy = room.tenancies?.find(t => t.status === 'active')
+              const tenant = activeTenancy?.tenant
+              const isOccupied = room.status === 'occupied' && tenant
+              const roomInvites = pendingInvites.filter(inv => inv.room_id === room.id)
+
+              if (isOccupied) {
+                return (
+                  <button
+                    key={room.id}
+                    onClick={() => setSelectedRoom(room)}
+                    className="w-full flex items-center gap-3 bg-white rounded-xl p-3.5 shadow-sm border border-gray-100 hover:shadow-md hover:border-primary-100 active:scale-[0.98] transition-all text-left"
+                  >
+                    {/* Green accent */}
+                    <div className="w-1 h-12 rounded-full bg-green-500 shrink-0" />
+                    {/* Avatar */}
+                    <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold shrink-0">
+                      {tenant.name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-800">{room.label}</span>
+                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">{t('properties.occupied', 'Dihuni')}</span>
+                      </div>
+                      <p className="text-sm text-gray-700 truncate">{tenant.name}</p>
+                      <p className="text-[11px] text-gray-400">RM{room.rent_amount}/bln · 📱 {tenant.phone || '—'}</p>
+                    </div>
+                    <span className="text-gray-300 text-lg">›</span>
+                  </button>
+                )
+              }
+
+              // Vacant room
+              return (
+                <div key={room.id} className="bg-white rounded-xl p-3.5 border border-dashed border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-10 rounded-full bg-gray-300 shrink-0" />
+                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm font-medium shrink-0">?</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-800">{room.label}</span>
+                        <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-semibold">{t('properties.vacant', 'Kosong')}</span>
+                        <button onClick={(e) => { e.stopPropagation(); openEditRoom(room) }} className="p-1 rounded text-gray-300 hover:text-gray-500">
+                          <Pencil size={12} />
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-400">{t('properties.no_tenant', 'Tiada penyewa')}</p>
+                      <p className="text-[11px] text-gray-400">RM{room.rent_amount}/bln</p>
+                    </div>
+                    <Link to={`/tenants/new?room_id=${room.id}&property_id=${property.id}`}
+                      className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg hover:bg-primary-100 shrink-0">
+                      + {t('properties.invite_short', 'Jemput')}
+                    </Link>
+                  </div>
+
+                  {/* Pending invites */}
+                  {roomInvites.length > 0 && (
+                    <div className="mt-2.5 space-y-1.5">
+                      {roomInvites.map(inv => (
+                        <div key={inv.id} className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
+                          <Clock size={12} className="text-amber-600 shrink-0" />
+                          <p className="text-[11px] text-amber-700 flex-1 truncate">
+                            {inv.email || t('properties.no_email')} · {t('properties.expires', { date: format(new Date(inv.expires_at), 'dd MMM') })}
+                          </p>
+                          <button onClick={() => {
+                            supabase.from('invites').update({ status: 'revoked' }).eq('id', inv.id)
+                              .then(() => { toast.success(t('properties.invite_revoked')); loadProperty() })
+                          }} className="p-0.5 text-amber-500 hover:text-red-500">
+                            <XCircle size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Room detail bottom sheet */}
+      <RoomDetailSheet
+        open={!!selectedRoom}
+        onClose={() => setSelectedRoom(null)}
+        room={selectedRoom}
+        property={property}
+        pendingInvites={pendingInvites}
+        onRefresh={loadProperty}
+      />
 
       {/* Edit Property BottomSheet */}
       <BottomSheet open={editingProperty} onClose={() => setEditingProperty(false)} title={t('properties.edit_property')}>
         <div className="space-y-4">
           <Input label={t('properties.name')} value={editPropertyForm.name}
-            onChange={(e) => setEditPropertyForm({ ...editPropertyForm, name: e.target.value })} />
+            onChange={e => setEditPropertyForm({ ...editPropertyForm, name: e.target.value })} />
           <Input label={t('properties.address')} value={editPropertyForm.address}
-            onChange={(e) => setEditPropertyForm({ ...editPropertyForm, address: e.target.value })} />
+            onChange={e => setEditPropertyForm({ ...editPropertyForm, address: e.target.value })} />
           <Select label={t('properties.billing_date')} value={editPropertyForm.billing_date}
-            onChange={(e) => setEditPropertyForm({ ...editPropertyForm, billing_date: Number(e.target.value) })}>
-            {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
+            onChange={e => setEditPropertyForm({ ...editPropertyForm, billing_date: Number(e.target.value) })}>
+            {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
               <option key={d} value={d}>{t('properties.day', { day: d })}</option>
             ))}
           </Select>
@@ -323,18 +344,16 @@ export default function PropertyDetailPage() {
         {editingRoom && (
           <div className="space-y-4">
             <Input label={t('properties.room_label_edit')} value={editRoomForm.label}
-              onChange={(e) => setEditRoomForm({ ...editRoomForm, label: e.target.value })} />
+              onChange={e => setEditRoomForm({ ...editRoomForm, label: e.target.value })} />
             <Input label={t('properties.room_rent_edit')} type="number" value={editRoomForm.rent_amount}
-              onChange={(e) => setEditRoomForm({ ...editRoomForm, rent_amount: e.target.value })} />
+              onChange={e => setEditRoomForm({ ...editRoomForm, rent_amount: e.target.value })} />
             <div className="flex gap-3 pt-2">
               <Button variant="secondary" className="flex-1" onClick={() => setEditingRoom(null)}>{t('common.cancel')}</Button>
               <Button className="flex-1" loading={saving} onClick={handleSaveRoom}>{t('common.save')}</Button>
             </div>
-
-            {/* Deactivate — only for vacant rooms */}
             {editingRoom.status === 'vacant' && (
               <div className="pt-3 border-t border-gray-100">
-                <Button variant="danger" fullWidth size="sm" icon={Trash2} onClick={handleDeactivateRoom} loading={saving}>
+                <Button variant="danger" fullWidth size="sm" onClick={handleDeactivateRoom} loading={saving}>
                   {t('properties.deactivate_room')}
                 </Button>
                 <p className="text-xs text-gray-400 text-center mt-2">{t('properties.deactivate_warning')}</p>

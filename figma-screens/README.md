@@ -18,5 +18,6 @@ Paste each script into Figma's Plugin Dev Console to generate screens.
 | 5 | `05-tenant-screens.js` | Tenant & Shared | Tenant Dashboard, Bills, Payments, Payment Success |
 | 6 | `06-shared-screens.js` | Tenant & Shared | Account, Profile Edit, FAQ, Report, Monthly Report |
 | 8 | `08-ocr-smart-templates.js` | Landlord Flow | Smart Entry, Scan Result, Anomaly Warning |
+| 9 | `09-property-detail-revamp.js` | Landlord Flow | Property Detail, Room Occupied, Room Vacant |
 
 **Note:** Each script is self-contained with all helpers. Just switch to the right page and paste.
