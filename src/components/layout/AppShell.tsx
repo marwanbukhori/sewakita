@@ -190,14 +190,9 @@ export default function AppShell() {
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
             }><User size={20} /><span>{t('nav.account')}</span></NavLink>
             {role === 'landlord' && (
-              <>
-                <NavLink to="/account/reports/monthly" className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
-                }><BarChart3 size={20} /><span>{t('reports.monthly_title')}</span></NavLink>
-                <NavLink to="/account/reports/annual" className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
-                }><FileText size={20} /><span>{t('reports.annual_title')}</span></NavLink>
-              </>
+              <NavLink to="/account/payment-settings" className={({ isActive }) =>
+                `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
+              }><CreditCard size={20} /><span>{t('account.payment_settings', 'Payment Settings')}</span></NavLink>
             )}
             <NavLink to="/faq" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
