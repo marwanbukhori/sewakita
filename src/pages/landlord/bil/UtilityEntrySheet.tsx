@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import StatusBadge from '@/components/ui/StatusBadge'
+import SplitMethodPicker from '@/components/billing/SplitMethodPicker'
 
 const UTILITY_ICONS: Record<string, typeof Zap> = { electric: Zap, water: Droplets, internet: Wifi }
 const UTILITY_LABELS: Record<string, string> = { electric: 'Elektrik (TNB)', water: 'Air (SYABAS)', internet: 'Internet' }
@@ -249,12 +250,12 @@ export default function UtilityEntrySheet({
                 <Input type="number" required placeholder="Jumlah (RM)" value={utilityForm.total_amount}
                   onChange={(e) => setUtilityForm({ ...utilityForm, total_amount: e.target.value })} />
               </div>
-              <Select value={utilityForm.split_method} onChange={(e) => setUtilityForm({ ...utilityForm, split_method: e.target.value as SplitMethod })}>
-                <option value="sub_meter">Sub-meter (kWh per bilik)</option>
-                <option value="equal">Bahagi sama rata</option>
-                <option value="fixed">Jumlah tetap per bilik</option>
-                <option value="absorbed">Tuan rumah tanggung</option>
-              </Select>
+              <SplitMethodPicker
+                value={utilityForm.split_method}
+                onChange={(method) => setUtilityForm({ ...utilityForm, split_method: method })}
+                totalAmount={Number(utilityForm.total_amount) || 0}
+                occupiedRoomCount={occupiedRooms.length}
+              />
 
               {utilityForm.split_method === 'sub_meter' && (
                 <div className="space-y-2">
