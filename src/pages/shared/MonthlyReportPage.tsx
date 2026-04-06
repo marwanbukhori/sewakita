@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download, FileDown } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { MonthlyBill, Room, Property, Profile } from '@/types/database'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -12,6 +13,8 @@ import StatusBadge from '@/components/ui/StatusBadge'
 import SectionHeader from '@/components/ui/SectionHeader'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import { downloadCSV } from '@/lib/csv'
+import { CHART_COLORS, CHART_FONT, formatRM } from '@/lib/chart-theme'
+import { createReportPDF, addChartToPage, addStatCard, addTableRows, saveReport, captureChart } from '@/lib/report-pdf'
 
 interface BillReport extends MonthlyBill {
   room: Room & { property: Property }
@@ -65,6 +68,37 @@ export default function MonthlyReportPage() {
   const totalCollected = bills.reduce((s, b) => s + b.total_paid, 0)
   const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0
 
+  // Chart data by property
+  const chartData = Object.values(
+    bills.reduce<Record<string, { name: string; expected: number; collected: number }>>((acc, b) => {
+      const propName = b.room?.property?.name || 'Lain-lain'
+      const propId = (b.room?.property as Property & { id?: string })?.id || 'unknown'
+      if (!acc[propId]) acc[propId] = { name: propName, expected: 0, collected: 0 }
+      acc[propId].expected += b.total_due
+      acc[propId].collected += b.total_paid
+      return acc
+    }, {})
+  )
+
+  async function handleExportPDF() {
+    const doc = createReportPDF('Laporan Kutipan Bulanan', month)
+    let y = 50
+    addStatCard(doc, 'Dijangka', formatRM(totalExpected), 20, y)
+    addStatCard(doc, 'Dikutip', formatRM(totalCollected), 65, y)
+    addStatCard(doc, 'Kadar', `${collectionRate}%`, 110, y)
+    y += 28
+    try {
+      const img = await captureChart('chart-monthly-collection')
+      y = addChartToPage(doc, img, y, 70)
+    } catch { /* */ }
+    y = addTableRows(doc,
+      ['Hartanah', 'Bilik', 'Penyewa', 'Dijangka', 'Dikutip', 'Status'],
+      bills.map(b => [b.room?.property?.name || '', b.room?.label || '', b.tenant?.name || '', String(b.total_due), String(b.total_paid), b.status]),
+      y
+    )
+    saveReport(doc, 'Kutipan', month)
+  }
+
   // Group by property
   const grouped = bills.reduce<Record<string, { name: string; bills: BillReport[] }>>((acc, b) => {
     const propName = b.room?.property?.name || 'Lain-lain'
@@ -84,9 +118,10 @@ export default function MonthlyReportPage() {
 
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-800">{t('reports.monthly_title')}</h1>
-        <Button variant="ghost" size="sm" icon={Download} onClick={handleExport}>
-          CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" icon={Download} onClick={handleExport}>CSV</Button>
+          <Button variant="ghost" size="sm" icon={FileDown} onClick={handleExportPDF}>PDF</Button>
+        </div>
       </div>
 
       <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
@@ -111,6 +146,25 @@ export default function MonthlyReportPage() {
           <div className="absolute inset-y-0 left-0 bg-white rounded-full transition-all" style={{ width: `${collectionRate}%` }} />
         </div>
       </Card>
+
+      {/* Per-property chart */}
+      {chartData.length > 0 && (
+        <Card variant="elevated" padding="p-4">
+          <p className="text-sm font-bold text-gray-800 mb-3">Kutipan per Hartanah</p>
+          <div id="chart-monthly-collection">
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={chartData} barGap={2}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ ...CHART_FONT, fontSize: 10 }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ ...CHART_FONT, fontSize: 10 }} tickLine={false} axisLine={false} width={40} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v) => formatRM(Number(v))} labelStyle={CHART_FONT} />
+                <Bar dataKey="expected" name="Dijangka" fill={CHART_COLORS.neutral} radius={[3, 3, 0, 0]} />
+                <Bar dataKey="collected" name="Dikutip" fill={CHART_COLORS.success} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
 
       {/* Per-property breakdown */}
       {bills.length === 0 ? (
