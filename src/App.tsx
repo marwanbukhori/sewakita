@@ -24,6 +24,7 @@ import NotificationSettingsPage from '@/pages/landlord/NotificationSettingsPage'
 import PlansPage from '@/pages/landlord/PlansPage'
 import SubscriptionSuccessPage from '@/pages/landlord/SubscriptionSuccessPage'
 import PaymentSettingsPage from '@/pages/landlord/PaymentSettingsPage'
+import ReportsDashboardPage from '@/pages/landlord/ReportsDashboardPage'
 
 import TenantDashboard from '@/pages/tenant/TenantDashboard'
 import TenantBillsPage from '@/pages/tenant/TenantBillsPage'
@@ -128,8 +129,12 @@ function AppRoutes() {
         <Route path="/account/edit" element={<ProfileEditPage />} />
         <Route path="/account/password" element={<ChangePasswordPage />} />
         <Route path="/report" element={<ReportPage />} />
-        <Route path="/account/reports/monthly" element={<MonthlyReportPage />} />
-        <Route path="/account/reports/annual" element={<AnnualReportPage />} />
+        <Route path="/reports" element={<ReportsDashboardPage />} />
+        <Route path="/reports/monthly" element={<MonthlyReportPage />} />
+        <Route path="/reports/annual" element={<AnnualReportPage />} />
+        {/* Legacy redirects */}
+        <Route path="/account/reports/monthly" element={<Navigate to="/reports/monthly" replace />} />
+        <Route path="/account/reports/annual" element={<Navigate to="/reports/annual" replace />} />
         <Route path="/faq" element={<FAQPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
