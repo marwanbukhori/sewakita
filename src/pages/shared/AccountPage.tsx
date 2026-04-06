@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, ChevronRight, LogOut, Shield, User } from 'lucide-react'
+import { ChevronRight, LogOut, Shield, User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Card from '@/components/ui/Card'
@@ -22,7 +22,6 @@ export default function AccountPage() {
       title: t('account.title'),
       items: [
         { icon: User, label: t('account.personal_info'), to: '/account/edit' },
-        ...(role === 'landlord' ? [{ icon: Building2, label: t('account.my_properties'), to: '/properties' }] : []),
       ],
     },
     {

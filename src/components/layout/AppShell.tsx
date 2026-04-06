@@ -87,7 +87,6 @@ export default function AppShell() {
   const menuItems = [
     { icon: User, label: t('account.personal_info'), to: '/account' },
     ...(role === 'landlord' ? [
-      { icon: Building2, label: t('account.my_properties'), to: '/properties' },
       { icon: CreditCard, label: t('account.payment_settings', 'Payment Settings'), to: '/account/payment-settings' },
     ] : []),
     { icon: HelpCircle, label: t('menu.faq'), to: '/faq' },
