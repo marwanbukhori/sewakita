@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
+import { CreditCard, Check, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Eye, Bell } from 'lucide-react'
 import { BatikBackground } from '@/assets/batik/patterns'
 import type { MonthlyBill, Property, Room, Profile, PaymentMethod } from '@/types/database'
 import toast from 'react-hot-toast'
@@ -18,6 +18,7 @@ import MonthlyWorkflowCard from '@/components/billing/MonthlyWorkflowCard'
 import UtilityEntrySheet from './bil/UtilityEntrySheet'
 import GenerationReviewSheet from './bil/GenerationReviewSheet'
 import BillViewModal from '@/components/billing/BillViewModal'
+import PaymentClaimReview, { type ClaimWithDetails } from '@/components/billing/PaymentClaimReview'
 
 interface BillWithDetails extends MonthlyBill {
   room: Room & { property: Property }
@@ -37,6 +38,8 @@ export default function BilPage() {
   const [expandedBill, setExpandedBill] = useState<string | null>(null)
   const [paymentModal, setPaymentModal] = useState<{ bill: BillWithDetails; amount: string; method: PaymentMethod } | null>(null)
   const [viewBill, setViewBill] = useState<BillWithDetails | null>(null)
+  const [pendingClaims, setPendingClaims] = useState<ClaimWithDetails[]>([])
+  const [reviewClaim, setReviewClaim] = useState<ClaimWithDetails | null>(null)
 
   // Properties + workflow
   const [properties, setProperties] = useState<Property[]>([])
@@ -56,6 +59,7 @@ export default function BilPage() {
     loadBills()
     loadMonthlyTrend()
     loadUtilitiesCount()
+    loadPendingClaims()
   }, [profile, month])
 
   async function loadProperties() {
@@ -106,6 +110,21 @@ export default function BilPage() {
       }
     })
     setMonthlyTrend(grouped)
+  }
+
+  async function loadPendingClaims() {
+    const { data } = await supabase
+      .from('payment_claims')
+      .select('*, tenant:profiles!payment_claims_tenant_id_fkey(*), bill:monthly_bills!payment_claims_bill_id_fkey(*, room:rooms(label, property:properties(name, landlord_id)))')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+    const myClaims = (data || []).filter((c: any) => c.bill?.room?.property?.landlord_id === profile!.id)
+      .map((c: any) => ({
+        ...c,
+        room_label: c.bill?.room?.label,
+        property_name: c.bill?.room?.property?.name,
+      }))
+    setPendingClaims(myClaims)
   }
 
   // === Payment functions ===
@@ -231,6 +250,31 @@ export default function BilPage() {
         }}
         onSendReminders={() => unpaidBills.forEach(bill => handleWhatsApp(bill, bill.status === 'overdue' ? 'reminder' : 'bill'))}
       />
+
+      {/* Pending payment claims */}
+      {pendingClaims.length > 0 && (
+        <Card variant="default" padding="p-0" className="border border-amber-200 bg-amber-50/50">
+          <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+            <Bell size={16} className="text-amber-600" />
+            <span className="text-xs font-bold text-amber-900">Payment Claims</span>
+            <span className="bg-amber-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pendingClaims.length}</span>
+          </div>
+          <div className="divide-y divide-amber-200/50">
+            {pendingClaims.map((claim) => (
+              <div key={claim.id} className="flex items-center gap-3 px-4 py-2.5">
+                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                  <span className="text-xs font-bold text-amber-700">{claim.tenant?.name?.[0]}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{claim.tenant?.name}</p>
+                  <p className="text-[11px] text-gray-500">RM{Number(claim.amount).toFixed(0)} · {claim.method} · {claim.paid_date}</p>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => setReviewClaim(claim)}>Review</Button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Analytics (visible when bills exist) */}
       {bills.length > 0 && (
@@ -399,6 +443,13 @@ export default function BilPage() {
 
       {/* Bill view modal */}
       <BillViewModal bill={viewBill} onClose={() => setViewBill(null)} />
+
+      {/* Claim review sheet */}
+      <PaymentClaimReview
+        claim={reviewClaim}
+        onClose={() => setReviewClaim(null)}
+        onActioned={() => { loadBills(); loadPendingClaims() }}
+      />
 
       {/* Payment bottom sheet */}
       <BottomSheet open={!!paymentModal} onClose={() => setPaymentModal(null)} title="Rekod Bayaran">
