@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { ArrowLeft, Download, FileDown, MessageCircle } from 'lucide-react'
@@ -27,6 +28,7 @@ interface AgingBucket {
 }
 
 export default function AgingReportPage() {
+  const { t } = useTranslation()
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [bills, setBills] = useState<OverdueBill[]>([])
@@ -106,10 +108,10 @@ export default function AgingReportPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>Kembali</Button>
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>{t('common.back')}</Button>
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Tunggakan Penyewa</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('reports.aging_title')}</h1>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" icon={Download} onClick={handleExportCSV}>CSV</Button>
           <Button variant="ghost" size="sm" icon={FileDown} onClick={handleExportPDF}>PDF</Button>
@@ -119,15 +121,15 @@ export default function AgingReportPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Jumlah tunggakan</p>
+          <p className="text-[11px] text-gray-500">{t('reports.aging_total')}</p>
           <p className="text-lg font-bold text-red-600">{formatRM(totalArrears)}</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Penyewa</p>
+          <p className="text-[11px] text-gray-500">{t('reports.aging_tenants')}</p>
           <p className="text-lg font-bold text-gray-900">{tenantCount}</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Purata hari</p>
+          <p className="text-[11px] text-gray-500">{t('reports.aging_avg_days')}</p>
           <p className="text-lg font-bold text-gray-900">{avgDays}</p>
         </Card>
       </div>
@@ -135,7 +137,7 @@ export default function AgingReportPage() {
       {/* Aging buckets chart */}
       {bills.length > 0 && (
         <Card variant="elevated" padding="p-4">
-          <p className="text-sm font-bold text-gray-800 mb-3">Agihan Tunggakan</p>
+          <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.aging_distribution')}</p>
           <div id="chart-aging">
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={buckets}>
@@ -155,7 +157,7 @@ export default function AgingReportPage() {
       {/* Tenant list */}
       {bills.length === 0 ? (
         <Card variant="elevated" padding="p-6" className="text-center">
-          <p className="text-sm text-gray-400">Tiada tunggakan. Semua penyewa up to date!</p>
+          <p className="text-sm text-gray-400">{t('reports.no_arrears', 'No arrears. All tenants are up to date!')}</p>
         </Card>
       ) : (
         <div className="space-y-2">

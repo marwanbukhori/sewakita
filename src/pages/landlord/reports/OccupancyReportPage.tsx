@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { ArrowLeft, Download, FileDown } from 'lucide-react'
@@ -23,6 +24,7 @@ interface VacantRoom {
 }
 
 export default function OccupancyReportPage() {
+  const { t } = useTranslation()
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [rooms, setRooms] = useState<RoomWithProperty[]>([])
@@ -108,10 +110,10 @@ export default function OccupancyReportPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>Kembali</Button>
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>{t('common.back')}</Button>
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Kadar Penghunian</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('reports.occupancy_title')}</h1>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" icon={Download} onClick={handleExportCSV}>CSV</Button>
           <Button variant="ghost" size="sm" icon={FileDown} onClick={handleExportPDF}>PDF</Button>
@@ -121,22 +123,22 @@ export default function OccupancyReportPage() {
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Kadar</p>
+          <p className="text-[11px] text-gray-500">{t('reports.occupancy_rate')}</p>
           <p className="text-lg font-bold text-primary-600">{occupancyRate}%</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Dihuni</p>
+          <p className="text-[11px] text-gray-500">{t('reports.occupied')}</p>
           <p className="text-lg font-bold text-gray-900">{occupied}</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[11px] text-gray-500">Kosong</p>
+          <p className="text-[11px] text-gray-500">{t('reports.vacant')}</p>
           <p className="text-lg font-bold text-amber-600">{vacant}</p>
         </Card>
       </div>
 
       {/* Trend line */}
       <Card variant="elevated" padding="p-4">
-        <p className="text-sm font-bold text-gray-800 mb-3">Trend Penghunian (12 bulan)</p>
+        <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.occupancy_trend')}</p>
         <div id="chart-occupancy-trend">
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={trendData}>
@@ -152,11 +154,11 @@ export default function OccupancyReportPage() {
 
       {/* Per-property donut */}
       <Card variant="elevated" padding="p-4">
-        <p className="text-sm font-bold text-gray-800 mb-3">Per Hartanah</p>
+        <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.per_property')}</p>
         <div id="chart-occupancy-by-property" className="flex items-center justify-center gap-4">
           <ResponsiveContainer width={160} height={160}>
             <PieChart>
-              <Pie data={[{ name: 'Dihuni', value: occupied }, { name: 'Kosong', value: vacant }]}
+              <Pie data={[{ name: t('reports.occupied'), value: occupied }, { name: t('reports.vacant'), value: vacant }]}
                 cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0}>
                 <Cell fill={CHART_COLORS.primary} />
                 <Cell fill={CHART_COLORS.neutral} />
@@ -178,7 +180,7 @@ export default function OccupancyReportPage() {
       {/* Vacancy list */}
       {vacantRooms.length > 0 && (
         <div>
-          <p className="text-sm font-bold text-gray-800 mb-2">Bilik Kosong</p>
+          <p className="text-sm font-bold text-gray-800 mb-2">{t('reports.vacant_rooms')}</p>
           <Card variant="elevated" padding="p-0">
             <div className="divide-y divide-gray-100">
               {vacantRooms.map((r, i) => (
@@ -187,7 +189,7 @@ export default function OccupancyReportPage() {
                     <p className="text-sm font-medium text-gray-800">{r.room}</p>
                     <p className="text-[11px] text-gray-500">{r.property}</p>
                   </div>
-                  <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium">Kosong</span>
+                  <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium">{t('reports.vacant')}</span>
                 </div>
               ))}
             </div>

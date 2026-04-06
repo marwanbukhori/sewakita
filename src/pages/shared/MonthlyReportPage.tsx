@@ -38,7 +38,7 @@ export default function MonthlyReportPage() {
     setLoading(true)
     const { data } = await supabase
       .from('monthly_bills')
-      .select('*, room:rooms(label, property:properties(name, id)), tenant:profiles!monthly_bills_tenant_id_fkey(name)')
+      .select('*, room:rooms(label, property:properties(name, id, landlord_id)), tenant:profiles!monthly_bills_tenant_id_fkey(name)')
       .eq('month', month)
       .order('status')
 

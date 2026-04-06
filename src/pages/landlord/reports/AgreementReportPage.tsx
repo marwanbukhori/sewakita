@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { ArrowLeft, Download, FileDown } from 'lucide-react'
@@ -20,6 +21,7 @@ interface AgreementWithDetails extends RentAgreement {
 }
 
 export default function AgreementReportPage() {
+  const { t } = useTranslation()
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [agreements, setAgreements] = useState<AgreementWithDetails[]>([])
@@ -53,9 +55,9 @@ export default function AgreementReportPage() {
   })
 
   const statusData = [
-    { name: 'Aktif', value: active.length, color: CHART_COLORS.success },
-    { name: 'Draf', value: draft.length, color: CHART_COLORS.neutral },
-    { name: 'Tamat', value: expired.length, color: CHART_COLORS.danger },
+    { name: t('reports.agreement_active'), value: active.length, color: CHART_COLORS.success },
+    { name: t('reports.agreement_draft'), value: draft.length, color: CHART_COLORS.neutral },
+    { name: t('reports.agreement_expired'), value: expired.length, color: CHART_COLORS.danger },
   ].filter(d => d.value > 0)
 
   function handleExportCSV() {
@@ -94,10 +96,10 @@ export default function AgreementReportPage() {
 
   return (
     <div className="space-y-4 animate-in">
-      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>Kembali</Button>
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>{t('common.back')}</Button>
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Perjanjian Sewa</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('reports.agreement_title')}</h1>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" icon={Download} onClick={handleExportCSV}>CSV</Button>
           <Button variant="ghost" size="sm" icon={FileDown} onClick={handleExportPDF}>PDF</Button>
@@ -107,19 +109,19 @@ export default function AgreementReportPage() {
       {/* Summary */}
       <div className="grid grid-cols-4 gap-2">
         <Card variant="elevated" padding="p-3">
-          <p className="text-[10px] text-gray-500">Jumlah</p>
+          <p className="text-[10px] text-gray-500">{t('reports.agreement_total')}</p>
           <p className="text-lg font-bold text-gray-900">{agreements.length}</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[10px] text-gray-500">Aktif</p>
+          <p className="text-[10px] text-gray-500">{t('reports.agreement_active')}</p>
           <p className="text-lg font-bold text-green-600">{active.length}</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[10px] text-gray-500">Hampir tamat</p>
+          <p className="text-[10px] text-gray-500">{t('reports.agreement_expiring')}</p>
           <p className="text-lg font-bold text-amber-600">{expiringSoon.length}</p>
         </Card>
         <Card variant="elevated" padding="p-3">
-          <p className="text-[10px] text-gray-500">Tamat</p>
+          <p className="text-[10px] text-gray-500">{t('reports.agreement_expired')}</p>
           <p className="text-lg font-bold text-red-600">{expired.length}</p>
         </Card>
       </div>
@@ -127,7 +129,7 @@ export default function AgreementReportPage() {
       {/* Status donut */}
       {statusData.length > 0 && (
         <Card variant="elevated" padding="p-4">
-          <p className="text-sm font-bold text-gray-800 mb-3">Agihan Status</p>
+          <p className="text-sm font-bold text-gray-800 mb-3">{t('reports.agreement_status_dist')}</p>
           <div id="chart-agreement-status" className="flex items-center justify-center gap-4">
             <ResponsiveContainer width={160} height={160}>
               <PieChart>
@@ -166,7 +168,7 @@ export default function AgreementReportPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-gray-800 truncate">{a.tenant?.name || 'Belum ditetapkan'}</p>
+                        <p className="text-sm font-semibold text-gray-800 truncate">{a.tenant?.name || t('properties.not_assigned', 'Not assigned')}</p>
                         {isExpiring && (
                           <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold shrink-0">
                             {daysUntilEnd}d lagi

@@ -377,7 +377,8 @@
     "agreement_expired": "Tamat",
     "agreement_status_dist": "Agihan Status",
     "agreement_draft": "Draf",
-    "days_left": "hari lagi"
+    "days_left": "hari lagi",
+    "no_arrears": "Tiada tunggakan. Semua penyewa up to date!"
   },
   "faq": {
     "title": "Soalan Lazim",

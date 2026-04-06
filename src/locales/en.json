@@ -377,7 +377,8 @@
     "agreement_expired": "Expired",
     "agreement_status_dist": "Status Distribution",
     "agreement_draft": "Draft",
-    "days_left": "days left"
+    "days_left": "days left",
+    "no_arrears": "No arrears. All tenants are up to date!"
   },
   "faq": {
     "title": "FAQ",
