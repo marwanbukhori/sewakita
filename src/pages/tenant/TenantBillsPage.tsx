@@ -11,6 +11,8 @@ import StatusBadge from '@/components/ui/StatusBadge'
 import SectionHeader from '@/components/ui/SectionHeader'
 import EmptyState from '@/components/ui/EmptyState'
 import { SkeletonList } from '@/components/ui/Skeleton'
+import BillDueBadge from '@/components/tenant/BillDueBadge'
+import UtilityLineExplainer from '@/components/tenant/UtilityLineExplainer'
 
 export default function TenantBillsPage() {
   const { t } = useTranslation()
@@ -116,8 +118,15 @@ export default function TenantBillsPage() {
                               <p className="text-xs text-danger-500">{t('billing.balance')}: RM{bill.total_due - bill.total_paid}</p>
                             )}
                           </div>
-                          <span className="font-bold text-gray-900 text-sm shrink-0">RM{bill.total_due}</span>
-                          <StatusBadge status={bill.status as 'paid' | 'overdue' | 'partial' | 'pending'} />
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-gray-900 text-sm">RM{bill.total_due}</span>
+                              <StatusBadge status={bill.status as 'paid' | 'overdue' | 'partial' | 'pending'} />
+                            </div>
+                            {bill.due_date && bill.status !== 'paid' && (
+                              <BillDueBadge dueDate={bill.due_date} status={bill.status} />
+                            )}
+                          </div>
                           {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                         </button>
 
@@ -130,9 +139,10 @@ export default function TenantBillsPage() {
                               </div>
                               {bill.utility_breakdown?.map((u, i) => (
                                 u.amount > 0 && (
-                                  <div key={i} className="flex justify-between">
-                                    <span className="text-gray-500">
+                                  <div key={i} className="flex justify-between items-center">
+                                    <span className="text-gray-500 flex items-center gap-1">
                                       {u.type === 'electric' ? t('billing.electricity') : u.type === 'water' ? t('billing.water') : t('billing.internet')}
+                                      <UtilityLineExplainer type={u.type} amount={u.amount} splitMethod={u.split_method} />
                                     </span>
                                     <span>RM{u.amount}</span>
                                   </div>

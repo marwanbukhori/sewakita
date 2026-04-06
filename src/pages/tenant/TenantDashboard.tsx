@@ -4,7 +4,9 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Receipt, CreditCard, Home, Calendar, AlertTriangle, FileText, MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import type { MonthlyBill, Tenancy, Room, Property, Payment, RentAgreement } from '@/types/database'
+import type { MonthlyBill, Tenancy, Room, Property, Payment } from '@/types/database'
+import BillDueBadge from '@/components/tenant/BillDueBadge'
+import BillComparison from '@/components/tenant/BillComparison'
 import { format } from 'date-fns'
 import Card from '@/components/ui/Card'
 import StatusBadge from '@/components/ui/StatusBadge'
@@ -15,6 +17,7 @@ export default function TenantDashboard() {
   const { profile } = useAuth()
   const [tenancy, setTenancy] = useState<(Tenancy & { room: Room & { property: Property } }) | null>(null)
   const [currentBill, setCurrentBill] = useState<MonthlyBill | null>(null)
+  const [previousBill, setPreviousBill] = useState<MonthlyBill | null>(null)
   const [recentPayments, setRecentPayments] = useState<Payment[]>([])
   const [totalOutstanding, setTotalOutstanding] = useState(0)
   const [overdueMonths, setOverdueMonths] = useState(0)
@@ -65,6 +68,18 @@ export default function TenantDashboard() {
       .single()
 
     setCurrentBill(billData)
+
+    // Load previous month bill for comparison
+    const prevMonth = new Date()
+    prevMonth.setMonth(prevMonth.getMonth() - 1)
+    const prevMonthStr = prevMonth.toISOString().slice(0, 7)
+    const { data: prevBillData } = await supabase
+      .from('monthly_bills')
+      .select('*')
+      .eq('tenant_id', profile!.id)
+      .eq('month', prevMonthStr)
+      .single()
+    setPreviousBill(prevBillData)
 
     // Load all unpaid bills for outstanding balance
     const { data: allBills } = await supabase
@@ -120,7 +135,14 @@ export default function TenantDashboard() {
       {currentBill ? (
         <Card variant="hero" padding="p-5">
           <p className="text-primary-200 text-sm font-medium mb-1">Bil {currentMonthLabel}</p>
-          <p className="text-3xl font-bold mb-4">RM{currentBill.total_due.toLocaleString()}</p>
+          <p className="text-3xl font-bold mb-2">RM{currentBill.total_due.toLocaleString()}</p>
+
+          {/* Due date badge */}
+          {currentBill.due_date && (
+            <div className="mb-3">
+              <BillDueBadge dueDate={currentBill.due_date} status={currentBill.status} />
+            </div>
+          )}
 
           {/* Breakdown nested card */}
           <div className="bg-white/15 rounded-xl p-3 space-y-1.5 mb-4">
@@ -149,6 +171,11 @@ export default function TenantDashboard() {
                 </div>
               </>
             )}
+          </div>
+
+          {/* vs last month comparison */}
+          <div className="mb-3">
+            <BillComparison currentBill={currentBill} previousBill={previousBill} />
           </div>
 
           <StatusBadge

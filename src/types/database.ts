@@ -119,6 +119,7 @@ export interface MonthlyBill {
   total_due: number
   total_paid: number
   status: BillStatus
+  due_date?: string
   created_at: string
   updated_at: string
 }
