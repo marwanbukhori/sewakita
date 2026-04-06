@@ -7,6 +7,7 @@ export type UtilityType = 'electric' | 'water' | 'internet'
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'duitnow' | 'other'
 export type InviteStatus = 'pending' | 'accepted' | 'expired' | 'revoked'
 export type ActivityType = 'bill_generated' | 'payment_received' | 'tenant_joined' | 'tenant_left' | 'overdue'
+export type ClaimStatus = 'pending' | 'approved' | 'rejected'
 
 export interface Profile {
   id: string
@@ -142,6 +143,23 @@ export interface Payment {
   created_at: string
 }
 
+export interface PaymentClaim {
+  id: string
+  bill_id: string
+  tenant_id: string
+  amount: number
+  method: PaymentMethod
+  paid_date: string
+  proof_url?: string
+  notes?: string
+  status: ClaimStatus
+  reviewed_by?: string
+  reviewed_at?: string
+  reject_reason?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface RentAgreement {
   id: string
   property_id: string
@@ -240,6 +258,11 @@ export interface Database {
         Row: Invite
         Insert: Omit<Invite, 'id' | 'token' | 'expires_at' | 'created_at'>
         Update: Partial<Omit<Invite, 'id' | 'created_at'>>
+      }
+      payment_claims: {
+        Row: PaymentClaim
+        Insert: Omit<PaymentClaim, 'id' | 'status' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<PaymentClaim, 'id' | 'created_at'>>
       }
     }
   }
