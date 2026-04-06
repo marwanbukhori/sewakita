@@ -88,8 +88,7 @@ export default function AppShell() {
     ...(role === 'landlord' ? [
       { icon: Building2, label: t('account.my_properties'), to: '/properties' },
       { icon: CreditCard, label: 'Payment Settings', to: '/account/payment-settings' },
-      { icon: BarChart3, label: t('account.monthly_report'), to: '/account/reports/monthly' },
-      { icon: FileText, label: t('account.annual_report'), to: '/account/reports/annual' },
+      { icon: BarChart3, label: 'Laporan', to: '/reports' },
     ] : []),
     { icon: HelpCircle, label: t('menu.faq'), to: '/faq' },
     { icon: Flag, label: t('report.title'), to: '/report' },
