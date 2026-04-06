@@ -71,8 +71,8 @@ export default function AppShell() {
   const landlordNav: NavItem[] = [
     { to: '/dashboard', label: t('nav.home'), icon: Home },
     { to: '/bil', label: t('nav.billing'), icon: Receipt, badge: overdueCount },
-    { to: '/reports', label: t('nav.reports'), icon: BarChart3 },
     { to: '/properties', label: t('nav.properties'), icon: Building2 },
+    { to: '/reports', label: t('nav.reports'), icon: BarChart3 },
   ]
 
   const tenantNav: NavItem[] = [
