@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download, FileDown } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 import type { MonthlyBill, Property } from '@/types/database'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Select from '@/components/ui/Select'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import { downloadCSV } from '@/lib/csv'
+import { CHART_COLORS, CHART_FONT, formatRM, formatMonthShort } from '@/lib/chart-theme'
+import { createReportPDF, addChartToPage, addStatCard, addTableRows, saveReport, captureChart } from '@/lib/report-pdf'
 
 interface PropertyIncome {
   propertyName: string
@@ -77,6 +80,45 @@ export default function AnnualReportPage() {
   const grandTotal = data.reduce((s, p) => s + p.totalIncome, 0)
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
+  // Build stacked chart data: 12 months, each with per-property income
+  const stackedChartData = Array.from({ length: 12 }, (_, i) => {
+    const m = `${year}-${String(i + 1).padStart(2, '0')}`
+    const row: Record<string, string | number> = { month: formatMonthShort(m) }
+    for (const prop of data) {
+      row[prop.propertyName] = prop.months[m] || 0
+    }
+    return row
+  })
+
+  const STACK_COLORS = [CHART_COLORS.primary, CHART_COLORS.success, CHART_COLORS.accent, CHART_COLORS.warning, CHART_COLORS.danger]
+
+  async function handleExportPDF() {
+    const doc = createReportPDF('Ringkasan Cukai Tahunan', `Tahun ${year}`)
+    let y = 50
+    addStatCard(doc, 'Pendapatan', formatRM(grandTotal), 20, y)
+    addStatCard(doc, 'Hartanah', `${data.length}`, 65, y)
+    y += 28
+    try {
+      const img = await captureChart('chart-annual-income')
+      y = addChartToPage(doc, img, y, 70)
+    } catch { /* */ }
+    y = addTableRows(doc,
+      ['Hartanah', 'Bulan', 'Pendapatan (RM)'],
+      data.flatMap(p => Object.entries(p.months).sort(([a], [b]) => a.localeCompare(b)).map(([m, amt]) => [p.propertyName, m, String(amt)])),
+      y
+    )
+    // LHDN note
+    if (y > 250) { doc.addPage(); y = 20 }
+    y += 5
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(107, 114, 128)
+    doc.text('Nota LHDN: Pendapatan sewa diisytiharkan di bawah Seksyen 4(d) Akta Cukai Pendapatan 1967.', 20, y)
+    y += 4
+    doc.text('Simpan rekod selama 7 tahun.', 20, y)
+    saveReport(doc, 'Cukai', year)
+  }
+
   if (loading) return <SkeletonList count={2} />
 
   return (
@@ -87,9 +129,10 @@ export default function AnnualReportPage() {
 
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-800">Ringkasan Cukai</h1>
-        <Button variant="ghost" size="sm" icon={Download} onClick={handleExport}>
-          CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" icon={Download} onClick={handleExport}>CSV</Button>
+          <Button variant="ghost" size="sm" icon={FileDown} onClick={handleExportPDF}>PDF</Button>
+        </div>
       </div>
 
       <Select value={year} onChange={(e) => setYear(e.target.value)}>
@@ -104,6 +147,27 @@ export default function AnnualReportPage() {
           * Perbelanjaan belum direkod. Sila simpan resit untuk potongan cukai LHDN.
         </p>
       </Card>
+
+      {/* Stacked income chart */}
+      {data.length > 0 && (
+        <Card variant="elevated" padding="p-4">
+          <p className="text-sm font-bold text-gray-800 mb-3">Pendapatan Bulanan per Hartanah</p>
+          <div id="chart-annual-income">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={stackedChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="month" tick={{ ...CHART_FONT, fontSize: 10 }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ ...CHART_FONT, fontSize: 10 }} tickLine={false} axisLine={false} width={40} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v) => formatRM(Number(v))} labelStyle={CHART_FONT} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                {data.map((prop, i) => (
+                  <Bar key={prop.propertyName} dataKey={prop.propertyName} stackId="income" fill={STACK_COLORS[i % STACK_COLORS.length]} radius={i === data.length - 1 ? [3, 3, 0, 0] : undefined} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
 
       {/* Per property */}
       {data.length === 0 ? (
