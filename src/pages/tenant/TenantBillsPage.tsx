@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Receipt, ChevronDown, ChevronUp, CreditCard } from 'lucide-react'
+import { Receipt, ChevronDown, ChevronUp, CreditCard, Upload } from 'lucide-react'
 import type { MonthlyBill } from '@/types/database'
+import PaymentClaimSheet from '@/components/tenant/PaymentClaimSheet'
 import toast from 'react-hot-toast'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -21,10 +22,13 @@ export default function TenantBillsPage() {
   const [expandedBill, setExpandedBill] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
+  const [claimBill, setClaimBill] = useState<MonthlyBill | null>(null)
+  const [pendingClaimBillIds, setPendingClaimBillIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!profile) return
     loadBills()
+    loadPendingClaims()
   }, [profile])
 
   async function loadBills() {
@@ -36,6 +40,15 @@ export default function TenantBillsPage() {
 
     setBills(data || [])
     setLoading(false)
+  }
+
+  async function loadPendingClaims() {
+    const { data } = await supabase
+      .from('payment_claims')
+      .select('bill_id')
+      .eq('tenant_id', profile!.id)
+      .eq('status', 'pending')
+    setPendingClaimBillIds(new Set((data || []).map(c => c.bill_id)))
   }
 
   async function handlePayNow(bill: MonthlyBill) {
@@ -155,9 +168,20 @@ export default function TenantBillsPage() {
                               </div>
                             </div>
                             {bill.status !== 'paid' && (
-                              <Button icon={CreditCard} fullWidth loading={paying} onClick={() => handlePayNow(bill)}>
-                                Pay Now — RM{bill.total_due - bill.total_paid}
-                              </Button>
+                              <div className="space-y-2">
+                                <Button icon={CreditCard} fullWidth loading={paying} onClick={() => handlePayNow(bill)}>
+                                  Pay Now — RM{bill.total_due - bill.total_paid}
+                                </Button>
+                                {pendingClaimBillIds.has(bill.id) ? (
+                                  <div className="text-center text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded-lg">
+                                    Claim pending — waiting for landlord review
+                                  </div>
+                                ) : (
+                                  <Button icon={Upload} fullWidth variant="secondary" onClick={() => setClaimBill(bill)}>
+                                    I've Paid
+                                  </Button>
+                                )}
+                              </div>
                             )}
                           </div>
                         )}
@@ -170,6 +194,13 @@ export default function TenantBillsPage() {
           ))}
         </div>
       )}
+
+      <PaymentClaimSheet
+        open={!!claimBill}
+        onClose={() => setClaimBill(null)}
+        bill={claimBill}
+        onSubmitted={() => { loadBills(); loadPendingClaims() }}
+      />
     </div>
   )
 }
