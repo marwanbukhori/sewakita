@@ -223,7 +223,10 @@ export default function BilPage() {
         }}
         onEnterUtilities={() => setShowUtilitySheet(true)}
         onPreviewGenerate={() => setShowReviewSheet(true)}
-        onViewBills={() => setStatusFilter('all')}
+        onViewBills={() => {
+          setStatusFilter('all')
+          document.getElementById('bills-list')?.scrollIntoView({ behavior: 'smooth' })
+        }}
         onSendReminders={() => unpaidBills.forEach(bill => handleWhatsApp(bill, bill.status === 'overdue' ? 'reminder' : 'bill'))}
       />
 
@@ -286,6 +289,7 @@ export default function BilPage() {
       )}
 
       {/* Bills grouped by property */}
+      <div id="bills-list" />
       {filteredBills.length === 0 && bills.length === 0 ? (
         <EmptyState icon={CreditCard} title="Tiada bil untuk bulan ini" />
       ) : filteredBills.length === 0 ? (
