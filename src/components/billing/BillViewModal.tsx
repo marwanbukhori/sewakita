@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { Download, X } from 'lucide-react'
 import type { MonthlyBill, Property, Room, Profile } from '@/types/database'
 import { downloadBillPDF } from '@/lib/bill-pdf'
@@ -33,8 +34,8 @@ export default function BillViewModal({ bill, onClose }: BillViewModalProps) {
     return 'Internet'
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
@@ -132,6 +133,7 @@ export default function BillViewModal({ bill, onClose }: BillViewModalProps) {
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
