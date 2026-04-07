@@ -13,16 +13,12 @@
 --   After running, you'll need to re-register and set up from scratch.
 --
 -- What it does NOT touch:
---   - plans table (Free, Pro pricing)
---   - promo_codes table (SEWAKITA30)
---   - Database schema, functions, triggers
---   - Storage buckets (but empties utility-scans)
---   - Edge functions
+--   plans, promo_codes, schema, functions, triggers, edge functions
 -- ============================================================
 
 BEGIN;
 
--- Billing data (order matters due to foreign keys)
+-- Billing data
 DELETE FROM payments;
 DELETE FROM payment_claims;
 DELETE FROM monthly_bills;
@@ -35,7 +31,7 @@ DELETE FROM activity_log;
 -- Agreements
 DELETE FROM rent_agreements;
 
--- Subscriptions (keeps plans and promo_codes)
+-- Subscriptions
 DELETE FROM subscriptions;
 
 -- Tenancy data
@@ -48,7 +44,7 @@ DELETE FROM notification_settings;
 DELETE FROM rooms;
 DELETE FROM properties;
 
--- User data (this will cascade auth cleanup on next login)
+-- User data
 DELETE FROM profiles;
 
 -- Reset promo code usage counter
