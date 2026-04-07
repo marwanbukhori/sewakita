@@ -25,6 +25,7 @@ import PlansPage from '@/pages/landlord/PlansPage'
 import SubscriptionSuccessPage from '@/pages/landlord/SubscriptionSuccessPage'
 import PaymentSettingsPage from '@/pages/landlord/PaymentSettingsPage'
 import ReportsDashboardPage from '@/pages/landlord/ReportsDashboardPage'
+import { ONLINE_PAYMENTS_ENABLED } from '@/lib/feature-gates'
 import AgingReportPage from '@/pages/landlord/reports/AgingReportPage'
 import OccupancyReportPage from '@/pages/landlord/reports/OccupancyReportPage'
 import AgreementReportPage from '@/pages/landlord/reports/AgreementReportPage'
@@ -123,8 +124,8 @@ function AppRoutes() {
         <Route path="/properties/:id/notifications" element={<NotificationSettingsPage />} />
         <Route path="/bil" element={<BilPage />} />
         <Route path="/plans" element={<PlansPage />} />
-        <Route path="/plans/success" element={<SubscriptionSuccessPage />} />
-        <Route path="/account/payment-settings" element={<PaymentSettingsPage />} />
+        <Route path="/plans/success" element={ONLINE_PAYMENTS_ENABLED ? <SubscriptionSuccessPage /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/account/payment-settings" element={ONLINE_PAYMENTS_ENABLED ? <PaymentSettingsPage /> : <Navigate to="/dashboard" replace />} />
         {/* Legacy route redirects */}
         <Route path="/billing" element={<Navigate to="/bil" replace />} />
         <Route path="/payments" element={<Navigate to="/bil" replace />} />

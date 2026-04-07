@@ -15,6 +15,9 @@ import ScanResultSheet from '@/components/billing/ScanResultSheet'
 import UtilityHistoryStrip from '@/components/billing/UtilityHistoryStrip'
 import { getSuggestedAmount, getLastNMonthsUtilities } from '@/lib/utilities'
 import type { ExtractionResult } from '../../../../supabase/functions/_shared/ocr-prompts'
+import { hasOCR, getPlanTier } from '@/lib/feature-gates'
+import { getCurrentPlanCode } from '@/lib/subscription'
+import { useAuth } from '@/lib/auth-context'
 
 const UTILITY_ICONS: Record<string, typeof Zap> = { electric: Zap, water: Droplets, internet: Wifi }
 const UTILITY_LABELS: Record<string, string> = { electric: 'Elektrik (TNB)', water: 'Air (SYABAS)', internet: 'Internet' }
@@ -40,6 +43,8 @@ export default function UtilityEntrySheet({
   month,
   onBillsGenerated,
 }: UtilityEntrySheetProps) {
+  const { profile } = useAuth()
+  const [planTier, setPlanTier] = useState<'free' | 'pro'>('free')
   const [rooms, setRooms] = useState<RoomWithTenancies[]>([])
   const [existingUtilities, setExistingUtilities] = useState<UtilityBill[]>([])
   const [propertyBills, setPropertyBills] = useState<MonthlyBill[]>([])
@@ -67,6 +72,10 @@ export default function UtilityEntrySheet({
       loadTemplates()
     }
   }, [open, selectedProperty, month])
+
+  useEffect(() => {
+    if (profile) getCurrentPlanCode(profile.id).then(code => setPlanTier(getPlanTier(code)))
+  }, [profile])
 
   async function loadRooms() {
     const { data } = await supabase
@@ -294,18 +303,20 @@ export default function UtilityEntrySheet({
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </Select>
 
-        {/* Scan CTA */}
-        <ScanBillCTA
-          loading={scanning}
-          onFileSelected={handleScanFile}
-        />
-
-        {/* or divider */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs text-gray-400">atau key-in manual</span>
-          <div className="flex-1 h-px bg-gray-200" />
-        </div>
+        {/* Scan CTA — Pro only */}
+        {hasOCR(planTier) && (
+          <>
+            <ScanBillCTA
+              loading={scanning}
+              onFileSelected={handleScanFile}
+            />
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400">atau key-in manual</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+          </>
+        )}
 
         {/* Utility bills */}
         <Card variant="elevated" padding="p-5">
