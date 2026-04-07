@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { ChevronUp, Plus, Zap, Droplets, Wifi, Receipt } from 'lucide-react'
+import { ChevronUp, Plus, Zap, Droplets, Wifi, Receipt, Pencil, Trash2, Check, X } from 'lucide-react'
 import type { Property, Room, Tenancy, Profile, MonthlyBill, UtilityBill, UtilityTemplate, UtilityType, SplitMethod } from '@/types/database'
 import toast from 'react-hot-toast'
 import BottomSheet from '@/components/ui/BottomSheet'
@@ -56,6 +56,8 @@ export default function UtilityEntrySheet({
   const [scanResult, setScanResult] = useState<ExtractionResult | null>(null)
   const [showScanResult, setShowScanResult] = useState(false)
   const [scanHistoryAmounts, setScanHistoryAmounts] = useState<number[]>([])
+  const [editingUtility, setEditingUtility] = useState<string | null>(null)
+  const [editAmount, setEditAmount] = useState('')
   const [utilityForm, setUtilityForm] = useState({
     type: 'electric' as UtilityType,
     total_amount: '',
@@ -139,6 +141,14 @@ export default function UtilityEntrySheet({
 
   async function handleSaveUtility(e: React.FormEvent) {
     e.preventDefault()
+
+    // Warn if duplicate type exists
+    const duplicate = existingUtilities.find(u => u.type === utilityForm.type)
+    if (duplicate) {
+      const confirmed = window.confirm(`${UTILITY_LABELS[utilityForm.type]} sudah ada (RM${duplicate.total_amount}). Tambah lagi?`)
+      if (!confirmed) return
+    }
+
     const readings = utilityForm.split_method === 'sub_meter'
       ? Object.entries(utilityForm.readings).map(([room_id, reading]) => ({ room_id, reading: Number(reading) }))
       : undefined
@@ -223,6 +233,22 @@ export default function UtilityEntrySheet({
     }
     setShowUtilityForm(true)
     prefillAmount(utilityForm.type)
+  }
+
+  async function handleUpdateUtility(id: string, newAmount: number) {
+    if (newAmount <= 0) { toast.error('Jumlah mesti lebih dari 0'); return }
+    const { error } = await supabase.from('utility_bills').update({ total_amount: newAmount }).eq('id', id)
+    if (error) { toast.error('Gagal mengemaskini'); return }
+    toast.success('Dikemaskini!')
+    setEditingUtility(null)
+    loadUtilities()
+  }
+
+  async function handleDeleteUtility(id: string) {
+    const { error } = await supabase.from('utility_bills').delete().eq('id', id)
+    if (error) { toast.error('Gagal memadam'); return }
+    toast.success('Dipadam!')
+    loadUtilities()
   }
 
   async function handleScanFile(file: File) {
@@ -342,15 +368,56 @@ export default function UtilityEntrySheet({
             <div className="space-y-2 mb-4">
               {existingUtilities.map((ub) => {
                 const Icon = UTILITY_ICONS[ub.type]
+                const isEditing = editingUtility === ub.id
+
+                if (isEditing) {
+                  return (
+                    <div key={ub.id} className="flex items-center gap-2 bg-primary-50 rounded-xl p-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
+                        <Icon size={16} className="text-primary-600" />
+                      </div>
+                      <span className="text-xs font-medium text-gray-600 shrink-0">{UTILITY_LABELS[ub.type]}</span>
+                      <div className="flex items-center gap-1 flex-1">
+                        <span className="text-sm text-gray-500">RM</span>
+                        <input
+                          type="number"
+                          value={editAmount}
+                          onChange={e => setEditAmount(e.target.value)}
+                          className="w-full bg-white rounded-lg px-2 py-1.5 text-sm font-bold text-gray-800 border border-primary-300 focus:outline-none focus:border-primary-500"
+                          autoFocus
+                        />
+                      </div>
+                      <button onClick={() => handleUpdateUtility(ub.id, Number(editAmount))}
+                        className="p-1.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700">
+                        <Check size={14} />
+                      </button>
+                      <button onClick={() => setEditingUtility(null)}
+                        className="p-1.5 rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )
+                }
+
                 return (
-                  <div key={ub.id} className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+                  <div key={ub.id} className="flex items-center justify-between bg-gray-50 rounded-xl p-3 group">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
                         <Icon size={16} className="text-primary-600" />
                       </div>
                       <span className="text-sm font-medium text-gray-800">{UTILITY_LABELS[ub.type]}</span>
                     </div>
-                    <span className="text-sm font-bold text-gray-800">RM{ub.total_amount}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-gray-800">RM{ub.total_amount}</span>
+                      <button onClick={() => { setEditingUtility(ub.id); setEditAmount(String(ub.total_amount)) }}
+                        className="p-1 rounded text-gray-300 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                        <Pencil size={13} />
+                      </button>
+                      <button onClick={() => handleDeleteUtility(ub.id)}
+                        className="p-1 rounded text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
                 )
               })}
