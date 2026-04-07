@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Plus, MapPin, ChevronRight, Home, Users, Lock } from 'lucide-react'
+import { Building2, Plus, MapPin, ChevronRight, Users, Lock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Property, Room } from '@/types/database'
 import Card from '@/components/ui/Card'
@@ -138,6 +138,14 @@ export default function PropertiesPage() {
             )
           })}
         </div>
+      )}
+
+      {/* See all tenants link */}
+      {properties.length > 0 && (
+        <Link to="/tenants" className="flex items-center justify-center gap-2 py-3 text-sm text-primary-600 font-medium hover:text-primary-700">
+          <Users size={16} />
+          {t('tenants.view_all', 'See all tenants')}
+        </Link>
       )}
     </div>
   )

@@ -151,7 +151,7 @@ export default function PropertyDetailPage() {
   return (
     <div className="space-y-4 animate-in -mx-4 sm:mx-0">
       {/* Hero header */}
-      <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 px-5 pt-4 pb-5 sm:rounded-2xl overflow-hidden">
+      <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 px-5 pt-5 pb-5 sm:rounded-2xl overflow-hidden shadow-md">
         <BatikHeroOverlay className="!opacity-[0.08]" />
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-4">
