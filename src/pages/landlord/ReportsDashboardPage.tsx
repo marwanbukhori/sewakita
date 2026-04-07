@@ -11,6 +11,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Select from '@/components/ui/Select'
 import { SkeletonList } from '@/components/ui/Skeleton'
+import ProGate from '@/components/ui/ProGate'
 import type { Property } from '@/types/database'
 
 interface MonthlyData {
@@ -144,6 +145,7 @@ export default function ReportsDashboardPage() {
   ]
 
   return (
+    <ProGate feature="reports">
     <div className="space-y-4 animate-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-800">{t('reports.dashboard_title')}</h1>
@@ -263,5 +265,6 @@ export default function ReportsDashboardPage() {
         </div>
       </div>
     </div>
+    </ProGate>
   )
 }

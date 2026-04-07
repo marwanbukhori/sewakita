@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { SkeletonList } from '@/components/ui/Skeleton'
+import ProGate from '@/components/ui/ProGate'
 import { downloadCSV } from '@/lib/csv'
 import { CHART_COLORS, CHART_FONT } from '@/lib/chart-theme'
 import { createReportPDF, addChartToPage, addStatCard, addTableRows, saveReport, captureChart } from '@/lib/report-pdf'
@@ -95,6 +96,7 @@ export default function AgreementReportPage() {
   if (loading) return <SkeletonList count={3} />
 
   return (
+    <ProGate feature="reports">
     <div className="space-y-4 animate-in">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>{t('common.back')}</Button>
 
@@ -187,5 +189,6 @@ export default function AgreementReportPage() {
         </div>
       )}
     </div>
+    </ProGate>
   )
 }
