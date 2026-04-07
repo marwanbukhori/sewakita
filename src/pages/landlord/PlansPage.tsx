@@ -10,12 +10,11 @@ import { SkeletonList } from '@/components/ui/Skeleton'
 import {
   getActiveSubscription,
   listPlans,
-  isOnTrial,
-  trialDaysRemaining,
   formatPeriodRemaining,
   type Plan,
   type SubscriptionWithPlan,
 } from '@/lib/subscription'
+import { ONLINE_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
 
 type Interval = 'monthly' | 'annual'
 
@@ -105,16 +104,14 @@ export default function PlansPage() {
 
       {/* Current status */}
       {subscription && (
-        <Card variant={isOnTrial(subscription) ? 'hero' : 'elevated'} padding="p-4">
+        <Card variant="elevated" padding="p-4">
           <div className="flex items-center gap-3">
-            <Crown size={22} className={isOnTrial(subscription) ? 'text-white' : 'text-primary-600'} />
+            <Crown size={22} className="text-primary-600" />
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-semibold ${isOnTrial(subscription) ? 'text-white' : 'text-gray-800'}`}>
-                {isOnTrial(subscription)
-                  ? `Pro Trial — ${trialDaysRemaining(subscription)} days remaining`
-                  : subscription.plan.display_name}
+              <p className="text-sm font-semibold text-gray-800">
+                {subscription.plan.display_name}
               </p>
-              <p className={`text-xs ${isOnTrial(subscription) ? 'text-white/80' : 'text-gray-500'}`}>
+              <p className="text-xs text-gray-500">
                 {formatPeriodRemaining(subscription.period_end)}
               </p>
             </div>

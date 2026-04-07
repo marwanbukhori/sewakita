@@ -42,13 +42,9 @@ export async function listPlans(): Promise<Plan[]> {
     .from('plans')
     .select('*')
     .eq('is_active', true)
-    .neq('code', 'trial_pro')  // trial isn't user-selectable
+    .neq('code', 'free')  // free isn't selectable — it's the default
     .order('sort_order', { ascending: true })
   return (data || []) as Plan[]
-}
-
-export function isOnTrial(sub: SubscriptionWithPlan | null): boolean {
-  return sub?.plan_code === 'trial_pro' && sub?.status === 'active'
 }
 
 export function daysUntil(dateIso: string): number {
@@ -56,9 +52,9 @@ export function daysUntil(dateIso: string): number {
   return Math.max(0, Math.ceil(ms / 86400000))
 }
 
-export function trialDaysRemaining(sub: SubscriptionWithPlan | null): number {
-  if (!isOnTrial(sub)) return 0
-  return daysUntil(sub!.period_end)
+export async function getCurrentPlanCode(landlordId: string): Promise<string | null> {
+  const sub = await getActiveSubscription(landlordId)
+  return sub?.plan_code || null
 }
 
 export function formatPeriodRemaining(dateIso: string): string {

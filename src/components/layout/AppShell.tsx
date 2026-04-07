@@ -1,7 +1,8 @@
 import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
-import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, FileText, Globe, Flag, Crown } from 'lucide-react'
-import { getActiveSubscription, isOnTrial, trialDaysRemaining, type SubscriptionWithPlan } from '@/lib/subscription'
+import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, Globe, Flag } from 'lucide-react'
+import { getActiveSubscription, type SubscriptionWithPlan } from '@/lib/subscription'
+import { ONLINE_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
@@ -86,7 +87,7 @@ export default function AppShell() {
 
   const menuItems = [
     { icon: User, label: t('account.personal_info'), to: '/account' },
-    ...(role === 'landlord' ? [
+    ...(role === 'landlord' && ONLINE_PAYMENTS_ENABLED ? [
       { icon: CreditCard, label: t('account.payment_settings', 'Payment Settings'), to: '/account/payment-settings' },
     ] : []),
     { icon: HelpCircle, label: t('menu.faq'), to: '/faq' },
@@ -189,7 +190,7 @@ export default function AppShell() {
             <NavLink to="/account" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
             }><User size={20} /><span>{t('nav.account')}</span></NavLink>
-            {role === 'landlord' && (
+            {role === 'landlord' && ONLINE_PAYMENTS_ENABLED && (
               <NavLink to="/account/payment-settings" className={({ isActive }) =>
                 `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
               }><CreditCard size={20} /><span>{t('account.payment_settings', 'Payment Settings')}</span></NavLink>
@@ -222,15 +223,6 @@ export default function AppShell() {
         </nav>
 
         <main className="flex-1 p-4 sm:p-6 min-h-[calc(100vh-3.5rem)] pb-24 sm:pb-6 overflow-x-hidden">
-          {isOnTrial(subscription) && (
-            <Link to="/plans" className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 hover:border-amber-300 transition-colors">
-              <Crown size={16} className="text-amber-600 shrink-0" />
-              <span className="text-xs text-amber-900 flex-1">
-                <strong>Pro trial</strong> — {trialDaysRemaining(subscription)} days remaining
-              </span>
-              <span className="text-xs text-amber-700 font-semibold">Pick a plan →</span>
-            </Link>
-          )}
           <Outlet />
         </main>
       </div>
