@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Receipt, CreditCard, UserPlus, UserMinus, AlertTriangle, CheckCircle } from 'lucide-react'
@@ -104,6 +105,9 @@ export default function ActivityFeed() {
           })}
         </div>
       </Card>
+      <Link to="/activity" className="flex items-center justify-center py-2 text-xs text-primary-600 font-medium hover:text-primary-700">
+        {t('activity.see_more', 'See all activity')} →
+      </Link>
     </div>
   )
 }
