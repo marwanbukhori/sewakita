@@ -319,7 +319,7 @@ export default function UtilityEntrySheet({
         )}
 
         {/* Utility bills */}
-        <Card variant="elevated" padding="p-5">
+        <Card variant="elevated" padding="p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-gray-800">Bil Utiliti</h2>
             <Button variant="ghost" size="sm" onClick={() => openUtilityForm()}
@@ -423,7 +423,7 @@ export default function UtilityEntrySheet({
         </Card>
 
         {/* Generate bills section */}
-        <Card variant="elevated" padding="p-5">
+        <Card variant="elevated" padding="p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-gray-800">Jana Bil ({month})</h2>
             <Button size="sm" icon={Receipt} loading={generating} onClick={handleGenerateBills}>
