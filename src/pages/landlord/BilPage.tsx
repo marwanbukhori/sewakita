@@ -14,7 +14,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import { SkeletonList } from '@/components/ui/Skeleton'
-import MonthlyWorkflowCard from '@/components/billing/MonthlyWorkflowCard'
+import MonthlyWorkflowCard, { type PropertyStatus } from '@/components/billing/MonthlyWorkflowCard'
 import UtilityEntrySheet from './bil/UtilityEntrySheet'
 import GenerationReviewSheet from './bil/GenerationReviewSheet'
 import BillViewModal from '@/components/billing/BillViewModal'
@@ -44,7 +44,7 @@ export default function BilPage() {
   // Properties + workflow
   const [properties, setProperties] = useState<Property[]>([])
   const [selectedProperty, setSelectedProperty] = useState<string>('')
-  const [utilitiesCount, setUtilitiesCount] = useState(0)
+  const [propertyStatuses, setPropertyStatuses] = useState<PropertyStatus[]>([])
   const [showUtilitySheet, setShowUtilitySheet] = useState(false)
   const [showReviewSheet, setShowReviewSheet] = useState(false)
   const [monthlyTrend, setMonthlyTrend] = useState<{ month: string; expected: number; collected: number }[]>([])
@@ -58,7 +58,7 @@ export default function BilPage() {
     if (!profile) return
     loadBills()
     loadMonthlyTrend()
-    loadUtilitiesCount()
+    loadPropertyStatuses()
     loadPendingClaims()
   }, [profile, month])
 
@@ -80,13 +80,28 @@ export default function BilPage() {
     setBills(myBills)
   }
 
-  async function loadUtilitiesCount() {
-    const { count } = await supabase
-      .from('utility_bills')
-      .select('*', { count: 'exact', head: true })
-      .eq('month', month)
-      .in('property_id', properties.map(p => p.id).length > 0 ? properties.map(p => p.id) : ['__none__'])
-    setUtilitiesCount(count || 0)
+  async function loadPropertyStatuses() {
+    if (properties.length === 0) return
+    const propIds = properties.map(p => p.id)
+
+    const [{ data: utilities }, { data: monthBills }] = await Promise.all([
+      supabase.from('utility_bills').select('property_id').eq('month', month).in('property_id', propIds),
+      supabase.from('monthly_bills').select('property_id, status').eq('month', month).in('property_id', propIds),
+    ])
+
+    const statuses: PropertyStatus[] = properties.map(p => {
+      const hasUtilities = (utilities || []).some(u => u.property_id === p.id)
+      const propBills = (monthBills || []).filter(b => b.property_id === p.id)
+      return {
+        id: p.id,
+        name: p.name,
+        hasUtilities,
+        hasBills: propBills.length > 0,
+        billCount: propBills.length,
+        paidCount: propBills.filter(b => b.status === 'paid').length,
+      }
+    })
+    setPropertyStatuses(statuses)
   }
 
   async function loadMonthlyTrend() {
@@ -212,9 +227,21 @@ export default function BilPage() {
 
   function handleBillsGenerated() {
     loadBills()
-    loadUtilitiesCount()
+    loadPropertyStatuses()
     setShowUtilitySheet(false)
     setShowReviewSheet(false)
+  }
+
+  function handlePropertyAction(propertyId: string) {
+    setSelectedProperty(propertyId)
+    const status = propertyStatuses.find(p => p.id === propertyId)
+    if (!status || !status.hasUtilities) {
+      setShowUtilitySheet(true)
+    } else if (!status.hasBills) {
+      setShowReviewSheet(true)
+    } else {
+      document.getElementById('bills-list')?.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   return (
@@ -233,22 +260,11 @@ export default function BilPage() {
         </div>
       </div>
 
-      {/* Monthly Workflow Card */}
+      {/* Monthly Workflow Card with per-property status */}
       <MonthlyWorkflowCard
         month={month}
-        stats={{
-          utilitiesEntered: utilitiesCount,
-          billsGenerated: bills.length,
-          billsPaid: statusCounts.paid,
-          totalBills: bills.length,
-        }}
-        onEnterUtilities={() => setShowUtilitySheet(true)}
-        onPreviewGenerate={() => setShowReviewSheet(true)}
-        onViewBills={() => {
-          setStatusFilter('all')
-          document.getElementById('bills-list')?.scrollIntoView({ behavior: 'smooth' })
-        }}
-        onSendReminders={() => unpaidBills.forEach(bill => handleWhatsApp(bill, bill.status === 'overdue' ? 'reminder' : 'bill'))}
+        properties={propertyStatuses}
+        onPropertyAction={handlePropertyAction}
       />
 
       {/* Pending payment claims */}
@@ -382,21 +398,26 @@ export default function BilPage() {
                               </>
                             )}
                           </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="ghost" icon={Eye} className="flex-1"
-                              onClick={() => setViewBill(bill)}>
-                              Lihat Bil
-                            </Button>
-                            {bill.status !== 'paid' && (
-                              <Button size="sm" icon={Check} className="flex-1"
-                                onClick={() => setPaymentModal({ bill, amount: String(bill.total_due - bill.total_paid), method: 'bank_transfer' })}>
-                                Record Payment
-                              </Button>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            <button onClick={() => setViewBill(bill)}
+                              className="flex flex-col items-center gap-1 py-2 rounded-lg text-gray-500 hover:bg-gray-50 active:scale-95 transition-all">
+                              <Eye size={16} />
+                              <span className="text-[10px] font-medium">Bil</span>
+                            </button>
+                            {bill.status !== 'paid' ? (
+                              <button onClick={() => setPaymentModal({ bill, amount: String(bill.total_due - bill.total_paid), method: 'bank_transfer' })}
+                                className="flex flex-col items-center gap-1 py-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 active:scale-95 transition-all">
+                                <Check size={16} />
+                                <span className="text-[10px] font-medium">Bayar</span>
+                              </button>
+                            ) : (
+                              <div />
                             )}
-                            <Button size="sm" variant="ghost" icon={MessageCircle} className="flex-1 !text-green-600"
-                              onClick={() => handleWhatsApp(bill, bill.status === 'paid' ? 'receipt' : bill.status === 'overdue' ? 'reminder' : 'bill')}>
-                              {bill.status === 'paid' ? 'Receipt' : bill.status === 'overdue' ? 'Remind' : 'Send Bill'}
-                            </Button>
+                            <button onClick={() => handleWhatsApp(bill, bill.status === 'paid' ? 'receipt' : bill.status === 'overdue' ? 'reminder' : 'bill')}
+                              className="flex flex-col items-center gap-1 py-2 rounded-lg text-green-600 hover:bg-green-50 active:scale-95 transition-all">
+                              <MessageCircle size={16} />
+                              <span className="text-[10px] font-medium">{bill.status === 'paid' ? 'Resit' : 'Hantar'}</span>
+                            </button>
                           </div>
                         </div>
                       )}
@@ -409,15 +430,14 @@ export default function BilPage() {
         </div>
       )}
 
-      {/* Floating WhatsApp CTA */}
+      {/* Send All Bills — inline */}
       {unpaidBills.length > 0 && (
         <button
           onClick={() => unpaidBills.forEach(bill => handleWhatsApp(bill, bill.status === 'overdue' ? 'reminder' : 'bill'))}
-          className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 bg-green-600 text-white px-5 py-3.5 rounded-full shadow-xl hover:bg-green-700 hover:scale-105 active:scale-95 flex items-center gap-2 text-sm font-semibold z-40 animate-in"
-          style={{ animationDelay: '300ms' }}
+          className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-semibold transition-all"
         >
-          <MessageCircle size={18} />
-          Send All Bills
+          <MessageCircle size={16} />
+          Send All Bills ({unpaidBills.length})
         </button>
       )}
 
