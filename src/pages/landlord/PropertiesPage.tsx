@@ -50,15 +50,20 @@ export default function PropertiesPage() {
           <h1 className="text-xl font-bold text-gray-800">{t('properties.title')}</h1>
           <p className="text-xs text-gray-500 mt-0.5">{properties.length} {t('properties.title').toLowerCase()}</p>
         </div>
-        {canAddProperty(getPlanTier(planCode), properties.length) ? (
-          <Link to="/properties/new">
-            <Button size="sm" icon={Plus}>{t('common.add')}</Button>
+        <div className="flex items-center gap-2">
+          <Link to="/tenants">
+            <Button size="sm" variant="ghost" icon={Users}>{t('tenants.title', 'Tenants')}</Button>
           </Link>
-        ) : (
-          <Link to="/plans">
-            <Button size="sm" variant="secondary" icon={Lock}>Upgrade</Button>
-          </Link>
-        )}
+          {canAddProperty(getPlanTier(planCode), properties.length) ? (
+            <Link to="/properties/new">
+              <Button size="sm" icon={Plus}>{t('common.add')}</Button>
+            </Link>
+          ) : (
+            <Link to="/plans">
+              <Button size="sm" variant="secondary" icon={Lock}>Upgrade</Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {properties.length === 0 ? (
@@ -140,13 +145,6 @@ export default function PropertiesPage() {
         </div>
       )}
 
-      {/* See all tenants link */}
-      {properties.length > 0 && (
-        <Link to="/tenants" className="flex items-center justify-center gap-2 py-3 text-sm text-primary-600 font-medium hover:text-primary-700">
-          <Users size={16} />
-          {t('tenants.view_all', 'See all tenants')}
-        </Link>
-      )}
     </div>
   )
 }
