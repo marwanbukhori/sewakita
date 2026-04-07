@@ -58,9 +58,13 @@ export default function BilPage() {
     if (!profile) return
     loadBills()
     loadMonthlyTrend()
-    loadPropertyStatuses()
     loadPendingClaims()
   }, [profile, month])
+
+  useEffect(() => {
+    if (!profile || properties.length === 0) return
+    loadPropertyStatuses()
+  }, [profile, month, properties])
 
   async function loadProperties() {
     const { data } = await supabase
