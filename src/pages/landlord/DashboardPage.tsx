@@ -118,7 +118,7 @@ export default function DashboardPage() {
       <QuickActions actions={[
         { icon: Building2, label: t('quick_actions.add_property'), to: '/properties/new', color: 'bg-primary-50 text-primary-600' },
         { icon: FileText, label: t('quick_actions.generate_bills'), to: '/bil?tab=generate', color: 'bg-amber-50 text-amber-600' },
-        { icon: Receipt, label: t('quick_actions.view_bills'), to: '/bil', color: 'bg-green-50 text-green-600' },
+        { icon: Users, label: t('tenants.title', 'Tenants'), to: '/tenants', color: 'bg-green-50 text-green-600' },
         { icon: BarChart3, label: t('quick_actions.reports'), to: '/reports', color: 'bg-purple-50 text-purple-600' },
       ]} />
 
