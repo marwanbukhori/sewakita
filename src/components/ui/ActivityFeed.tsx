@@ -76,11 +76,16 @@ export default function ActivityFeed() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Activity</h2>
-        {unreadCount > 0 && (
-          <button onClick={markAllRead} className="text-xs text-primary-600 hover:text-primary-700 font-medium">
-            Mark all read
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {unreadCount > 0 && (
+            <button onClick={markAllRead} className="text-xs text-gray-400 hover:text-gray-600 font-medium">
+              Mark all read
+            </button>
+          )}
+          <Link to="/activity" className="text-xs text-primary-600 font-medium hover:text-primary-700">
+            {t('activity.see_more', 'See all')} →
+          </Link>
+        </div>
       </div>
       <Card variant="elevated" padding="p-0">
         <div className="divide-y divide-gray-100">
@@ -105,9 +110,6 @@ export default function ActivityFeed() {
           })}
         </div>
       </Card>
-      <Link to="/activity" className="flex items-center justify-center py-2 text-xs text-primary-600 font-medium hover:text-primary-700">
-        {t('activity.see_more', 'See all activity')} →
-      </Link>
     </div>
   )
 }
