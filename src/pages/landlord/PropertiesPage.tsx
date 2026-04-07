@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Plus, MapPin, ChevronRight, Home, Users } from 'lucide-react'
+import { Building2, Plus, MapPin, ChevronRight, Home, Users, Lock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Property, Room } from '@/types/database'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import EmptyState from '@/components/ui/EmptyState'
 import { SkeletonList } from '@/components/ui/Skeleton'
+import { getPlanTier, canAddProperty } from '@/lib/feature-gates'
+import { getCurrentPlanCode } from '@/lib/subscription'
 
 interface PropertyWithRooms extends Property {
   rooms: Room[]
@@ -19,10 +21,12 @@ export default function PropertiesPage() {
   const { t } = useTranslation()
   const [properties, setProperties] = useState<PropertyWithRooms[]>([])
   const [loading, setLoading] = useState(true)
+  const [planCode, setPlanCode] = useState<string | null>(null)
 
   useEffect(() => {
     if (!profile) return
     loadProperties()
+    getCurrentPlanCode(profile.id).then(setPlanCode)
   }, [profile])
 
   async function loadProperties() {
@@ -46,9 +50,15 @@ export default function PropertiesPage() {
           <h1 className="text-xl font-bold text-gray-800">{t('properties.title')}</h1>
           <p className="text-xs text-gray-500 mt-0.5">{properties.length} {t('properties.title').toLowerCase()}</p>
         </div>
-        <Link to="/properties/new">
-          <Button size="sm" icon={Plus}>{t('common.add')}</Button>
-        </Link>
+        {canAddProperty(getPlanTier(planCode), properties.length) ? (
+          <Link to="/properties/new">
+            <Button size="sm" icon={Plus}>{t('common.add')}</Button>
+          </Link>
+        ) : (
+          <Link to="/plans">
+            <Button size="sm" variant="secondary" icon={Lock}>Upgrade</Button>
+          </Link>
+        )}
       </div>
 
       {properties.length === 0 ? (
