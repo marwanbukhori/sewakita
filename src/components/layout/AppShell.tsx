@@ -196,6 +196,9 @@ export default function AppShell() {
                 `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
               }><CreditCard size={20} /><span>{t('account.payment_settings', 'Payment Settings')}</span></NavLink>
             )}
+            <Link to="/features" className="flex items-center gap-3 px-3 h-11 rounded-lg text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors">
+              <Sparkles size={20} /><span>{t('landing.nav_features')}</span>
+            </Link>
             <NavLink to="/faq" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
             }><HelpCircle size={20} /><span>{t('menu.faq')}</span></NavLink>
