@@ -107,6 +107,8 @@ function AppRoutes() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/invite/:token" element={<AcceptInvitePage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route element={<AppShell />}>
             <Route path="/tenant/dashboard" element={<TenantDashboard />} />
             <Route path="/tenant/bills" element={<TenantBillsPage />} />
@@ -130,6 +132,8 @@ function AppRoutes() {
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         <Route path="/invite/:token" element={<AcceptInvitePage />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/properties" element={<PropertiesPage />} />
