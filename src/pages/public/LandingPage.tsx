@@ -58,7 +58,7 @@ export default function LandingPage() {
       }`}>
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-primary-600' : 'text-white'}`}>
-            SewaKita
+            ReRumah
           </span>
 
           {/* Desktop nav */}
@@ -293,7 +293,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
             <div>
-              <span className="text-xl font-bold text-primary-400">SewaKita</span>
+              <span className="text-xl font-bold text-primary-400">ReRumah</span>
               <p className="text-sm text-gray-400 mt-1">{t('landing.footer_tagline')}</p>
             </div>
             <div className="flex items-center gap-6">

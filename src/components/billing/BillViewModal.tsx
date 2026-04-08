@@ -50,7 +50,7 @@ export default function BillViewModal({ bill, onClose }: BillViewModalProps) {
         <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 pt-6 pb-5 rounded-t-2xl sm:rounded-t-2xl">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="text-white/70 text-xs font-medium">SewaKita</p>
+              <p className="text-white/70 text-xs font-medium">ReRumah</p>
               <p className="text-white text-lg font-bold">Bil Bulanan</p>
             </div>
             <StatusBadge
@@ -125,7 +125,7 @@ export default function BillViewModal({ bill, onClose }: BillViewModalProps) {
         {/* Footer */}
         <div className="px-6 py-4 space-y-3">
           <p className="text-[10px] text-gray-400 text-center">
-            Bil ini dijana secara automatik oleh SewaKita · Ref: {bill.id.slice(0, 8)}
+            Bil ini dijana secara automatik oleh ReRumah · Ref: {bill.id.slice(0, 8)}
           </p>
 
           <Button icon={Download} fullWidth variant="secondary" onClick={() => downloadBillPDF(bill)}>

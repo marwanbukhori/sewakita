@@ -62,7 +62,7 @@ export default function MonthlyReportPage() {
       b.status === 'paid' ? t('billing.paid_label') : b.status === 'overdue' ? t('billing.overdue_label') : b.status === 'partial' ? t('billing.partial_label') : t('billing.pending_label'),
       b.month,
     ])
-    downloadCSV(`sewakita-kutipan-${month}.csv`, headers, rows)
+    downloadCSV(`rerumah-kutipan-${month}.csv`, headers, rows)
   }
 
   const totalExpected = bills.reduce((s, b) => s + b.total_due, 0)

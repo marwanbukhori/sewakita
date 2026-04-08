@@ -48,7 +48,7 @@ export default function AgreementViewPage() {
   function handleDownloadPDF() {
     if (!agreement || !property || !room) return
     const doc = generateAgreementPDF(agreement, property, room)
-    doc.save(`SewaKita_Agreement_${property.name}_${room.label}.pdf`)
+    doc.save(`ReRumah_Agreement_${property.name}_${room.label}.pdf`)
   }
 
   if (loading) return <SkeletonList count={3} />

@@ -155,7 +155,7 @@ async function renewMonthly(sub: { id: string; landlord_id: string; plan_code: s
 
   const result = await toyyibpayProvider.createBill(ctx, {
     externalRef: `sub_${sub.id}`,
-    name: `SewaKita ${plan.display_name}`,
+    name: `ReRumah ${plan.display_name}`,
     description: `Monthly renewal: ${plan.display_name}`,
     amountCents: Math.round(Number(plan.price_myr) * 100),
     payerName: profile.name,

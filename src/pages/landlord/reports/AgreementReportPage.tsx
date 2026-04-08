@@ -62,7 +62,7 @@ export default function AgreementReportPage() {
   ].filter(d => d.value > 0)
 
   function handleExportCSV() {
-    downloadCSV('sewakita-perjanjian.csv',
+    downloadCSV('rerumah-perjanjian.csv',
       ['Penyewa', 'Hartanah', 'Bilik', 'Mula', 'Tamat', 'Status'],
       agreements.map(a => [a.tenant?.name || '-', a.property?.name || '', a.room?.label || '', a.start_date, a.end_date || '-', a.status])
     )

@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
 
     const result = await toyyibpayProvider.createBill(ctx, {
       externalRef: `sub_${sub.id}`,
-      name: `SewaKita ${plan.display_name}`,
+      name: `ReRumah ${plan.display_name}`,
       description: `Subscription: ${plan.display_name}`,
       amountCents: Math.round(Number(plan.price_myr) * 100),
       payerName: profile.name,

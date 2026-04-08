@@ -20,7 +20,7 @@ export function createReportPDF(title: string, subtitle: string): jsPDF {
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(18)
   doc.setFont('helvetica', 'bold')
-  doc.text('SewaKita', margin, 16)
+  doc.text('ReRumah', margin, 16)
 
   doc.setFontSize(12)
   doc.setFont('helvetica', 'normal')
@@ -104,6 +104,6 @@ export function saveReport(doc: jsPDF, type: string, period: string) {
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(156, 163, 175)
   const pageHeight = doc.internal.pageSize.getHeight()
-  doc.text(`Dijana oleh SewaKita · ${new Date().toLocaleDateString('ms-MY')}`, 20, pageHeight - 10)
-  doc.save(`SewaKita_Laporan_${type}_${period}.pdf`)
+  doc.text(`Dijana oleh ReRumah · ${new Date().toLocaleDateString('ms-MY')}`, 20, pageHeight - 10)
+  doc.save(`ReRumah_Laporan_${type}_${period}.pdf`)
 }

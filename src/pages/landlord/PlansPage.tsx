@@ -236,7 +236,7 @@ export default function PlansPage() {
                 <Input
                   value={promoCode}
                   onChange={e => setPromoCode(e.target.value.toUpperCase())}
-                  placeholder="e.g. SEWAKITA30"
+                  placeholder="e.g. RERUMAH30"
                   className="flex-1 !uppercase"
                 />
                 <Button loading={redeeming} onClick={handleRedeemPromo} disabled={!promoCode.trim()}>

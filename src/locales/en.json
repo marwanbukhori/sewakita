@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "SewaKita",
+    "name": "ReRumah",
     "tagline": "Manage rental properties with ease",
     "version": "v1.0"
   },
@@ -48,7 +48,7 @@
     "phone_placeholder": "012-3456789",
     "back": "Back",
     "get_started": "Get started",
-    "welcome_toast": "Welcome to SewaKita!",
+    "welcome_toast": "Welcome to ReRumah!",
     "failed_save": "Failed to save. Please try again."
   },
   "dashboard": {
@@ -238,7 +238,7 @@
     "security": "Security",
     "change_password": "Change password",
     "logout": "Log Out",
-    "logout_confirm": "Are you sure you want to log out of SewaKita?",
+    "logout_confirm": "Are you sure you want to log out of ReRumah?",
     "cancel": "Cancel",
     "my_agreement": "My Rental Agreement"
   },
@@ -299,7 +299,7 @@
     "status_terminated": "Terminated"
   },
   "invite": {
-    "title": "SewaKita",
+    "title": "ReRumah",
     "invited": "You've been invited to rent",
     "invalid": "Invalid Invite",
     "not_found": "Invite not found or invalid.",
@@ -394,11 +394,11 @@
     "q5": "Can I send bills via WhatsApp?",
     "a5": "Yes! On the Payments page, each bill has a WhatsApp button to send bills, payment reminders, or receipts directly to the tenant.",
     "q6": "What if a tenant pays partially?",
-    "a6": "SewaKita supports partial payments. Record the amount paid and the system will automatically update the balance. The bill status will change to \"Partial\".",
+    "a6": "ReRumah supports partial payments. Record the amount paid and the system will automatically update the balance. The bill status will change to \"Partial\".",
     "q7": "How are utility bills calculated?",
     "a7": "You can choose a splitting method: sub-meter (per room reading), equal split, fixed amount per room, or landlord absorbs entirely.",
     "q8": "Is my data safe?",
-    "a8": "Yes. SewaKita uses Supabase with Row-Level Security (RLS). Each user can only view their own data. Data is encrypted during transmission."
+    "a8": "Yes. ReRumah uses Supabase with Row-Level Security (RLS). Each user can only view their own data. Data is encrypted during transmission."
   },
   "move_out": {
     "title": "Move Out",
@@ -491,18 +491,18 @@
     "price_feat_6": "Monthly & annual reports",
     "price_cta": "Start Free Today",
     "faq_title": "Frequently Asked Questions",
-    "faq1_q": "Is SewaKita really free?",
-    "faq1_a": "Yes! SewaKita is completely free during the beta period. We'll introduce affordable plans in the future, but early users will always get special pricing.",
+    "faq1_q": "Is ReRumah really free?",
+    "faq1_a": "Yes! ReRumah is completely free during the beta period. We'll introduce affordable plans in the future, but early users will always get special pricing.",
     "faq2_q": "How do tenants pay rent?",
     "faq2_a": "Tenants can pay online via FPX or DuitNow through our ToyyibPay integration. Landlords can also record manual payments (bank transfer, cash).",
     "faq3_q": "Is my data secure?",
     "faq3_a": "Absolutely. We use Supabase (built on PostgreSQL) with Row-Level Security. Your data is encrypted and only accessible to you and your tenants.",
     "faq4_q": "Do I need to install anything?",
-    "faq4_a": "No installation needed. SewaKita is a Progressive Web App (PWA) — just open it in your browser. You can also add it to your home screen for a native app experience.",
-    "faq5_q": "Can I use SewaKita in Bahasa Malaysia?",
-    "faq5_a": "Yes! SewaKita supports both English and Bahasa Malaysia. You can switch languages anytime from the menu.",
+    "faq4_a": "No installation needed. ReRumah is a Progressive Web App (PWA) — just open it in your browser. You can also add it to your home screen for a native app experience.",
+    "faq5_q": "Can I use ReRumah in Bahasa Malaysia?",
+    "faq5_a": "Yes! ReRumah supports both English and Bahasa Malaysia. You can switch languages anytime from the menu.",
     "cta_title": "Ready to simplify your rental management?",
-    "cta_subtitle": "Join landlords across Malaysia who are saving hours every month with SewaKita.",
+    "cta_subtitle": "Join landlords across Malaysia who are saving hours every month with ReRumah.",
     "cta_button": "Get Started Free",
     "footer_tagline": "Property management made simple",
     "footer_made": "Made with ❤️ in Malaysia"

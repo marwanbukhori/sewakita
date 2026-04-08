@@ -7,7 +7,7 @@ export type ProviderMode = 'platform' | 'merchant'
 export interface ProviderContext {
   secretKey: string
   categoryCode: string
-  mode: ProviderMode         // platform = sewakita collecting, merchant = landlord collecting
+  mode: ProviderMode         // platform = rerumah collecting, merchant = landlord collecting
   accountId?: string         // landlord's property_id in merchant mode (logging only)
   sandbox: boolean
 }

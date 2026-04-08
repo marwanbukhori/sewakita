@@ -60,7 +60,7 @@ export default function SubscriptionSuccessPage() {
             <CheckCircle className="text-green-600" size={40} />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">You're on {planName}</h1>
-          <p className="text-sm text-gray-500 mb-8">Your subscription is active. Thanks for supporting SewaKita.</p>
+          <p className="text-sm text-gray-500 mb-8">Your subscription is active. Thanks for supporting ReRumah.</p>
           <Button fullWidth size="lg" onClick={() => navigate('/dashboard')}>
             Back to Dashboard
           </Button>

@@ -74,7 +74,7 @@ async function handleSubscriptionEvent(subscriptionId: string, event: { status: 
       landlord_id: sub.landlord_id,
       type: 'payment_received',
       title: `Subscription activated: ${sub.plan_code}`,
-      detail: `SewaKita subscription paid — renews ${newPeriodEnd.toISOString().slice(0, 10)}`,
+      detail: `ReRumah subscription paid — renews ${newPeriodEnd.toISOString().slice(0, 10)}`,
       related_id: subscriptionId,
     })
   } else if (event.status === 'failed') {

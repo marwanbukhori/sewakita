@@ -82,7 +82,7 @@ export default function OccupancyReportPage() {
     .map(r => ({ property: r.property.name, room: r.label, daysVacant: 0 }))
 
   function handleExportCSV() {
-    downloadCSV('sewakita-penghunian.csv',
+    downloadCSV('rerumah-penghunian.csv',
       ['Hartanah', 'Bilik', 'Status'],
       rooms.map(r => [r.property.name, r.label, r.status === 'occupied' ? 'Dihuni' : 'Kosong'])
     )

@@ -148,7 +148,7 @@ export default function AcceptInvitePage() {
 
   async function handleGoogle() {
     // Store invite token in localStorage so we can resume after OAuth redirect
-    localStorage.setItem('sewakita_invite_token', token!)
+    localStorage.setItem('rerumah_invite_token', token!)
     const { error } = await signInWithGoogle()
     if (error) {
       toast.error('Gagal log masuk dengan Google.')
@@ -225,7 +225,7 @@ export default function AcceptInvitePage() {
     }
 
     setSaving(false)
-    toast.success('Selamat datang ke SewaKita!')
+    toast.success('Selamat datang ke ReRumah!')
     navigate('/tenant/dashboard')
     window.location.reload()
   }
@@ -264,9 +264,9 @@ export default function AcceptInvitePage() {
         <div className="w-full max-w-sm animate-in">
           <div className="text-center mb-6">
             <div className="w-16 h-16 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-md">
-              <span className="text-white text-2xl font-bold">S</span>
+              <span className="text-white text-2xl font-bold">R</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">SewaKita</h1>
+            <h1 className="text-2xl font-bold text-gray-800">ReRumah</h1>
             <p className="text-gray-500 mt-1.5 text-sm">Anda dijemput untuk menyewa</p>
           </div>
 
@@ -347,7 +347,7 @@ export default function AcceptInvitePage() {
       <div className="min-h-screen bg-[#F7FAFC] flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-sm animate-in">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">SewaKita</h1>
+            <h1 className="text-2xl font-bold text-gray-800">ReRumah</h1>
             <p className="text-gray-500 mt-1.5 text-sm">Lengkapkan profil anda untuk menerima jemputan</p>
           </div>
 

@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'SewaKita',
-        short_name: 'SewaKita',
+        name: 'ReRumah',
+        short_name: 'ReRumah',
         description: 'Urus sewa rumah dan bilik dengan mudah',
         theme_color: '#0f766e',
         background_color: '#ffffff',

@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
     const result = await toyyibpayProvider.createBill(ctx, {
       externalRef: `rent_${payment.id}`,
       name: `Rent ${description || ''}`.slice(0, 30),
-      description: description || `SewaKita rent payment`,
+      description: description || `ReRumah rent payment`,
       amountCents: Math.round(Number(amount) * 100),
       payerName: tenant_name,
       payerEmail: tenant_email,

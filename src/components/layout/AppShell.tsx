@@ -100,7 +100,7 @@ export default function AppShell() {
       <header className={`relative bg-gradient-to-r from-primary-600 via-primary-700 to-primary-600 sticky top-0 z-50 safe-top transition-shadow duration-200 overflow-hidden ${scrolled ? 'shadow-md' : ''}`}>
         <BatikHeroOverlay className="!opacity-[0.08]" />
         <div className="relative z-10 max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <span className="text-lg font-bold tracking-tight text-white">SewaKita</span>
+          <span className="text-lg font-bold tracking-tight text-white">ReRumah</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMenuOpen(!menuOpen)}

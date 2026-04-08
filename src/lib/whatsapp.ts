@@ -34,7 +34,7 @@ export function generateBillMessage(bill: MonthlyBill, tenantName: string): stri
   lines.push('')
   lines.push('Sila jelaskan bayaran sebelum hujung bulan. Terima kasih!')
   lines.push('')
-  lines.push('— SewaKita')
+  lines.push('— ReRumah')
 
   return lines.join('\n')
 }
@@ -50,7 +50,7 @@ export function generateReminderMessage(bill: MonthlyBill, tenantName: string): 
     '',
     'Mohon jelaskan bayaran secepat mungkin. Jika sudah membayar, sila maklumkan. Terima kasih!',
     '',
-    '— SewaKita',
+    '— ReRumah',
   ].join('\n')
 }
 
@@ -65,7 +65,7 @@ export function generateReceiptMessage(bill: MonthlyBill, tenantName: string): s
     '',
     'Resit ini adalah untuk rekod anda. Terima kasih!',
     '',
-    '— SewaKita',
+    '— ReRumah',
   ].join('\n')
 }
 

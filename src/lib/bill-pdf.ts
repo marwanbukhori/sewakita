@@ -27,7 +27,7 @@ export function generateBillPDF(bill: BillWithDetails) {
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(20)
   doc.setFont('helvetica', 'bold')
-  doc.text('SewaKita', margin, 18)
+  doc.text('ReRumah', margin, 18)
 
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
@@ -169,9 +169,9 @@ export function generateBillPDF(bill: BillWithDetails) {
   doc.setTextColor(156, 163, 175) // gray-400
   doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
-  doc.text('Bil ini dijana secara automatik oleh SewaKita.', margin, y)
+  doc.text('Bil ini dijana secara automatik oleh ReRumah.', margin, y)
   y += 4
-  doc.text('This bill was generated automatically by SewaKita.', margin, y)
+  doc.text('This bill was generated automatically by ReRumah.', margin, y)
   y += 4
   doc.text(`Ref: ${bill.id.slice(0, 8)}`, margin, y)
 
@@ -180,6 +180,6 @@ export function generateBillPDF(bill: BillWithDetails) {
 
 export function downloadBillPDF(bill: BillWithDetails) {
   const doc = generateBillPDF(bill)
-  const filename = `SewaKita_Bil_${bill.month}_${bill.tenant.name.replace(/\s+/g, '_')}.pdf`
+  const filename = `ReRumah_Bil_${bill.month}_${bill.tenant.name.replace(/\s+/g, '_')}.pdf`
   doc.save(filename)
 }

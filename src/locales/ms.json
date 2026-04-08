@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "SewaKita",
+    "name": "ReRumah",
     "tagline": "Urus sewa rumah dan bilik dengan mudah",
     "version": "v1.0"
   },
@@ -48,7 +48,7 @@
     "phone_placeholder": "012-3456789",
     "back": "Kembali",
     "get_started": "Mula guna",
-    "welcome_toast": "Selamat datang ke SewaKita!",
+    "welcome_toast": "Selamat datang ke ReRumah!",
     "failed_save": "Gagal menyimpan. Sila cuba lagi."
   },
   "dashboard": {
@@ -238,7 +238,7 @@
     "security": "Keselamatan",
     "change_password": "Tukar kata laluan",
     "logout": "Log Keluar",
-    "logout_confirm": "Adakah anda pasti mahu log keluar dari SewaKita?",
+    "logout_confirm": "Adakah anda pasti mahu log keluar dari ReRumah?",
     "cancel": "Batal",
     "my_agreement": "Perjanjian Sewa Saya"
   },
@@ -299,7 +299,7 @@
     "status_terminated": "Ditamatkan"
   },
   "invite": {
-    "title": "SewaKita",
+    "title": "ReRumah",
     "invited": "Anda dijemput untuk menyewa",
     "invalid": "Jemputan Tidak Sah",
     "not_found": "Jemputan tidak dijumpai atau tidak sah.",
@@ -394,11 +394,11 @@
     "q5": "Bolehkah saya hantar bil melalui WhatsApp?",
     "a5": "Ya! Di halaman Bayaran, setiap bil ada butang WhatsApp untuk menghantar bil, peringatan bayaran, atau resit terus ke penyewa.",
     "q6": "Bagaimana jika penyewa membayar separa?",
-    "a6": "SewaKita menyokong bayaran separa. Rekodkan jumlah yang dibayar dan sistem akan mengemas kini baki secara automatik. Status bil akan bertukar kepada \"Separa\".",
+    "a6": "ReRumah menyokong bayaran separa. Rekodkan jumlah yang dibayar dan sistem akan mengemas kini baki secara automatik. Status bil akan bertukar kepada \"Separa\".",
     "q7": "Bagaimana bil utiliti dikira?",
     "a7": "Anda boleh pilih kaedah pembahagian: sub-meter (ikut bacaan per bilik), bahagi sama rata, jumlah tetap per bilik, atau tuan rumah tanggung sepenuhnya.",
     "q8": "Adakah data saya selamat?",
-    "a8": "Ya. SewaKita menggunakan Supabase dengan Row-Level Security (RLS). Setiap pengguna hanya boleh melihat data mereka sendiri. Data disulitkan semasa penghantaran."
+    "a8": "Ya. ReRumah menggunakan Supabase dengan Row-Level Security (RLS). Setiap pengguna hanya boleh melihat data mereka sendiri. Data disulitkan semasa penghantaran."
   },
   "move_out": {
     "title": "Pindah Keluar",
@@ -491,18 +491,18 @@
     "price_feat_6": "Laporan bulanan & tahunan",
     "price_cta": "Mula Percuma Hari Ini",
     "faq_title": "Soalan Lazim",
-    "faq1_q": "Adakah SewaKita benar-benar percuma?",
-    "faq1_a": "Ya! SewaKita percuma sepenuhnya semasa tempoh beta. Kami akan memperkenalkan pelan mampu milik pada masa hadapan, tetapi pengguna awal akan sentiasa mendapat harga istimewa.",
+    "faq1_q": "Adakah ReRumah benar-benar percuma?",
+    "faq1_a": "Ya! ReRumah percuma sepenuhnya semasa tempoh beta. Kami akan memperkenalkan pelan mampu milik pada masa hadapan, tetapi pengguna awal akan sentiasa mendapat harga istimewa.",
     "faq2_q": "Bagaimana penyewa membayar sewa?",
     "faq2_a": "Penyewa boleh bayar secara dalam talian melalui FPX atau DuitNow melalui integrasi ToyyibPay kami. Tuan rumah juga boleh merekod bayaran manual (pindahan bank, tunai).",
     "faq3_q": "Adakah data saya selamat?",
     "faq3_a": "Sudah tentu. Kami menggunakan Supabase (dibina atas PostgreSQL) dengan Keselamatan Peringkat Baris. Data anda disulitkan dan hanya boleh diakses oleh anda dan penyewa anda.",
     "faq4_q": "Perlukah saya memasang apa-apa?",
-    "faq4_a": "Tidak perlu pemasangan. SewaKita adalah Progressive Web App (PWA) — buka sahaja di pelayar anda. Anda juga boleh tambah ke skrin utama untuk pengalaman seperti aplikasi.",
-    "faq5_q": "Bolehkah saya guna SewaKita dalam Bahasa Malaysia?",
-    "faq5_a": "Ya! SewaKita menyokong Bahasa Inggeris dan Bahasa Malaysia. Anda boleh tukar bahasa pada bila-bila masa dari menu.",
+    "faq4_a": "Tidak perlu pemasangan. ReRumah adalah Progressive Web App (PWA) — buka sahaja di pelayar anda. Anda juga boleh tambah ke skrin utama untuk pengalaman seperti aplikasi.",
+    "faq5_q": "Bolehkah saya guna ReRumah dalam Bahasa Malaysia?",
+    "faq5_a": "Ya! ReRumah menyokong Bahasa Inggeris dan Bahasa Malaysia. Anda boleh tukar bahasa pada bila-bila masa dari menu.",
     "cta_title": "Sedia untuk mudahkan pengurusan sewa anda?",
-    "cta_subtitle": "Sertai tuan rumah di seluruh Malaysia yang menjimatkan masa setiap bulan dengan SewaKita.",
+    "cta_subtitle": "Sertai tuan rumah di seluruh Malaysia yang menjimatkan masa setiap bulan dengan ReRumah.",
     "cta_button": "Mula Percuma",
     "footer_tagline": "Pengurusan hartanah dipermudahkan",
     "footer_made": "Dibuat dengan ❤️ di Malaysia"

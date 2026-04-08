@@ -39,13 +39,13 @@ Deno.serve(async (req) => {
     await toyyibpayProvider.createBill(ctx, {
       externalRef: `verify_${crypto.randomUUID()}`,
       name: 'Credential check',
-      description: 'SewaKita credential verification',
+      description: 'ReRumah credential verification',
       amountCents: 100,
       payerName: 'Test',
-      payerEmail: 'verify@sewakita.app',
+      payerEmail: 'verify@rerumah.my',
       payerPhone: '0000000000',
-      returnUrl: 'https://sewakita.app',
-      callbackUrl: 'https://sewakita.app',
+      returnUrl: 'https://rerumah.my',
+      callbackUrl: 'https://rerumah.my',
       chargeFeeToCustomer: false,
     })
 

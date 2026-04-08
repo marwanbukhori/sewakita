@@ -158,7 +158,7 @@ export default function TenantFormPage() {
     if (!inviteLink) return
     const room = vacantRooms.find((r) => r.id === form.room_id)
     const property = properties.find((p) => p.id === form.property_id)
-    const message = `Assalamualaikum,\n\n${t('landing.hero_subtitle')}\n\n*${property?.name}* (${room?.label})\nRM${form.agreed_rent}/month | Deposit: RM${form.deposit}\n\n${inviteLink}\n\n— SewaKita`
+    const message = `Assalamualaikum,\n\n${t('landing.hero_subtitle')}\n\n*${property?.name}* (${room?.label})\nRM${form.agreed_rent}/month | Deposit: RM${form.deposit}\n\n${inviteLink}\n\n— ReRumah`
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank')
   }
 

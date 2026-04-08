@@ -75,7 +75,7 @@ export default function AnnualReportPage() {
     }
     const grandTotal = data.reduce((s, p) => s + p.totalIncome, 0)
     rows.push(['JUMLAH KESELURUHAN', year, String(grandTotal)])
-    downloadCSV(`sewakita-cukai-${year}.csv`, headers, rows)
+    downloadCSV(`rerumah-cukai-${year}.csv`, headers, rows)
   }
 
   const grandTotal = data.reduce((s, p) => s + p.totalIncome, 0)
