@@ -11,32 +11,38 @@ const LANDLORD_MODULES = [
   {
     icon: Building2,
     titleKey: 'fp.mod_property_title',
+    illustration: '/illustrations/mock-properties.svg',
     bullets: ['fp.mod_property_1', 'fp.mod_property_2', 'fp.mod_property_3', 'fp.mod_property_4'],
   },
   {
     icon: Receipt,
     titleKey: 'fp.mod_billing_title',
+    illustration: '/illustrations/mock-billing.svg',
     bullets: ['fp.mod_billing_1', 'fp.mod_billing_2', 'fp.mod_billing_3', 'fp.mod_billing_4'],
   },
   {
     icon: Users,
     titleKey: 'fp.mod_tenants_title',
+    illustration: '/illustrations/mock-tenants.svg',
     bullets: ['fp.mod_tenants_1', 'fp.mod_tenants_2', 'fp.mod_tenants_3', 'fp.mod_tenants_4'],
   },
   {
     icon: FileText,
     titleKey: 'fp.mod_agreements_title',
+    illustration: '/illustrations/mock-agreements.svg',
     bullets: ['fp.mod_agreements_1', 'fp.mod_agreements_2', 'fp.mod_agreements_3', 'fp.mod_agreements_4'],
   },
   {
     icon: BarChart3,
     titleKey: 'fp.mod_reports_title',
     badgeKey: 'fp.pro_badge',
+    illustration: '/illustrations/mock-reports.svg',
     bullets: ['fp.mod_reports_1', 'fp.mod_reports_2', 'fp.mod_reports_3', 'fp.mod_reports_4', 'fp.mod_reports_5'],
   },
   {
     icon: MessageCircle,
     titleKey: 'fp.mod_notifications_title',
+    illustration: '/illustrations/mock-whatsapp.svg',
     bullets: ['fp.mod_notifications_1', 'fp.mod_notifications_2', 'fp.mod_notifications_3', 'fp.mod_notifications_4'],
   },
 ]
@@ -156,32 +162,39 @@ export default function FeaturesPage() {
         <div className="max-w-6xl mx-auto px-5">
 
           {role === 'landlord' ? (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-12">
               {LANDLORD_MODULES.map((mod, i) => (
-                <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
-                      <mod.icon size={24} className="text-primary-600" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-gray-900 text-lg">{t(mod.titleKey)}</h3>
-                        {mod.badgeKey && (
-                          <span className="text-[10px] font-bold bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full uppercase">
-                            {t(mod.badgeKey)}
-                          </span>
-                        )}
+                <div key={i} className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 md:gap-12`}>
+                  {/* Mockup */}
+                  <div className="w-48 md:w-56 shrink-0">
+                    <img src={mod.illustration} alt="" className="w-full drop-shadow-xl" />
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 bg-white rounded-2xl p-6 border border-gray-100">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
+                        <mod.icon size={24} className="text-primary-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-gray-900 text-lg">{t(mod.titleKey)}</h3>
+                          {mod.badgeKey && (
+                            <span className="text-[10px] font-bold bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full uppercase">
+                              {t(mod.badgeKey)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <ul className="space-y-2.5 ml-1">
+                      {mod.bullets.map((key, j) => (
+                        <li key={j} className="flex items-start gap-3 text-sm text-gray-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary-400 mt-1.5 shrink-0" />
+                          <span>{t(key)}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="space-y-2.5 ml-1">
-                    {mod.bullets.map((key, j) => (
-                      <li key={j} className="flex items-start gap-3 text-sm text-gray-600">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary-400 mt-1.5 shrink-0" />
-                        <span>{t(key)}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               ))}
             </div>

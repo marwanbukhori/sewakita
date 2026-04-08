@@ -1,0 +1,44 @@
+<svg width="280" height="480" viewBox="0 0 280 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="272" height="472" rx="28" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  <rect x="100" y="12" width="80" height="6" rx="3" fill="#E5E7EB"/>
+  <!-- Header -->
+  <rect x="20" y="30" width="240" height="36" rx="8" fill="#0F766E"/>
+  <text x="30" y="53" font-family="system-ui" font-size="13" font-weight="600" fill="white">Billing — April 2026</text>
+  <!-- Workflow card -->
+  <rect x="20" y="80" width="240" height="64" rx="12" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="1"/>
+  <circle cx="44" cy="104" r="10" fill="#22C55E"/>
+  <text x="44" y="108" font-family="system-ui" font-size="10" fill="white" text-anchor="middle">✓</text>
+  <rect x="62" y="96" width="80" height="8" rx="3" fill="#15803D"/>
+  <rect x="62" y="110" width="60" height="6" rx="3" fill="#6B7280"/>
+  <text x="220" y="108" font-family="system-ui" font-size="10" fill="#22C55E" font-weight="600">3/3</text>
+  <!-- Donut chart area -->
+  <rect x="20" y="158" width="240" height="120" rx="12" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <circle cx="90" cy="218" r="36" stroke="#E5E7EB" stroke-width="8" fill="none"/>
+  <circle cx="90" cy="218" r="36" stroke="#22C55E" stroke-width="8" fill="none" stroke-dasharray="170 226" stroke-linecap="round"/>
+  <text x="90" y="222" font-family="system-ui" font-size="14" font-weight="700" fill="#1F2937" text-anchor="middle">75%</text>
+  <!-- Legend -->
+  <circle cx="160" cy="200" r="4" fill="#22C55E"/>
+  <text x="170" y="204" font-family="system-ui" font-size="9" fill="#6B7280">Collected</text>
+  <circle cx="160" cy="218" r="4" fill="#F59E0B"/>
+  <text x="170" y="222" font-family="system-ui" font-size="9" fill="#6B7280">Partial</text>
+  <circle cx="160" cy="236" r="4" fill="#EF4444"/>
+  <text x="170" y="240" font-family="system-ui" font-size="9" fill="#6B7280">Overdue</text>
+  <!-- Bill rows -->
+  <rect x="20" y="292" width="240" height="48" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <circle cx="44" cy="316" r="12" fill="#E5E7EB"/>
+  <rect x="64" y="306" width="80" height="8" rx="3" fill="#1F2937"/>
+  <rect x="64" y="320" width="50" height="6" rx="3" fill="#9CA3AF"/>
+  <rect x="196" y="308" width="44" height="18" rx="9" fill="#F0FDF4"/>
+  <text x="218" y="320" font-family="system-ui" font-size="8" fill="#22C55E" text-anchor="middle" font-weight="600">Paid</text>
+  <rect x="20" y="350" width="240" height="48" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <circle cx="44" cy="374" r="12" fill="#E5E7EB"/>
+  <rect x="64" y="364" width="90" height="8" rx="3" fill="#1F2937"/>
+  <rect x="64" y="378" width="60" height="6" rx="3" fill="#9CA3AF"/>
+  <rect x="196" y="366" width="44" height="18" rx="9" fill="#FEF2F2"/>
+  <text x="218" y="378" font-family="system-ui" font-size="8" fill="#EF4444" text-anchor="middle" font-weight="600">Due</text>
+  <!-- Bottom nav -->
+  <rect x="0" y="430" width="280" height="50" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <circle cx="56" cy="452" r="10" fill="#E5E7EB"/>
+  <circle cx="140" cy="452" r="10" fill="#0F766E" opacity="0.15"/>
+  <circle cx="224" cy="452" r="10" fill="#E5E7EB"/>
+</svg>
