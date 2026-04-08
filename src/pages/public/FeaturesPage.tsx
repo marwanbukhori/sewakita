@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Building2, Receipt, Users, FileText, BarChart3, MessageCircle, ArrowRight, Eye, CreditCard, Phone, Menu, X } from 'lucide-react'
+import { Building2, Receipt, Users, FileText, BarChart3, MessageCircle, ArrowRight, Eye, CreditCard, Phone, Menu, X, ArrowLeft } from 'lucide-react'
 import { BatikHeroOverlay, BatikDivider } from '@/assets/batik/patterns'
 import LanguageToggle from '@/components/ui/LanguageToggle'
+import { useAuth } from '@/lib/auth-context'
 
 type Role = 'landlord' | 'tenant'
 
@@ -56,6 +57,9 @@ const TENANT_MODULES = [
 
 export default function FeaturesPage() {
   const { t } = useTranslation()
+  const { user, profile } = useAuth()
+  const isLoggedIn = !!user
+  const dashboardPath = profile?.role === 'tenant' ? '/tenant/dashboard' : '/dashboard'
   const [role, setRole] = useState<Role>('landlord')
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenu, setMobileMenu] = useState(false)
@@ -81,16 +85,26 @@ export default function FeaturesPage() {
             <Link to="/features" className={`text-sm font-semibold transition-colors ${scrolled ? 'text-primary-600' : 'text-white'}`}>
               {t('landing.nav_features')}
             </Link>
-            <Link to="/" className={`text-sm font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-primary-600' : 'text-white/80 hover:text-white'}`}>
-              {t('landing.nav_pricing')}
-            </Link>
+            {!isLoggedIn && (
+              <Link to="/" className={`text-sm font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-primary-600' : 'text-white/80 hover:text-white'}`}>
+                {t('landing.nav_pricing')}
+              </Link>
+            )}
             <LanguageToggle />
-            <Link to="/login" className={`text-sm font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-primary-600' : 'text-white/80 hover:text-white'}`}>
-              {t('landing.nav_login')}
-            </Link>
-            <Link to="/login" className="bg-white text-primary-600 px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 shadow-md transition-all hover:shadow-lg active:scale-95">
-              {t('landing.nav_cta')}
-            </Link>
+            {isLoggedIn ? (
+              <Link to={dashboardPath} className="inline-flex items-center gap-2 bg-white text-primary-600 px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 shadow-md transition-all hover:shadow-lg active:scale-95">
+                <ArrowLeft size={14} /> {t('fp.back_to_dashboard')}
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className={`text-sm font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-primary-600' : 'text-white/80 hover:text-white'}`}>
+                  {t('landing.nav_login')}
+                </Link>
+                <Link to="/login" className="bg-white text-primary-600 px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 shadow-md transition-all hover:shadow-lg active:scale-95">
+                  {t('landing.nav_cta')}
+                </Link>
+              </>
+            )}
           </nav>
 
           <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-2 rounded-lg">
@@ -106,16 +120,24 @@ export default function FeaturesPage() {
               <Link to="/features" onClick={() => setMobileMenu(false)} className="block w-full text-left text-sm font-semibold text-primary-600 py-2">
                 {t('landing.nav_features')}
               </Link>
-              <Link to="/" onClick={() => setMobileMenu(false)} className="block w-full text-left text-sm font-medium text-gray-700 py-2">
-                {t('landing.nav_pricing')}
-              </Link>
+              {!isLoggedIn && (
+                <Link to="/" onClick={() => setMobileMenu(false)} className="block w-full text-left text-sm font-medium text-gray-700 py-2">
+                  {t('landing.nav_pricing')}
+                </Link>
+              )}
               <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                 <span className="text-sm text-gray-500">Language</span>
                 <LanguageToggle />
               </div>
-              <Link to="/login" className="block w-full text-center bg-primary-600 text-white py-3 rounded-xl text-sm font-bold mt-2">
-                {t('landing.nav_cta')}
-              </Link>
+              {isLoggedIn ? (
+                <Link to={dashboardPath} onClick={() => setMobileMenu(false)} className="block w-full text-center bg-primary-600 text-white py-3 rounded-xl text-sm font-bold mt-2">
+                  {t('fp.back_to_dashboard')}
+                </Link>
+              ) : (
+                <Link to="/login" className="block w-full text-center bg-primary-600 text-white py-3 rounded-xl text-sm font-bold mt-2">
+                  {t('landing.nav_cta')}
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -225,8 +247,8 @@ export default function FeaturesPage() {
         <div className="relative z-10 max-w-2xl mx-auto px-5 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('fp.cta_title')}</h2>
           <p className="text-white/70 mb-8">{t('fp.cta_subtitle')}</p>
-          <Link to="/login" className="inline-flex items-center gap-2 bg-white text-primary-700 px-8 py-4 rounded-xl text-sm font-bold hover:bg-gray-50 shadow-xl transition-all hover:shadow-2xl active:scale-95">
-            {t('fp.cta_button')} <ArrowRight size={16} />
+          <Link to={isLoggedIn ? dashboardPath : '/login'} className="inline-flex items-center gap-2 bg-white text-primary-700 px-8 py-4 rounded-xl text-sm font-bold hover:bg-gray-50 shadow-xl transition-all hover:shadow-2xl active:scale-95">
+            {isLoggedIn ? t('fp.back_to_dashboard') : t('fp.cta_button')} <ArrowRight size={16} />
           </Link>
         </div>
       </section>
