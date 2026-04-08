@@ -26,7 +26,7 @@ function mapStatus(statusId: string): WebhookStatus {
   return 'failed'
 }
 
-async function postForm(url: string, body: Record<string, string>): Promise<any> {
+async function postForm(url: string, body: Record<string, string>): Promise<Record<string, unknown> | Record<string, unknown>[]> {
   const form = new URLSearchParams(body)
   const res = await fetch(url, {
     method: 'POST',

@@ -23,6 +23,7 @@ const SANDBOX = Deno.env.get('TOYYIBPAY_SANDBOX') === 'true'
 const APP_URL = Deno.env.get('APP_URL') || ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 Deno.serve(async (_req) => {
   const summary = { renewed: 0, dunned: 0, expired: 0, t14: 0, t3: 0, t0: 0, errors: [] as string[] }
 

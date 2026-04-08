@@ -16,14 +16,16 @@ interface EmailRequest {
   to: string
   template: 'bill' | 'receipt' | 'overdue' | 'agreement' | 'welcome' | 'report'
     | 'subscription-renewal' | 'subscription-dunning' | 'subscription-expired' | 'subscription-annual-reminder'
-  data: Record<string, any>
+  data: Record<string, string | number | boolean | null | unknown[]>
   language: 'en' | 'ms'
   tenant_id?: string
   property_id?: string
   landlord_id?: string
 }
 
-const TEMPLATES: Record<string, Record<string, { subject: string; body: (data: any) => string }>> = {
+type TemplateData = Record<string, string | number | boolean | null | { type: string; amount: number }[]>
+
+const TEMPLATES: Record<string, Record<string, { subject: string; body: (data: TemplateData) => string }>> = {
   bill: {
     en: {
       subject: 'Your Monthly Bill — {{month}}',
@@ -33,7 +35,7 @@ const TEMPLATES: Record<string, Record<string, { subject: string; body: (data: a
         <p>Your bill for <strong>${d.property_name}</strong> (${d.room_label}) is ready.</p>
         <table style="width:100%;border-collapse:collapse;margin:16px 0">
           <tr><td style="padding:8px;border-bottom:1px solid #eee">Room Rent</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">RM${d.rent_amount}</td></tr>
-          ${(d.utilities || []).map((u: any) => u.amount > 0 ? `<tr><td style="padding:8px;border-bottom:1px solid #eee">${u.type}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">RM${u.amount}</td></tr>` : '').join('')}
+          ${(d.utilities || []).map((u: { type: string; amount: number }) => u.amount > 0 ? `<tr><td style="padding:8px;border-bottom:1px solid #eee">${u.type}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">RM${u.amount}</td></tr>` : '').join('')}
           <tr><td style="padding:8px;font-weight:bold">Total</td><td style="padding:8px;font-weight:bold;text-align:right">RM${d.total_due}</td></tr>
         </table>
         <p>Please make your payment by day ${d.payment_due_day} of the month.</p>
@@ -48,7 +50,7 @@ const TEMPLATES: Record<string, Record<string, { subject: string; body: (data: a
         <p>Bil anda untuk <strong>${d.property_name}</strong> (${d.room_label}) telah sedia.</p>
         <table style="width:100%;border-collapse:collapse;margin:16px 0">
           <tr><td style="padding:8px;border-bottom:1px solid #eee">Sewa Bilik</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">RM${d.rent_amount}</td></tr>
-          ${(d.utilities || []).map((u: any) => u.amount > 0 ? `<tr><td style="padding:8px;border-bottom:1px solid #eee">${u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">RM${u.amount}</td></tr>` : '').join('')}
+          ${(d.utilities || []).map((u: { type: string; amount: number }) => u.amount > 0 ? `<tr><td style="padding:8px;border-bottom:1px solid #eee">${u.type === 'electric' ? 'Elektrik' : u.type === 'water' ? 'Air' : 'Internet'}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">RM${u.amount}</td></tr>` : '').join('')}
           <tr><td style="padding:8px;font-weight:bold">Jumlah</td><td style="padding:8px;font-weight:bold;text-align:right">RM${d.total_due}</td></tr>
         </table>
         <p>Sila jelaskan bayaran sebelum hari ${d.payment_due_day} setiap bulan.</p>

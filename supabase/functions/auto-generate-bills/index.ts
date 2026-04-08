@@ -12,7 +12,33 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
-Deno.serve(async (_req) => {
+interface UtilityRecord {
+  type: string
+  total_amount: number
+  split_method: string
+  fixed_amount_per_room?: number
+  per_room_readings?: { room_id: string; reading: number }[] | null
+  default_amount?: number
+}
+
+interface TenancyRecord {
+  status: string
+  tenant_id: string
+  move_in: string
+  agreed_rent: number
+  tenant: { name: string; email: string }
+}
+
+interface RoomRecord {
+  id: string
+  label: string
+  status: string
+  is_active: boolean
+  tenancies: TenancyRecord[]
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+Deno.serve(async (_req: Request) => {
   try {
     const today = new Date()
     const dayOfMonth = today.getDate()
@@ -63,7 +89,7 @@ Deno.serve(async (_req) => {
       // Use utility bills if they exist, otherwise use templates
       const utilities = (utilityBills && utilityBills.length > 0)
         ? utilityBills
-        : (templates || []).map((t: any) => ({
+        : (templates || []).map((t: UtilityRecord) => ({
             type: t.type,
             total_amount: t.default_amount || 0,
             split_method: t.split_method,
@@ -71,14 +97,14 @@ Deno.serve(async (_req) => {
             per_room_readings: null,
           }))
 
-      const occupiedRooms = (property.rooms || []).filter((r: any) =>
+      const occupiedRooms = (property.rooms || []).filter((r: RoomRecord) =>
         r.status === 'occupied' && r.is_active
       )
 
       let billsCreated = 0
 
       for (const room of occupiedRooms) {
-        const activeTenancy = (room.tenancies || []).find((t: any) => t.status === 'active')
+        const activeTenancy = (room.tenancies || []).find((t: TenancyRecord) => t.status === 'active')
         if (!activeTenancy) continue
 
         // Calculate rent (prorate for move-in month)
@@ -94,20 +120,20 @@ Deno.serve(async (_req) => {
         }
 
         // Calculate utility charges
-        const utilityBreakdown = utilities.map((ub: any) => {
+        const utilityBreakdown = utilities.map((ub: UtilityRecord) => {
           let amount = 0
           if (ub.split_method === 'absorbed') amount = 0
           else if (ub.split_method === 'equal') amount = Math.round(ub.total_amount / occupiedRooms.length)
           else if (ub.split_method === 'fixed') amount = ub.fixed_amount_per_room || 0
           else if (ub.split_method === 'sub_meter' && ub.per_room_readings) {
-            const totalReadings = ub.per_room_readings.reduce((s: number, r: any) => s + r.reading, 0)
-            const roomReading = ub.per_room_readings.find((r: any) => r.room_id === room.id)
+            const totalReadings = ub.per_room_readings.reduce((s: number, r: { reading: number }) => s + r.reading, 0)
+            const roomReading = ub.per_room_readings.find((r: { room_id: string }) => r.room_id === room.id)
             if (roomReading && totalReadings > 0) amount = Math.round((roomReading.reading / totalReadings) * ub.total_amount)
           }
           return { type: ub.type, amount, split_method: ub.split_method }
         })
 
-        const totalDue = rentAmount + utilityBreakdown.reduce((s: number, u: any) => s + u.amount, 0)
+        const totalDue = rentAmount + utilityBreakdown.reduce((s: number, u: { amount: number }) => s + u.amount, 0)
 
         const { error: insertError } = await supabase.from('monthly_bills').insert({
           tenant_id: activeTenancy.tenant_id,
