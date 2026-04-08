@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
-import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, Globe, Flag } from 'lucide-react'
+import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, Globe, Flag, Sparkles } from 'lucide-react'
 import { getActiveSubscription, type SubscriptionWithPlan } from '@/lib/subscription'
 import { ONLINE_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
 import { useEffect, useState, useCallback } from 'react'
@@ -90,6 +90,7 @@ export default function AppShell() {
     ...(role === 'landlord' && ONLINE_PAYMENTS_ENABLED ? [
       { icon: CreditCard, label: t('account.payment_settings', 'Payment Settings'), to: '/account/payment-settings' },
     ] : []),
+    { icon: Sparkles, label: t('landing.nav_features'), to: '/features' },
     { icon: HelpCircle, label: t('menu.faq'), to: '/faq' },
     { icon: Flag, label: t('report.title'), to: '/report' },
   ]
