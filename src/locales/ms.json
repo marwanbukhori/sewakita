@@ -534,6 +534,10 @@
     "success_desc": "Terima kasih! Kami akan menyemak laporan anda dan menghubungi anda.",
     "failed": "Gagal menghantar laporan. Sila cuba lagi."
   },
+  "plans": {
+    "current_pro": "Pelan Saya",
+    "upgrade_to_pro": "Naik Taraf ke Pro"
+  },
   "fp": {
     "hero_title": "Semua yang anda perlukan untuk urus sewaan",
     "hero_subtitle": "Dari pendaftaran hartanah hingga kutipan bayaran, ReRumah uruskan semuanya. Lihat apa yang disediakan untuk tuan rumah dan penyewa.",

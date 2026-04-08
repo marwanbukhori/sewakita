@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
-import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, Globe, Flag, Sparkles } from 'lucide-react'
+import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, Globe, Flag, Sparkles, Crown } from 'lucide-react'
 import { getActiveSubscription, type SubscriptionWithPlan } from '@/lib/subscription'
 import { ONLINE_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
 import { useEffect, useState, useCallback } from 'react'
@@ -85,8 +85,13 @@ export default function AppShell() {
   const sidebarMainNav = role === 'tenant' ? tenantNav : landlordNav
   const nav = role === 'tenant' ? tenantNav : landlordNav
 
+  const tier = getPlanTier(subscription?.plan_code ?? null)
+
   const menuItems = [
     { icon: User, label: t('account.personal_info'), to: '/account' },
+    ...(role === 'landlord' ? [
+      { icon: Crown, label: tier === 'pro' ? t('plans.current_pro') : t('plans.upgrade_to_pro'), to: '/plans', badge: tier === 'pro' ? 'PRO' : undefined },
+    ] : []),
     ...(role === 'landlord' && ONLINE_PAYMENTS_ENABLED ? [
       { icon: CreditCard, label: t('account.payment_settings', 'Payment Settings'), to: '/account/payment-settings' },
     ] : []),
@@ -137,8 +142,11 @@ export default function AppShell() {
             <div className="py-2">
               {menuItems.map((item) => (
                 <Link key={item.to} to={item.to} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50">
-                  <item.icon size={18} className="text-gray-500" />
+                  <item.icon size={18} className={item.badge ? 'text-amber-500' : 'text-gray-500'} />
                   <span className="flex-1 text-sm text-gray-800">{item.label}</span>
+                  {item.badge && (
+                    <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{item.badge}</span>
+                  )}
                   <ChevronRight size={16} className="text-gray-300" />
                 </Link>
               ))}
@@ -191,6 +199,15 @@ export default function AppShell() {
             <NavLink to="/account" className={({ isActive }) =>
               `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
             }><User size={20} /><span>{t('nav.account')}</span></NavLink>
+            {role === 'landlord' && (
+              <NavLink to="/plans" className={({ isActive }) =>
+                `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
+              }>
+                <Crown size={20} className={tier === 'pro' ? 'text-amber-500' : ''} />
+                <span className="flex-1">{tier === 'pro' ? t('plans.current_pro') : t('plans.upgrade_to_pro')}</span>
+                {tier === 'pro' && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">PRO</span>}
+              </NavLink>
+            )}
             {role === 'landlord' && ONLINE_PAYMENTS_ENABLED && (
               <NavLink to="/account/payment-settings" className={({ isActive }) =>
                 `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
