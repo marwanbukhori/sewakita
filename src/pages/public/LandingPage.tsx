@@ -57,9 +57,7 @@ export default function LandingPage() {
         scrolled ? 'bg-white/95 backdrop-blur-md shadow-md' : 'bg-transparent'
       }`}>
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-          <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-primary-600' : 'text-white'}`}>
-            ReRumah
-          </span>
+          <img src="/logos/logo-mobile.svg" alt="ReRumah" className={`h-7 transition-all ${scrolled ? '' : 'brightness-0 invert'}`} />
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8">
@@ -293,7 +291,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
             <div>
-              <span className="text-xl font-bold text-primary-400">ReRumah</span>
+              <img src="/logos/logo-mobile.svg" alt="ReRumah" className="h-7 brightness-0 invert opacity-80" />
               <p className="text-sm text-gray-400 mt-1">{t('landing.footer_tagline')}</p>
             </div>
             <div className="flex items-center gap-6">

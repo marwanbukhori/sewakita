@@ -1,0 +1,5 @@
+<svg width="400" height="80" viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg">
+<rect width="400" height="80" rx="12" fill="#1E3A5F"/>
+<text x="200" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="700" fill="#93C5FD" letter-spacing="-1.5">re<tspan fill="#60A5FA">rumah</tspan></text>
+<text x="200" y="66" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="400" fill="#60A5FA" letter-spacing="4" opacity="0.6">PROPERTY MADE SIMPLE</text>
+</svg>

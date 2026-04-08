@@ -49,6 +49,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-[#F7FAFC] flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm animate-in">
         <div className="text-center mb-8">
+          <img src="/logos/favicon-dark.svg" alt="ReRumah" className="w-14 h-14 mx-auto mb-3 rounded-2xl shadow-md" />
           <h1 className="text-2xl font-bold text-gray-800">ReRumah</h1>
           <p className="text-gray-500 mt-1.5 text-sm">{t('onboarding.welcome')}</p>
         </div>

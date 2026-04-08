@@ -54,9 +54,7 @@ function AppRoutes() {
         <Route path="*" element={
           <div className="min-h-screen flex items-center justify-center bg-[#F7FAFC]">
             <div className="text-center animate-in">
-              <div className="w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-md">
-                <span className="text-white text-xl font-bold">R</span>
-              </div>
+              <img src="/logos/favicon-dark.svg" alt="ReRumah" className="w-14 h-14 mx-auto mb-4 shadow-md rounded-2xl" />
               <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full mx-auto mt-4" />
             </div>
           </div>

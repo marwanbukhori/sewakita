@@ -263,9 +263,7 @@ export default function AcceptInvitePage() {
       <div className="min-h-screen bg-[#F7FAFC] flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-sm animate-in">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-md">
-              <span className="text-white text-2xl font-bold">R</span>
-            </div>
+            <img src="/logos/favicon-dark.svg" alt="ReRumah" className="w-16 h-16 mx-auto mb-4 shadow-md rounded-2xl" />
             <h1 className="text-2xl font-bold text-gray-800">ReRumah</h1>
             <p className="text-gray-500 mt-1.5 text-sm">Anda dijemput untuk menyewa</p>
           </div>
