@@ -40,7 +40,7 @@ export default function ResetPasswordPage() {
 
       <div className="w-full max-w-sm animate-in relative z-10">
         <div className="text-center mb-8">
-          <img src="/logos/favicon-dark.svg" alt="ReRumah" className="w-16 h-16 mx-auto mb-4 shadow-md rounded-2xl" />
+          <img src="/logos/logo-full.svg" alt="ReRumah" className="h-12 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-800">{t('auth.reset_password')}</h1>
         </div>
 

@@ -57,7 +57,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <img src="/logos/favicon-dark.svg" alt="ReRumah" className="w-16 h-16 mx-auto mb-4 shadow-md rounded-2xl" />
+          <img src="/logos/logo-full.svg" alt="ReRumah" className="h-12 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-800">{t('app.name')}</h1>
           <p className="text-gray-500 mt-1.5 text-sm">
             {t('app.tagline')}
