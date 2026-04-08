@@ -48,10 +48,10 @@ const LANDLORD_MODULES = [
 ]
 
 const TENANT_MODULES = [
-  { icon: Eye, titleKey: 'fp.tenant_bills_title', descKey: 'fp.tenant_bills_desc' },
-  { icon: CreditCard, titleKey: 'fp.tenant_payments_title', descKey: 'fp.tenant_payments_desc' },
-  { icon: FileText, titleKey: 'fp.tenant_agreement_title', descKey: 'fp.tenant_agreement_desc' },
-  { icon: Phone, titleKey: 'fp.tenant_contact_title', descKey: 'fp.tenant_contact_desc' },
+  { icon: Eye, titleKey: 'fp.tenant_bills_title', descKey: 'fp.tenant_bills_desc', illustration: '/illustrations/mock-tenant-dashboard.svg' },
+  { icon: CreditCard, titleKey: 'fp.tenant_payments_title', descKey: 'fp.tenant_payments_desc', illustration: '/illustrations/mock-tenant-payments.svg' },
+  { icon: FileText, titleKey: 'fp.tenant_agreement_title', descKey: 'fp.tenant_agreement_desc', illustration: '/illustrations/mock-tenant-agreement.svg' },
+  { icon: Phone, titleKey: 'fp.tenant_contact_title', descKey: 'fp.tenant_contact_desc', illustration: '/illustrations/mock-tenant-contact.svg' },
 ]
 
 export default function FeaturesPage() {
@@ -199,14 +199,19 @@ export default function FeaturesPage() {
               ))}
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="space-y-12 max-w-4xl mx-auto">
               {TENANT_MODULES.map((mod, i) => (
-                <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow text-center">
-                  <div className="w-14 h-14 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4">
-                    <mod.icon size={28} className="text-primary-600" />
+                <div key={i} className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 md:gap-12`}>
+                  <div className="w-48 md:w-56 shrink-0">
+                    <img src={mod.illustration} alt="" className="w-full drop-shadow-xl" />
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{t(mod.titleKey)}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{t(mod.descKey)}</p>
+                  <div className="flex-1 bg-white rounded-2xl p-6 border border-gray-100">
+                    <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-4">
+                      <mod.icon size={24} className="text-primary-600" />
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-lg mb-2">{t(mod.titleKey)}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{t(mod.descKey)}</p>
+                  </div>
                 </div>
               ))}
             </div>

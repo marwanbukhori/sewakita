@@ -1,0 +1,32 @@
+<svg width="280" height="480" viewBox="0 0 280 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="272" height="472" rx="28" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  <rect x="100" y="12" width="80" height="6" rx="3" fill="#E5E7EB"/>
+  <!-- Header -->
+  <rect x="20" y="30" width="240" height="36" rx="8" fill="#0F766E"/>
+  <text x="30" y="53" font-family="system-ui" font-size="13" font-weight="600" fill="white">Payments</text>
+  <!-- Month header -->
+  <text x="20" y="90" font-family="system-ui" font-size="12" font-weight="600" fill="#6B7280">April 2026</text>
+  <!-- Payment rows -->
+  <rect x="20" y="100" width="240" height="44" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="32" y="118" font-family="system-ui" font-size="10" fill="#1F2937">1 Apr 2026</text>
+  <text x="32" y="132" font-family="system-ui" font-size="9" fill="#9CA3AF">Bank Transfer</text>
+  <text x="240" y="120" font-family="system-ui" font-size="12" fill="#22C55E" text-anchor="end" font-weight="600">+RM545</text>
+  <!-- Month header -->
+  <text x="20" y="172" font-family="system-ui" font-size="12" font-weight="600" fill="#6B7280">March 2026</text>
+  <rect x="20" y="182" width="240" height="44" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="32" y="200" font-family="system-ui" font-size="10" fill="#1F2937">3 Mar 2026</text>
+  <text x="32" y="214" font-family="system-ui" font-size="9" fill="#9CA3AF">DuitNow</text>
+  <text x="240" y="202" font-family="system-ui" font-size="12" fill="#22C55E" text-anchor="end" font-weight="600">+RM500</text>
+  <rect x="20" y="234" width="240" height="44" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="32" y="252" font-family="system-ui" font-size="10" fill="#1F2937">3 Mar 2026</text>
+  <text x="32" y="266" font-family="system-ui" font-size="9" fill="#9CA3AF">Cash</text>
+  <text x="240" y="254" font-family="system-ui" font-size="12" fill="#22C55E" text-anchor="end" font-weight="600">+RM45</text>
+  <!-- Month header -->
+  <text x="20" y="306" font-family="system-ui" font-size="12" font-weight="600" fill="#6B7280">February 2026</text>
+  <rect x="20" y="316" width="240" height="44" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="32" y="334" font-family="system-ui" font-size="10" fill="#1F2937">1 Feb 2026</text>
+  <text x="32" y="348" font-family="system-ui" font-size="9" fill="#9CA3AF">Bank Transfer</text>
+  <text x="240" y="336" font-family="system-ui" font-size="12" fill="#22C55E" text-anchor="end" font-weight="600">+RM530</text>
+  <!-- Bottom nav -->
+  <rect x="0" y="450" width="280" height="30" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+</svg>
