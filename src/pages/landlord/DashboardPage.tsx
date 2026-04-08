@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Building2, Users, AlertTriangle, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle, CreditCard, Bell, LinkIcon, FileCheck } from 'lucide-react'
+import { Building2, Users, AlertTriangle, FileText, Receipt, TrendingUp, ArrowUpRight, BarChart3, MessageCircle, Bell, LinkIcon, FileCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Room, MonthlyBill, Profile, Property } from '@/types/database'
 import Card from '@/components/ui/Card'
@@ -199,7 +199,6 @@ function ProgressRingHero({ label, value, sub, percent, size = 68 }: { label: st
 }
 
 const SLIDES = [
-  { gradient: 'from-primary-600 via-primary-700 to-primary-800', badge: 'NEW', icon: CreditCard, title: 'FPX Payments Now Live', desc: 'Tenants can pay rent directly via FPX. Instant confirmation.', to: '/bil' },
   { gradient: 'from-emerald-600 via-emerald-700 to-emerald-800', badge: 'TIP', icon: MessageCircle, title: 'Send Bills via WhatsApp', desc: 'Tap the green button on any bill to remind tenants instantly.', to: '/bil' },
   { gradient: 'from-purple-500 via-purple-700 to-purple-800', badge: 'FEATURE', icon: FileCheck, title: 'Auto-generate Agreements', desc: 'Create professional PDF agreements when inviting tenants.', to: '/tenants/new' },
   { gradient: 'from-teal-500 via-teal-700 to-teal-800', badge: 'TIP', icon: LinkIcon, title: 'Invite Tenants with a Link', desc: 'Share an invite link via WhatsApp. Tenants sign up and join.', to: '/tenants/new' },
