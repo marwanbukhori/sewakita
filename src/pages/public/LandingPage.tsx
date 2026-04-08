@@ -8,7 +8,7 @@ import LanguageToggle from '@/components/ui/LanguageToggle'
 const FEATURES = [
   { icon: Building2, titleKey: 'landing.feat_property', descKey: 'landing.feat_property_desc' },
   { icon: Receipt, titleKey: 'landing.feat_billing', descKey: 'landing.feat_billing_desc' },
-  { icon: CreditCard, titleKey: 'landing.feat_payments', descKey: 'landing.feat_payments_desc' },
+  { icon: CreditCard, titleKey: 'landing.feat_payments', descKey: 'landing.feat_payments_desc', comingSoon: true },
   { icon: FileText, titleKey: 'landing.feat_agreements', descKey: 'landing.feat_agreements_desc' },
   { icon: MessageCircle, titleKey: 'landing.feat_whatsapp', descKey: 'landing.feat_whatsapp_desc' },
   { icon: BarChart3, titleKey: 'landing.feat_reports', descKey: 'landing.feat_reports_desc' },
@@ -180,8 +180,13 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((feat, i) => (
-              <div key={i} className="group bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary-200 hover:shadow-lg transition-all duration-300">
-                <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-4 group-hover:bg-primary-100 transition-colors">
+              <div key={i} className={`relative group bg-white rounded-2xl p-6 border border-gray-100 transition-all duration-300 ${feat.comingSoon ? 'opacity-60' : 'hover:border-primary-200 hover:shadow-lg'}`}>
+                {feat.comingSoon && (
+                  <div className="absolute top-4 right-4 bg-amber-100 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                    {t('landing.coming_soon')}
+                  </div>
+                )}
+                <div className={`w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-4 ${feat.comingSoon ? '' : 'group-hover:bg-primary-100'} transition-colors`}>
                   <feat.icon size={24} className="text-primary-600" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2">{t(feat.titleKey)}</h3>
