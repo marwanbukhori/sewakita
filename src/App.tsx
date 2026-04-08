@@ -12,6 +12,7 @@ import AcceptInvitePage from '@/pages/auth/AcceptInvitePage'
 // Lazy-loaded pages
 const LandingPage = lazy(() => import('@/pages/public/LandingPage'))
 const FeaturesPage = lazy(() => import('@/pages/public/FeaturesPage'))
+const PrivacyPolicyPage = lazy(() => import('@/pages/public/PrivacyPolicyPage'))
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const OnboardingPage = lazy(() => import('@/pages/auth/OnboardingPage'))
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
@@ -79,6 +80,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />

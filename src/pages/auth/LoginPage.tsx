@@ -127,7 +127,7 @@ export default function LoginPage() {
 
         <p className="text-center text-xs text-gray-400 mt-6">
           {t('auth.privacy')}{' '}
-          <a href="#" className="text-primary-600">{t('auth.privacy_policy')}</a>.
+          <Link to="/privacy" className="text-primary-600">{t('auth.privacy_policy')}</Link>.
         </p>
         <Link to="/" className="block text-center text-xs text-primary-600 hover:text-primary-700 font-medium mt-3">
           ← {t('common.back')}
