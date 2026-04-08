@@ -577,7 +577,9 @@
     "tenant_agreement_desc": "Semak dan tandatangan perjanjian sewa secara digital. Lihat syarat, utiliti, peraturan rumah, dan muat turun PDF.",
     "tenant_contact_title": "Hubungi Tuan Rumah",
     "tenant_contact_desc": "Hubungi tuan rumah anda terus melalui WhatsApp dari aplikasi. Tidak perlu cari nombor mereka.",
-    "cta_title": "Mula urus hartanah anda hari ini"
+    "cta_title": "Mula urus hartanah anda hari ini",
+    "cta_subtitle": "Sertai tuan rumah di seluruh Malaysia yang menjimatkan masa setiap bulan.",
+    "cta_button": "Mula Percuma"
   },
   "privacy": {
     "title": "Dasar Privasi",
@@ -608,9 +610,5 @@
     "s7_body": "Anda mempunyai hak untuk mengakses, membetulkan, atau memadamkan data peribadi anda. Anda boleh mengemas kini maklumat profil secara langsung dalam aplikasi, atau hubungi kami untuk meminta eksport data atau pemadaman akaun.",
     "s8_title": "Hubungi Kami",
     "s8_body": "Untuk soalan mengenai dasar privasi ini atau data anda, hubungi kami di marwanbukhori.dev@gmail.com."
-  },
-  "fp": {
-    "cta_subtitle": "Sertai tuan rumah di seluruh Malaysia yang menjimatkan masa setiap bulan.",
-    "cta_button": "Mula Percuma"
   }
 }

@@ -577,7 +577,9 @@
     "tenant_agreement_desc": "Review and sign your rental agreement digitally. View terms, utilities, house rules, and download as PDF.",
     "tenant_contact_title": "Contact Landlord",
     "tenant_contact_desc": "Reach your landlord directly via WhatsApp from the app. No need to search for their number.",
-    "cta_title": "Start managing your properties today"
+    "cta_title": "Start managing your properties today",
+    "cta_subtitle": "Join landlords across Malaysia who are saving hours every month.",
+    "cta_button": "Get Started Free"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -608,9 +610,5 @@
     "s7_body": "You have the right to access, correct, or delete your personal data. You can update your profile information directly in the app, or contact us to request data export or account deletion.",
     "s8_title": "Contact",
     "s8_body": "For questions about this privacy policy or your data, contact us at marwanbukhori.dev@gmail.com."
-  },
-  "fp": {
-    "cta_subtitle": "Join landlords across Malaysia who are saving hours every month.",
-    "cta_button": "Get Started Free"
   }
 }
