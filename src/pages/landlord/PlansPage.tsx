@@ -13,7 +13,7 @@ import {
   formatPeriodRemaining,
   type SubscriptionWithPlan,
 } from '@/lib/subscription'
-import { ONLINE_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
+import { SUBSCRIPTION_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
 
 type Interval = 'monthly' | 'annual'
 
@@ -59,7 +59,7 @@ export default function PlansPage() {
   const price = interval === 'monthly' ? 29 : 290
 
   async function handleUpgrade() {
-    if (!ONLINE_PAYMENTS_ENABLED) {
+    if (!SUBSCRIPTION_PAYMENTS_ENABLED) {
       toast('Coming soon — online payments are not yet available.')
       return
     }
@@ -209,7 +209,7 @@ export default function PlansPage() {
           </div>
           {!isPro && (
             <Button fullWidth loading={checkingOut} onClick={handleUpgrade}>
-              {ONLINE_PAYMENTS_ENABLED
+              {SUBSCRIPTION_PAYMENTS_ENABLED
                 ? `Upgrade to Pro — RM${price}`
                 : 'Coming Soon'}
             </Button>

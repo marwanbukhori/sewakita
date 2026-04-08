@@ -1,4 +1,5 @@
-export const ONLINE_PAYMENTS_ENABLED = import.meta.env.VITE_ENABLE_ONLINE_PAYMENTS === 'true'
+export const SUBSCRIPTION_PAYMENTS_ENABLED = import.meta.env.VITE_ENABLE_SUBSCRIPTION_PAYMENTS === 'true'
+export const TENANT_PAYMENTS_ENABLED = import.meta.env.VITE_ENABLE_TENANT_PAYMENTS === 'true'
 
 export type PlanTier = 'free' | 'pro'
 
@@ -16,8 +17,8 @@ export function hasReports(tier: PlanTier): boolean {
   return tier === 'pro'
 }
 
-export function hasOnlinePayments(tier: PlanTier): boolean {
-  return ONLINE_PAYMENTS_ENABLED && tier === 'pro'
+export function hasTenantPayments(tier: PlanTier): boolean {
+  return TENANT_PAYMENTS_ENABLED && tier === 'pro'
 }
 
 export function hasOCR(tier: PlanTier): boolean {

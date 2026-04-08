@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from '@/lib/auth-context'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import { ONLINE_PAYMENTS_ENABLED } from '@/lib/feature-gates'
+import { SUBSCRIPTION_PAYMENTS_ENABLED } from '@/lib/feature-gates'
 
 // Static imports — needed during loading/auth check
 import AppShell from '@/components/layout/AppShell'
@@ -148,8 +148,8 @@ function AppRoutes() {
           <Route path="/bil" element={<BilPage />} />
           <Route path="/activity" element={<ActivityListPage />} />
           <Route path="/plans" element={<PlansPage />} />
-          <Route path="/plans/success" element={ONLINE_PAYMENTS_ENABLED ? <SubscriptionSuccessPage /> : <Navigate to="/dashboard" replace />} />
-          <Route path="/account/payment-settings" element={ONLINE_PAYMENTS_ENABLED ? <PaymentSettingsPage /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/plans/success" element={SUBSCRIPTION_PAYMENTS_ENABLED ? <SubscriptionSuccessPage /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/account/payment-settings" element={SUBSCRIPTION_PAYMENTS_ENABLED ? <PaymentSettingsPage /> : <Navigate to="/dashboard" replace />} />
           {/* Legacy route redirects */}
           <Route path="/billing" element={<Navigate to="/bil" replace />} />
           <Route path="/payments" element={<Navigate to="/bil" replace />} />

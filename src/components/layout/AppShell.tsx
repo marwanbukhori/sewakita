@@ -2,7 +2,7 @@ import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth-context'
 import { Home, Building2, Receipt, CreditCard, Menu, X, LogOut, ChevronRight, HelpCircle, User, BarChart3, Globe, Flag, Sparkles, Crown } from 'lucide-react'
 import { getActiveSubscription, type SubscriptionWithPlan } from '@/lib/subscription'
-import { ONLINE_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
+import { SUBSCRIPTION_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import BottomSheet from '@/components/ui/BottomSheet'
@@ -92,7 +92,7 @@ export default function AppShell() {
     ...(role === 'landlord' ? [
       { icon: Crown, label: tier === 'pro' ? t('plans.current_pro') : t('plans.upgrade_to_pro'), to: '/plans', badge: tier === 'pro' ? 'PRO' : undefined },
     ] : []),
-    ...(role === 'landlord' && ONLINE_PAYMENTS_ENABLED ? [
+    ...(role === 'landlord' && SUBSCRIPTION_PAYMENTS_ENABLED ? [
       { icon: CreditCard, label: t('account.payment_settings', 'Payment Settings'), to: '/account/payment-settings' },
     ] : []),
     { icon: Sparkles, label: t('landing.nav_features'), to: '/features' },
@@ -208,7 +208,7 @@ export default function AppShell() {
                 {tier === 'pro' && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">PRO</span>}
               </NavLink>
             )}
-            {role === 'landlord' && ONLINE_PAYMENTS_ENABLED && (
+            {role === 'landlord' && SUBSCRIPTION_PAYMENTS_ENABLED && (
               <NavLink to="/account/payment-settings" className={({ isActive }) =>
                 `flex items-center gap-3 px-3 h-11 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 font-medium hover:bg-gray-50'}`
               }><CreditCard size={20} /><span>{t('account.payment_settings', 'Payment Settings')}</span></NavLink>

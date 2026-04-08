@@ -15,7 +15,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import BillDueBadge from '@/components/tenant/BillDueBadge'
 import UtilityLineExplainer from '@/components/tenant/UtilityLineExplainer'
-import { ONLINE_PAYMENTS_ENABLED } from '@/lib/feature-gates'
+import { TENANT_PAYMENTS_ENABLED } from '@/lib/feature-gates'
 
 export default function TenantBillsPage() {
   const { t } = useTranslation()
@@ -179,7 +179,7 @@ export default function TenantBillsPage() {
                             </div>
                             {bill.status !== 'paid' && (
                               <div className="space-y-2">
-                                {ONLINE_PAYMENTS_ENABLED && (
+                                {TENANT_PAYMENTS_ENABLED && (
                                   <Button icon={CreditCard} fullWidth loading={paying} onClick={() => handlePayNow(bill)}>
                                     Pay Now — RM{bill.total_due - bill.total_paid}
                                   </Button>
