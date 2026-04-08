@@ -20,9 +20,14 @@ const STEPS = [
   { num: '03', titleKey: 'landing.step3_title', descKey: 'landing.step3_desc', icon: Zap },
 ]
 
-const PRICING_FEATURES = [
-  'landing.price_feat_1', 'landing.price_feat_2', 'landing.price_feat_3',
-  'landing.price_feat_4', 'landing.price_feat_5', 'landing.price_feat_6',
+const FREE_FEATURES = [
+  'landing.free_feat_1', 'landing.free_feat_2', 'landing.free_feat_3',
+  'landing.free_feat_4', 'landing.free_feat_5',
+]
+
+const PRO_FEATURES = [
+  'landing.pro_feat_1', 'landing.pro_feat_2', 'landing.pro_feat_3',
+  'landing.pro_feat_4', 'landing.pro_feat_5', 'landing.pro_feat_6',
 ]
 
 const FAQ_ITEMS = [
@@ -61,7 +66,10 @@ export default function LandingPage() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8">
-            {['features', 'pricing', 'faq'].map(id => (
+            <Link to="/features" className={`text-sm font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-primary-600' : 'text-white/80 hover:text-white'}`}>
+              {t('landing.nav_features')}
+            </Link>
+            {['pricing', 'faq'].map(id => (
               <button key={id} onClick={() => scrollTo(id)}
                 className={`text-sm font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-primary-600' : 'text-white/80 hover:text-white'}`}>
                 {t(`landing.nav_${id}`)}
@@ -88,7 +96,10 @@ export default function LandingPage() {
         {mobileMenu && (
           <div className="md:hidden bg-white border-t border-gray-100 shadow-lg animate-in">
             <div className="px-5 py-4 space-y-3">
-              {['features', 'pricing', 'faq'].map(id => (
+              <Link to="/features" onClick={() => setMobileMenu(false)} className="block w-full text-left text-sm font-medium text-gray-700 py-2">
+                {t('landing.nav_features')}
+              </Link>
+              {['pricing', 'faq'].map(id => (
                 <button key={id} onClick={() => scrollTo(id)} className="block w-full text-left text-sm font-medium text-gray-700 py-2">
                   {t(`landing.nav_${id}`)}
                 </button>
@@ -144,10 +155,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
-              { value: '4', label: t('landing.stat_split') },
-              { value: 'WhatsApp', label: t('landing.stat_whatsapp') },
-              { value: 'FPX', label: t('landing.stat_fpx') },
-              { value: 'PDF', label: t('landing.stat_pdf') },
+              { value: t('landing.stat_free_value'), label: t('landing.stat_free_label') },
+              { value: 'RM19', label: t('landing.stat_pro_label') },
+              { value: '2', label: t('landing.stat_lang_label') },
+              { value: 'PWA', label: t('landing.stat_pwa_label') },
             ].map((stat, i) => (
               <div key={i}>
                 <p className="text-2xl font-bold text-primary-600">{stat.value}</p>
@@ -217,20 +228,43 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{t('landing.pricing_title')}</h2>
           </div>
 
-          <div className="max-w-md mx-auto">
+          <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-6">
+            {/* Free tier */}
+            <div className="bg-white rounded-3xl border-2 border-gray-200 p-8">
+              <div className="inline-block bg-gray-100 rounded-full px-3 py-1 text-xs font-bold text-gray-600 mb-4">
+                {t('landing.free_badge')}
+              </div>
+              <div className="mb-6">
+                <span className="text-5xl font-bold text-gray-900">RM0</span>
+                <span className="text-gray-400 ml-2">{t('landing.free_period')}</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {FREE_FEATURES.map((key, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    <Check size={16} className="text-primary-500 shrink-0" />
+                    <span className="text-gray-600">{t(key)}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/login" className="block w-full text-center border-2 border-gray-200 text-gray-700 py-3.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all active:scale-95">
+                {t('landing.free_cta')}
+              </Link>
+            </div>
+
+            {/* Pro tier */}
             <div className="relative bg-white rounded-3xl border-2 border-primary-200 p-8 shadow-xl overflow-hidden">
               <BatikHeroOverlay />
               <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-primary-800 rounded-3xl" style={{ zIndex: 0 }} />
               <div className="relative z-10 text-white">
                 <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-bold mb-4">
-                  {t('landing.price_badge')}
+                  {t('landing.pro_badge')}
                 </div>
                 <div className="mb-6">
-                  <span className="text-5xl font-bold">RM0</span>
-                  <span className="text-white/60 ml-2">{t('landing.price_period')}</span>
+                  <span className="text-5xl font-bold">RM19</span>
+                  <span className="text-white/60 ml-2">{t('landing.pro_period')}</span>
                 </div>
                 <ul className="space-y-3 mb-8">
-                  {PRICING_FEATURES.map((key, i) => (
+                  {PRO_FEATURES.map((key, i) => (
                     <li key={i} className="flex items-center gap-3 text-sm">
                       <Check size={16} className="text-green-300 shrink-0" />
                       <span className="text-white/90">{t(key)}</span>
@@ -238,7 +272,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link to="/login" className="block w-full text-center bg-white text-primary-700 py-3.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all active:scale-95 shadow-md">
-                  {t('landing.price_cta')}
+                  {t('landing.pro_cta')}
                 </Link>
               </div>
             </div>
@@ -295,7 +329,10 @@ export default function LandingPage() {
               <p className="text-sm text-gray-400 mt-1">{t('landing.footer_tagline')}</p>
             </div>
             <div className="flex items-center gap-6">
-              {['features', 'pricing', 'faq'].map(id => (
+              <Link to="/features" className="text-sm text-gray-400 hover:text-white transition-colors">
+                {t('landing.nav_features')}
+              </Link>
+              {['pricing', 'faq'].map(id => (
                 <button key={id} onClick={() => scrollTo(id)} className="text-sm text-gray-400 hover:text-white transition-colors">
                   {t(`landing.nav_${id}`)}
                 </button>
