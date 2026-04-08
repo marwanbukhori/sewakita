@@ -156,7 +156,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
               { value: t('landing.stat_free_value'), label: t('landing.stat_free_label') },
-              { value: 'RM19', label: t('landing.stat_pro_label') },
+              { value: 'RM29', label: t('landing.stat_pro_label') },
               { value: '2', label: t('landing.stat_lang_label') },
               { value: 'PWA', label: t('landing.stat_pwa_label') },
             ].map((stat, i) => (
@@ -271,7 +271,7 @@ export default function LandingPage() {
                   {t('landing.pro_badge')}
                 </div>
                 <div className="mb-6">
-                  <span className="text-5xl font-bold">RM19</span>
+                  <span className="text-5xl font-bold">RM29</span>
                   <span className="text-white/60 ml-2">{t('landing.pro_period')}</span>
                 </div>
                 <ul className="space-y-3 mb-8">
