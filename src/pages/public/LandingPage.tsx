@@ -189,6 +189,12 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+
+          <div className="text-center mt-10">
+            <Link to="/features" className="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm hover:text-primary-700 transition-colors">
+              {t('landing.see_all_features')} <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
 
