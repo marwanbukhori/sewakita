@@ -3,6 +3,7 @@
 // based on notification_settings.on_overdue (days after due date).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { startCronRun, completeCronRun, failCronRun } from '../_shared/cron-logger.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -11,6 +12,7 @@ const supabase = createClient(
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 Deno.serve(async (_req) => {
+  const cronRunId = await startCronRun('overdue-reminder')
   try {
     // 1. Mark overdue bills
     await supabase.rpc('mark_overdue_bills')
@@ -84,11 +86,13 @@ Deno.serve(async (_req) => {
       }
     }
 
+    await completeCronRun(cronRunId, { reminders_sent: remindersSent })
     return new Response(JSON.stringify({
       success: true,
       reminders_sent: remindersSent,
     }))
   } catch (error) {
+    await failCronRun(cronRunId, (error as Error).message)
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 })
   }
 })

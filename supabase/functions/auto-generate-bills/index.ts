@@ -6,6 +6,7 @@
 // where today matches the property's billing_date.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { startCronRun, completeCronRun, failCronRun } from '../_shared/cron-logger.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -39,6 +40,7 @@ interface RoomRecord {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 Deno.serve(async (_req: Request) => {
+  const cronRunId = await startCronRun('auto-generate-bills')
   try {
     const today = new Date()
     const dayOfMonth = today.getDate()
@@ -217,6 +219,11 @@ Deno.serve(async (_req: Request) => {
       totalBillsCreated += billsCreated
     }
 
+    await completeCronRun(cronRunId, {
+      properties_processed: properties.length,
+      total_bills_created: totalBillsCreated,
+      month: currentMonth,
+    })
     return new Response(JSON.stringify({
       success: true,
       properties_processed: properties.length,
@@ -224,6 +231,7 @@ Deno.serve(async (_req: Request) => {
       month: currentMonth,
     }))
   } catch (error) {
+    await failCronRun(cronRunId, (error as Error).message)
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 })
   }
 })

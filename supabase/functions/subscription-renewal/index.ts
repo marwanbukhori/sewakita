@@ -9,6 +9,7 @@
 // Schedule via Supabase Dashboard Cron Jobs: 0 1 * * * (9am MYT = 1am UTC)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { startCronRun, completeCronRun, failCronRun } from '../_shared/cron-logger.ts'
 import { toyyibpayProvider } from '../_shared/toyyibpay-provider.ts'
 import type { ProviderContext } from '../_shared/payment-provider.ts'
 
@@ -25,6 +26,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 Deno.serve(async (_req) => {
+  const cronRunId = await startCronRun('subscription-renewal')
   const summary = { renewed: 0, dunned: 0, expired: 0, t14: 0, t3: 0, t0: 0, errors: [] as string[] }
 
   // --- Step 1: Monthly renewals (active, ending ≤ 1 day) ---
@@ -125,6 +127,7 @@ Deno.serve(async (_req) => {
   }
 
   console.log('subscription-renewal summary:', summary)
+  await completeCronRun(cronRunId, summary)
   return new Response(JSON.stringify(summary), {
     headers: { 'Content-Type': 'application/json' },
   })
