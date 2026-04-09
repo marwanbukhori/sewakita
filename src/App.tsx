@@ -43,6 +43,24 @@ const TenantBillsPage = lazy(() => import('@/pages/tenant/TenantBillsPage'))
 const TenantPaymentsPage = lazy(() => import('@/pages/tenant/TenantPaymentsPage'))
 const TenantClaimsPage = lazy(() => import('@/pages/tenant/TenantClaimsPage'))
 const PaymentSuccessPage = lazy(() => import('@/pages/tenant/PaymentSuccessPage'))
+// Admin pages (lazy-loaded — only downloaded by admin users)
+const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'))
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
+const AdminConfigPage = lazy(() => import('@/pages/admin/ConfigPage'))
+const AdminFeatureFlagsPage = lazy(() => import('@/pages/admin/FeatureFlagsPage'))
+const AdminPlansPage = lazy(() => import('@/pages/admin/AdminPlansPage'))
+const AdminPromoCodesPage = lazy(() => import('@/pages/admin/PromoCodesPage'))
+const AdminUsersPage = lazy(() => import('@/pages/admin/UsersPage'))
+const AdminUserDetailPage = lazy(() => import('@/pages/admin/UserDetailPage'))
+const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/SubscriptionsPage'))
+const AdminPaymentsPage = lazy(() => import('@/pages/admin/PaymentsPage'))
+const AdminNotificationsPage = lazy(() => import('@/pages/admin/NotificationsPage'))
+const AdminBillGenerationPage = lazy(() => import('@/pages/admin/BillGenerationPage'))
+const AdminPaymentClaimsPage = lazy(() => import('@/pages/admin/PaymentClaimsPage'))
+const AdminCronHealthPage = lazy(() => import('@/pages/admin/CronHealthPage'))
+const AdminActivityLogPage = lazy(() => import('@/pages/admin/ActivityLogPage'))
+const AdminAuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'))
+
 const AccountPage = lazy(() => import('@/pages/shared/AccountPage'))
 const ProfileEditPage = lazy(() => import('@/pages/shared/ProfileEditPage'))
 const ChangePasswordPage = lazy(() => import('@/pages/shared/ChangePasswordPage'))
@@ -167,6 +185,24 @@ function AppRoutes() {
           <Route path="/account/reports/monthly" element={<Navigate to="/reports/monthly" replace />} />
           <Route path="/account/reports/annual" element={<Navigate to="/reports/annual" replace />} />
           <Route path="/faq" element={<FAQPage />} />
+        </Route>
+        {/* Admin routes — nested outside AppShell, uses own AdminLayout */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="config" element={<AdminConfigPage />} />
+          <Route path="flags" element={<AdminFeatureFlagsPage />} />
+          <Route path="plans" element={<AdminPlansPage />} />
+          <Route path="promo-codes" element={<AdminPromoCodesPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="users/:id" element={<AdminUserDetailPage />} />
+          <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+          <Route path="payments" element={<AdminPaymentsPage />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
+          <Route path="bill-generation" element={<AdminBillGenerationPage />} />
+          <Route path="payment-claims" element={<AdminPaymentClaimsPage />} />
+          <Route path="cron-health" element={<AdminCronHealthPage />} />
+          <Route path="activity" element={<AdminActivityLogPage />} />
+          <Route path="audit" element={<AdminAuditLogPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

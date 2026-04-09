@@ -8,6 +8,7 @@ interface AuthState {
   user: User | null
   profile: Profile | null
   role: UserRole | null
+  isAdmin: boolean
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>
@@ -105,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: session?.user ?? null,
         profile,
         role: profile?.role ?? null,
+        isAdmin: profile?.is_admin ?? false,
         loading,
         signIn,
         signUp,
