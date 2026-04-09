@@ -18,8 +18,8 @@ ALTER TABLE profiles ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE profiles ADD CONSTRAINT profiles_admin_must_be_landlord
     CHECK (NOT is_admin OR role = 'landlord');
 
--- Set initial admin
-UPDATE profiles SET is_admin = true WHERE email = 'marwanbukhori.dev@gmail.com';
+-- Set initial admin (also ensure role is landlord — required by CHECK constraint)
+UPDATE profiles SET role = 'landlord', is_admin = true WHERE email = 'marwanbukhori.dev@gmail.com';
 
 -- ---------------------------------------------------------------------------
 -- 2. Promo codes enhancement (missing updated_at)
