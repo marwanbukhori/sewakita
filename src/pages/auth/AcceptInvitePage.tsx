@@ -131,6 +131,7 @@ export default function AcceptInvitePage() {
     ])
 
     setSaving(false)
+    localStorage.removeItem('rerumah_invite_token')
     toast.success('Selamat datang! Anda kini terikat ke unit ini.')
     navigate('/tenant/dashboard')
     window.location.reload()
@@ -232,6 +233,7 @@ export default function AcceptInvitePage() {
     }
 
     setSaving(false)
+    localStorage.removeItem('rerumah_invite_token')
     toast.success('Selamat datang ke ReRumah!')
     navigate('/tenant/dashboard')
     window.location.reload()
