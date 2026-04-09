@@ -13,8 +13,10 @@ import Card from '@/components/ui/Card'
 export default function OnboardingPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [step, setStep] = useState<'role' | 'details'>('role')
-  const [role, setRole] = useState<UserRole>('landlord')
+  const inviteToken = localStorage.getItem('rerumah_invite_token')
+  const isFromInvite = !!inviteToken
+  const [step, setStep] = useState<'role' | 'details'>(isFromInvite ? 'details' : 'role')
+  const [role, setRole] = useState<UserRole>(isFromInvite ? 'tenant' : 'landlord')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
@@ -41,8 +43,13 @@ export default function OnboardingPage() {
     }
 
     toast.success(t('onboarding.welcome_toast'))
-    navigate(role === 'landlord' ? '/dashboard' : '/tenant/dashboard')
-    window.location.reload()
+    if (inviteToken) {
+      navigate(`/invite/${inviteToken}`)
+      window.location.reload()
+    } else {
+      navigate(role === 'landlord' ? '/dashboard' : '/tenant/dashboard')
+      window.location.reload()
+    }
   }
 
   return (

@@ -141,6 +141,9 @@ export default function AcceptInvitePage() {
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault()
     setAuthLoading(true)
+    if (isSignUp) {
+      localStorage.setItem('rerumah_invite_token', token!)
+    }
     const { error } = isSignUp ? await signUp(email, password) : await signIn(email, password)
     setAuthLoading(false)
     if (error) {
