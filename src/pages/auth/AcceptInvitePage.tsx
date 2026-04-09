@@ -87,7 +87,7 @@ export default function AcceptInvitePage() {
         .from('rent_agreements')
         .select('*')
         .eq('id', inv.agreement_id)
-        .single()
+        .maybeSingle()
       if (agreementData) setAgreement(agreementData)
     }
 
@@ -275,14 +275,14 @@ export default function AcceptInvitePage() {
                 <Building2 className="text-primary-600" size={20} />
               </div>
               <div>
-                <p className="font-semibold text-gray-800">{invite.property.name}</p>
-                <p className="text-sm text-gray-500">{invite.property.address}</p>
+                <p className="font-semibold text-gray-800">{invite.property?.name || 'Property'}</p>
+                <p className="text-sm text-gray-500">{invite.property?.address || ''}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500">Bilik</p>
-                <p className="font-semibold text-gray-800">{invite.room.label}</p>
+                <p className="font-semibold text-gray-800">{invite.room?.label || 'Room'}</p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500">Sewa</p>
@@ -354,8 +354,8 @@ export default function AcceptInvitePage() {
             <div className="flex items-center gap-3">
               <Home size={18} className="text-primary-600 shrink-0" />
               <div className="text-sm">
-                <span className="font-semibold text-primary-700">{invite.property.name}</span>
-                <span className="text-primary-600"> — {invite.room.label} — RM{invite.agreed_rent}/bln</span>
+                <span className="font-semibold text-primary-700">{invite.property?.name || 'Property'}</span>
+                <span className="text-primary-600"> — {invite.room?.label || 'Room'} — RM{invite.agreed_rent}/bln</span>
               </div>
             </div>
           </Card>
