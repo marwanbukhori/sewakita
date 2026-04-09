@@ -1,9 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from '@/lib/auth-context'
 import { ConfigProvider } from '@/lib/config'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import { supabase } from '@/lib/supabase'
 import { SUBSCRIPTION_PAYMENTS_ENABLED } from '@/lib/feature-gates'
 
 // Static imports — needed during loading/auth check
@@ -83,6 +84,39 @@ function LoadingSpinner() {
 
 function AppRoutes() {
   const { user, profile, loading } = useAuth()
+  const [pendingInviteToken, setPendingInviteToken] = useState<string | null>(null)
+  const [inviteChecked, setInviteChecked] = useState(false)
+
+  // Auto-detect pending invite for authenticated users without a profile
+  useEffect(() => {
+    if (!user?.email || profile || loading) {
+      setInviteChecked(true)
+      return
+    }
+
+    // Check localStorage first (set during invite signup)
+    const storedToken = localStorage.getItem('rerumah_invite_token')
+    if (storedToken) {
+      setPendingInviteToken(storedToken)
+      setInviteChecked(true)
+      return
+    }
+
+    // Query DB for pending invite matching this email
+    supabase
+      .from('invites')
+      .select('token')
+      .eq('email', user.email)
+      .eq('status', 'pending')
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setPendingInviteToken(data[0].token)
+          localStorage.setItem('rerumah_invite_token', data[0].token)
+        }
+        setInviteChecked(true)
+      })
+  }, [user, profile, loading])
 
   if (loading) {
     return (
@@ -111,6 +145,14 @@ function AppRoutes() {
   }
 
   if (!profile) {
+    if (!inviteChecked) {
+      return <LoadingSpinner />
+    }
+
+    if (pendingInviteToken && !window.location.pathname.startsWith('/invite/')) {
+      return <Navigate to={`/invite/${pendingInviteToken}`} replace />
+    }
+
     return (
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
