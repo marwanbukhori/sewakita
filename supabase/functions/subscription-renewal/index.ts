@@ -10,7 +10,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { startCronRun, completeCronRun, failCronRun } from '../_shared/cron-logger.ts'
-import { toyyibpayProvider } from '../_shared/toyyibpay-provider.ts'
+import { billplzProvider } from '../_shared/billplz-provider.ts'
 import type { ProviderContext } from '../_shared/payment-provider.ts'
 
 const supabase = createClient(
@@ -18,9 +18,9 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
-const PLATFORM_SECRET_KEY = Deno.env.get('TOYYIBPAY_SECRET_KEY')!
-const PLATFORM_CATEGORY_CODE = Deno.env.get('TOYYIBPAY_CATEGORY_CODE')!
-const SANDBOX = Deno.env.get('TOYYIBPAY_SANDBOX') === 'true'
+const PLATFORM_SECRET_KEY = Deno.env.get('BILLPLZ_API_KEY')!
+const PLATFORM_CATEGORY_CODE = Deno.env.get('BILLPLZ_COLLECTION_SUBSCRIPTION')!
+const SANDBOX = Deno.env.get('BILLPLZ_SANDBOX') === 'true'
 const APP_URL = Deno.env.get('APP_URL') || ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 
@@ -157,16 +157,16 @@ async function renewMonthly(sub: { id: string; landlord_id: string; plan_code: s
     sandbox: SANDBOX,
   }
 
-  const result = await toyyibpayProvider.createBill(ctx, {
+  const result = await billplzProvider.createBill(ctx, {
     externalRef: `sub_${sub.id}`,
     name: `ReRumah ${plan.display_name}`,
     description: `Monthly renewal: ${plan.display_name}`,
     amountCents: Math.round(Number(plan.price_myr) * 100),
     payerName: profile.name,
     payerEmail: profile.email,
-    payerPhone: profile.phone || '',
+    payerPhone: profile.phone || '0000000000',
     returnUrl: `${APP_URL}/plans/success?sub=${sub.id}`,
-    callbackUrl: `${SUPABASE_URL}/functions/v1/toyyibpay-webhook`,
+    callbackUrl: `${SUPABASE_URL}/functions/v1/billplz-webhook`,
     chargeFeeToCustomer: false,
   })
 

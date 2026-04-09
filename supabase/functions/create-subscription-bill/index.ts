@@ -1,9 +1,9 @@
-// Create a ToyyibPay bill for landlord SaaS subscription.
-// Uses the PLATFORM's ToyyibPay credentials (env vars).
+// Create a Billplz bill for landlord SaaS subscription.
+// Uses the PLATFORM's Billplz credentials (env vars).
 // Called by frontend when landlord clicks a plan card on /plans.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { toyyibpayProvider } from '../_shared/toyyibpay-provider.ts'
+import { billplzProvider } from '../_shared/billplz-provider.ts'
 import type { ProviderContext } from '../_shared/payment-provider.ts'
 
 const supabase = createClient(
@@ -11,13 +11,13 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
-const PLATFORM_SECRET_KEY = Deno.env.get('TOYYIBPAY_SECRET_KEY')!
-const PLATFORM_CATEGORY_CODE = Deno.env.get('TOYYIBPAY_CATEGORY_CODE')!
-const SANDBOX = Deno.env.get('TOYYIBPAY_SANDBOX') === 'true'
+const PLATFORM_SECRET_KEY = Deno.env.get('BILLPLZ_API_KEY')!
+const PLATFORM_CATEGORY_CODE = Deno.env.get('BILLPLZ_COLLECTION_SUBSCRIPTION')!
+const SANDBOX = Deno.env.get('BILLPLZ_SANDBOX') === 'true'
 const APP_URL = Deno.env.get('APP_URL') || ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 
-console.log('create-subscription-bill mode:', SANDBOX ? 'SANDBOX' : 'PRODUCTION')
+console.log('create-subscription-bill gateway: billplz, mode:', SANDBOX ? 'SANDBOX' : 'PRODUCTION')
 
 function corsHeaders() {
   return {
@@ -76,11 +76,18 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (existing?.gateway_bill_ref) {
-      const host = SANDBOX ? 'https://dev.toyyibpay.com' : 'https://toyyibpay.com'
-      return json({
-        payment_url: `${host}/${existing.gateway_bill_ref}`,
-        subscription_id: existing.id,
-      })
+      // Fetch the existing bill URL from Billplz
+      try {
+        const ctx: ProviderContext = { secretKey: PLATFORM_SECRET_KEY, categoryCode: PLATFORM_CATEGORY_CODE, mode: 'platform', sandbox: SANDBOX }
+        const status = await billplzProvider.getBillStatus(ctx, existing.gateway_bill_ref)
+        if (status.status === 'pending') {
+          const host = SANDBOX ? 'https://www.billplz-sandbox.com' : 'https://www.billplz.com'
+          return json({
+            payment_url: `${host}/bills/${existing.gateway_bill_ref}`,
+            subscription_id: existing.id,
+          })
+        }
+      } catch { /* fall through to create new bill */ }
     }
 
     // Cancel any other past_due subscription (user switching plans before paying)
@@ -99,7 +106,7 @@ Deno.serve(async (req) => {
         status: 'past_due',
         period_start: new Date().toISOString(),
         period_end: new Date().toISOString(),  // advances on webhook success
-        gateway: 'toyyibpay',
+        gateway: 'billplz',
         gateway_category_code: PLATFORM_CATEGORY_CODE,
       })
       .select('id')
@@ -116,17 +123,17 @@ Deno.serve(async (req) => {
       sandbox: SANDBOX,
     }
 
-    const result = await toyyibpayProvider.createBill(ctx, {
+    const result = await billplzProvider.createBill(ctx, {
       externalRef: `sub_${sub.id}`,
       name: `ReRumah ${plan.display_name}`,
       description: `Subscription: ${plan.display_name}`,
       amountCents: Math.round(Number(plan.price_myr) * 100),
       payerName: profile.name,
       payerEmail: profile.email,
-      payerPhone: profile.phone || '',
+      payerPhone: profile.phone || '0000000000',
       returnUrl: `${APP_URL}/plans/success?sub=${sub.id}`,
-      callbackUrl: `${SUPABASE_URL}/functions/v1/toyyibpay-webhook`,
-      chargeFeeToCustomer: false,  // platform absorbs the RM 1
+      callbackUrl: `${SUPABASE_URL}/functions/v1/billplz-webhook`,
+      chargeFeeToCustomer: false,
     })
 
     await supabase.from('subscriptions').update({
