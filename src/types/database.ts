@@ -18,6 +18,7 @@ export interface Profile {
   email: string
   ic_number?: string
   emergency_contact?: string
+  is_admin?: boolean
   created_at: string
   updated_at: string
 }
