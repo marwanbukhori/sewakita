@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'GET') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     })
   }
 
@@ -55,13 +55,14 @@ Deno.serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=60',
+        'Access-Control-Allow-Origin': '*',
       },
     })
   } catch (err) {
     console.error('get-public-config error:', err)
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     })
   }
 })
