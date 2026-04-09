@@ -23,6 +23,7 @@ export default function TenantDashboard() {
   const [overdueMonths, setOverdueMonths] = useState(0)
   const [agreementId, setAgreementId] = useState<string | null>(null)
   const [landlordPhone, setLandlordPhone] = useState<string | null>(null)
+  const [landlordName, setLandlordName] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -44,10 +45,11 @@ export default function TenantDashboard() {
     if (tenancyData) {
       const { data: landlord } = await supabase
         .from('profiles')
-        .select('phone')
+        .select('phone, name')
         .eq('id', tenancyData.room.property.landlord_id)
         .single()
       if (landlord?.phone) setLandlordPhone(landlord.phone)
+      if (landlord?.name) setLandlordName(landlord.name)
       const { data: agr } = await supabase
         .from('rent_agreements')
         .select('id')
@@ -204,12 +206,16 @@ export default function TenantDashboard() {
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">{tenancy.room.property.name}</p>
+              {tenancy.room.property.address && (
+                <p className="text-xs text-gray-400">{tenancy.room.property.address}</p>
+              )}
               <p className="text-xs text-gray-500">{tenancy.room.label} — RM{tenancy.agreed_rent}/bulan</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100 pt-3">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 border-t border-gray-100 pt-3">
             <span>Deposit: RM{tenancy.deposit}</span>
             <span className="flex items-center gap-1"><Calendar size={12} /> {format(new Date(tenancy.move_in), 'dd MMM yyyy')}</span>
+            {landlordName && <span>Tuan rumah: {landlordName}</span>}
             {agreementId && (
               <Link to={`/agreements/${agreementId}`} className="flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium">
                 <FileText size={12} /> {t('agreement.view')}
