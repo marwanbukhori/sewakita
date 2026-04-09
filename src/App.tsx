@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from '@/lib/auth-context'
+import { ConfigProvider } from '@/lib/config'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { SUBSCRIPTION_PAYMENTS_ENABLED } from '@/lib/feature-gates'
 
@@ -214,6 +215,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
+        <ConfigProvider>
         <AuthProvider>
           <AppRoutes />
           <Toaster
@@ -232,6 +234,7 @@ export default function App() {
             }}
           />
         </AuthProvider>
+        </ConfigProvider>
       </ErrorBoundary>
     </BrowserRouter>
   )

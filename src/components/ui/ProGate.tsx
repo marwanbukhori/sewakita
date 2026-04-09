@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { Lock } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { getCurrentPlanCode } from '@/lib/subscription'
-import { getPlanTier, hasReports } from '@/lib/feature-gates'
+import { getPlanTier } from '@/lib/feature-gates'
+import { useConfig } from '@/lib/config'
 import Button from '@/components/ui/Button'
 
 interface ProGateProps {
@@ -13,7 +14,10 @@ interface ProGateProps {
 
 export default function ProGate({ children, feature }: ProGateProps) {
   const { profile } = useAuth()
+  const { plans } = useConfig()
   const [tier, setTier] = useState<'free' | 'pro' | null>(null)
+  const monthlyPrice = plans.find(p => p.billing_interval === 'monthly')?.price_myr || '29'
+  const annualPrice = plans.find(p => p.billing_interval === 'annual')?.price_myr || '290'
 
   useEffect(() => {
     if (!profile) return
@@ -44,9 +48,9 @@ export default function ProGate({ children, feature }: ProGateProps) {
             Upgrade to Pro to unlock {feature === 'reports' ? 'reports, charts, and PDF export' : 'this feature'}.
           </p>
           <Link to="/plans">
-            <Button fullWidth>Upgrade to Pro — RM29/month</Button>
+            <Button fullWidth>Upgrade to Pro — RM{parseFloat(monthlyPrice).toFixed(0)}/month</Button>
           </Link>
-          <p className="text-[11px] text-gray-400 mt-3">Or RM290/year (save 2 months)</p>
+          <p className="text-[11px] text-gray-400 mt-3">Or RM{parseFloat(annualPrice).toFixed(0)}/year (save 2 months)</p>
         </div>
       </div>
     </div>

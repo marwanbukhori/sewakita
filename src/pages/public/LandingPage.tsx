@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Building2, Receipt, CreditCard, FileText, MessageCircle, BarChart3, ChevronDown, ChevronUp, Zap, Shield, Smartphone, ArrowRight, Check, Menu, X } from 'lucide-react'
 import { BatikHeroOverlay, BatikDivider } from '@/assets/batik/patterns'
 import LanguageToggle from '@/components/ui/LanguageToggle'
+import { useConfig } from '@/lib/config'
 
 const FEATURES = [
   { icon: Building2, titleKey: 'landing.feat_property', descKey: 'landing.feat_property_desc' },
@@ -39,6 +40,9 @@ const FAQ_ITEMS = [
 
 export default function LandingPage() {
   const { t } = useTranslation()
+  const { plans } = useConfig()
+  const monthlyPrice = plans.find(p => p.billing_interval === 'monthly')?.price_myr
+  const priceDisplay = monthlyPrice ? `RM${parseFloat(monthlyPrice).toFixed(0)}` : 'RM29'
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenu, setMobileMenu] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -155,7 +159,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
               { value: t('landing.stat_free_value'), label: t('landing.stat_free_label') },
-              { value: 'RM29', label: t('landing.stat_pro_label') },
+              { value: priceDisplay, label: t('landing.stat_pro_label') },
               { value: '2', label: t('landing.stat_lang_label') },
               { value: 'PWA', label: t('landing.stat_pwa_label') },
             ].map((stat, i) => (
@@ -265,7 +269,7 @@ export default function LandingPage() {
                   {t('landing.pro_badge')}
                 </div>
                 <div className="mb-6">
-                  <span className="text-5xl font-bold">RM29</span>
+                  <span className="text-5xl font-bold">{priceDisplay}</span>
                   <span className="text-white/60 ml-2">{t('landing.pro_period')}</span>
                 </div>
                 <ul className="space-y-3 mb-8">

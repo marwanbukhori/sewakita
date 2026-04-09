@@ -8,8 +8,8 @@ export function getPlanTier(planCode: string | null | undefined): PlanTier {
   return 'pro'
 }
 
-export function canAddProperty(tier: PlanTier, currentCount: number): boolean {
-  if (tier === 'free') return currentCount < 1
+export function canAddProperty(tier: PlanTier, currentCount: number, config?: { free_property_limit?: number }): boolean {
+  if (tier === 'free') return currentCount < (config?.free_property_limit ?? 1)
   return true
 }
 

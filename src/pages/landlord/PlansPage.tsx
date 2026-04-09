@@ -14,23 +14,19 @@ import {
   type SubscriptionWithPlan,
 } from '@/lib/subscription'
 import { SUBSCRIPTION_PAYMENTS_ENABLED, getPlanTier } from '@/lib/feature-gates'
+import { useConfig } from '@/lib/config'
 
 type Interval = 'monthly' | 'annual'
 
-const FREE_FEATURES = [
-  { icon: Building2, label: '1 property' },
-  { icon: Check, label: 'Bill generation & WhatsApp' },
-  { icon: Check, label: 'Manual payment recording' },
-]
+const DEFAULT_FREE_FEATURES = ['1 property', 'Bill generation & WhatsApp', 'Manual payment recording']
+const DEFAULT_PRO_FEATURES = ['Unlimited properties', 'Online payment (FPX)', 'Reports & analytics', 'OCR bill scanning', 'PDF export', 'Priority support']
 
-const PRO_FEATURES = [
-  { icon: Building2, label: 'Unlimited properties' },
-  { icon: CreditCard, label: 'Online payment (FPX)' },
-  { icon: BarChart3, label: 'Reports & analytics' },
-  { icon: Camera, label: 'OCR bill scanning' },
-  { icon: Check, label: 'PDF export' },
-  { icon: Check, label: 'Priority support' },
-]
+const featureIcons: Record<string, typeof Check> = {
+  'Unlimited properties': Building2,
+  'Online payment (FPX)': CreditCard,
+  'Reports & analytics': BarChart3,
+  'OCR bill scanning': Camera,
+}
 
 export default function PlansPage() {
   const { t } = useTranslation()
@@ -54,9 +50,15 @@ export default function PlansPage() {
     setLoading(false)
   }
 
+  const { config, plans: configPlans } = useConfig()
   const tier = getPlanTier(subscription?.plan_code)
   const isPro = tier === 'pro'
-  const price = interval === 'monthly' ? 29 : 290
+  const monthlyPlan = configPlans.find(p => p.billing_interval === 'monthly')
+  const annualPlan = configPlans.find(p => p.billing_interval === 'annual')
+  const price = interval === 'monthly' ? parseFloat(monthlyPlan?.price_myr || '29') : parseFloat(annualPlan?.price_myr || '290')
+  const savings = monthlyPlan && annualPlan ? Math.round(parseFloat(monthlyPlan.price_myr) * 12 - parseFloat(annualPlan.price_myr)) : 58
+  const freeFeatures = (config.free_features as string[]) || DEFAULT_FREE_FEATURES
+  const proFeatures = (config.pro_features as string[]) || DEFAULT_PRO_FEATURES
 
   async function handleUpgrade() {
     if (!SUBSCRIPTION_PAYMENTS_ENABLED) {
@@ -155,7 +157,7 @@ export default function PlansPage() {
             className={`px-4 h-9 rounded-full text-sm font-medium transition flex items-center gap-2 ${interval === 'annual' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
             Annual
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${interval === 'annual' ? 'bg-white text-primary-700' : 'bg-primary-100 text-primary-700'}`}>
-              Save RM38
+              Save RM{savings}
             </span>
           </button>
         </div>
@@ -175,12 +177,15 @@ export default function PlansPage() {
             )}
           </div>
           <div className="space-y-2">
-            {FREE_FEATURES.map((f, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                <f.icon size={14} className="text-gray-400 shrink-0" />
-                <span>{f.label}</span>
-              </div>
-            ))}
+            {freeFeatures.map((label, i) => {
+              const Icon = featureIcons[label] || Check
+              return (
+                <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                  <Icon size={14} className="text-gray-400 shrink-0" />
+                  <span>{label}</span>
+                </div>
+              )
+            })}
           </div>
         </Card>
 
@@ -200,12 +205,15 @@ export default function PlansPage() {
             )}
           </div>
           <div className="space-y-2 mb-4">
-            {PRO_FEATURES.map((f, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                <f.icon size={14} className="text-primary-600 shrink-0" />
-                <span>{f.label}</span>
-              </div>
-            ))}
+            {proFeatures.map((label, i) => {
+              const Icon = featureIcons[label] || Check
+              return (
+                <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                  <Icon size={14} className="text-primary-600 shrink-0" />
+                  <span>{label}</span>
+                </div>
+              )
+            })}
           </div>
           {!isPro && (
             <Button fullWidth loading={checkingOut} onClick={handleUpgrade}>

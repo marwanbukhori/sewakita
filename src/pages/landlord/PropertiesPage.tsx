@@ -11,6 +11,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import { getPlanTier, canAddProperty } from '@/lib/feature-gates'
 import { getCurrentPlanCode } from '@/lib/subscription'
+import { useConfig } from '@/lib/config'
 
 interface PropertyWithRooms extends Property {
   rooms: Room[]
@@ -19,6 +20,7 @@ interface PropertyWithRooms extends Property {
 export default function PropertiesPage() {
   const { profile } = useAuth()
   const { t } = useTranslation()
+  const { config: configData } = useConfig()
   const [properties, setProperties] = useState<PropertyWithRooms[]>([])
   const [loading, setLoading] = useState(true)
   const [planCode, setPlanCode] = useState<string | null>(null)
@@ -54,7 +56,7 @@ export default function PropertiesPage() {
           <Link to="/tenants">
             <Button size="sm" variant="ghost" icon={Users}>{t('tenants.title', 'Tenants')}</Button>
           </Link>
-          {canAddProperty(getPlanTier(planCode), properties.length) ? (
+          {canAddProperty(getPlanTier(planCode), properties.length, { free_property_limit: Number(configData.free_property_limit) || 1 }) ? (
             <Link to="/properties/new">
               <Button size="sm" icon={Plus}>{t('common.add')}</Button>
             </Link>

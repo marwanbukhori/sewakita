@@ -8,6 +8,7 @@ import type { Property } from '@/types/database'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Card from '@/components/ui/Card'
+import { useConfig } from '@/lib/config'
 
 interface NotificationSettings {
   email_enabled: boolean
@@ -23,6 +24,7 @@ export default function NotificationSettingsPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { config: configData } = useConfig()
   const [property, setProperty] = useState<Property | null>(null)
   const [settings, setSettings] = useState<NotificationSettings>({
     email_enabled: true,
@@ -156,10 +158,9 @@ export default function NotificationSettingsPage() {
                 className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white"
               >
                 <option value="">Disabled</option>
-                <option value="1">1 day</option>
-                <option value="3">3 days</option>
-                <option value="5">5 days</option>
-                <option value="7">7 days</option>
+                {((configData.overdue_reminder_intervals as number[]) || [1, 3, 5, 7]).map(d => (
+                  <option key={d} value={d}>{d} day{d > 1 ? 's' : ''}</option>
+                ))}
               </select>
             </div>
           </div>
