@@ -136,6 +136,8 @@ export default function AcceptInvitePage() {
     window.location.reload()
   }
 
+  const [showVerifyEmail, setShowVerifyEmail] = useState(false)
+
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault()
     setAuthLoading(true)
@@ -143,6 +145,8 @@ export default function AcceptInvitePage() {
     setAuthLoading(false)
     if (error) {
       toast.error(error.message)
+    } else if (isSignUp) {
+      setShowVerifyEmail(true)
     }
   }
 
@@ -301,6 +305,18 @@ export default function AcceptInvitePage() {
 
           {/* Auth form */}
           <div className="bg-white rounded-3xl shadow-lg p-7">
+            {showVerifyEmail ? (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-800 mb-2">Semak e-mel anda</h2>
+                <p className="text-sm text-gray-500 mb-1">Kami telah menghantar pautan pengesahan ke:</p>
+                <p className="text-sm font-medium text-gray-800 mb-4">{email}</p>
+                <p className="text-xs text-gray-400">Klik pautan dalam e-mel untuk meneruskan pendaftaran. Selepas itu, kembali ke halaman ini.</p>
+              </div>
+            ) : (
+            <>
             <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('invite.login_to_accept')}</h2>
 
             <form onSubmit={handleAuth} className="space-y-4">
@@ -333,6 +349,8 @@ export default function AcceptInvitePage() {
               </svg>
               {t('auth.login_google')}
             </Button>
+            </>
+            )}
           </div>
         </div>
       </div>
